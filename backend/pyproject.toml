@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claimvoice"
+version = "0.1.0"
+description = "ClaimVoice: a voice line that takes first notice of loss for auto and property claims, in English and French, and routes every claim with reasons."
+readme = "../README.md"
+requires-python = ">=3.13,<3.14"
+license = "MIT"
+authors = [{ name = "Moeiz Shahzad" }]
+# Exact pins; the full resolved set is frozen in requirements.lock (make lock).
+dependencies = [
+  # API and platform (ADR 0002)
+  "litestar==2.25.0",
+  "uvicorn[standard]==0.54.0",
+  "msgspec==0.22.0",
+  "pydantic-settings==2.16.3",
+  "SQLAlchemy[asyncio]==2.1.8",
+  "aiosqlite==0.22.1",
+  "alembic==1.20.1",
+  "argon2-cffi==25.1.0",
+  "structlog==26.1.0",
+  "prometheus-client==0.26.0",
+  "httpx==0.28.1",
+  "typer==0.29.1",
+  # voice runtime (ADR 0001): Pipecat core + aiortc for SmallWebRTC; no video, so no OpenCV
+  "pipecat-ai==1.16.0",
+  "aiortc==1.16.0",
+  # classical ML (ADR 0004)
+  "numpy==2.5.4",
+  "pandas==3.1.1",
+  "scipy==1.18.1",
+  "scikit-learn==1.9.1",
+  "xgboost==3.4.1",
+  "optuna==5.0.0",
+  "shap==0.54.1",
+  "mlflow-skinny==3.18.0",
+  "fastparquet==2026.9.0",
+]
+
+[project.optional-dependencies]
+# Cloud language understanding through free tiers (LLM_FAKE=false + a key). Not needed offline.
+ai = ["litellm==1.109.1"]
+# Cloud speech services through Pipecat's service classes (STT_PROVIDER / TTS_PROVIDER + a key). Not needed offline.
+voice-cloud = ["pipecat-ai[groq,deepgram,cartesia]==1.16.0"]
+# Optional production database.
+postgres = ["asyncpg==0.32.0"]
+dev = [
+  "pytest==9.2.0",
+  "pytest-asyncio==1.5.0",
+  "ruff==0.17.5",
+  "mypy==2.4.1",
+]
+
+[project.scripts]
+claimvoice = "claimvoice.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["claimvoice*"]
+
+[tool.setuptools.package-data]
+claimvoice = ["**/data/*.json", "**/data/*.jsonl", "**/data/*.yml", "ml/artifacts/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["alembic/versions/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "SIM", "RUF", "PT", "N", "C4"]
+ignore = ["S101", "B008", "RUF012", "RUF001", "RUF002", "RUF003", "S105", "S106"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "N802", "PT011", "PT018", "E501"]
+"**/ml/**" = ["N803", "N806"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true
+exclude = ["alembic/", "tests/"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "slow: model training or long call simulations (deselect with -m 'not slow')",
+  "data: needs freMTPL2 in data/ (make data); skipped when absent",
+]
+filterwarnings = ["ignore::DeprecationWarning:mlflow.*", "ignore::FutureWarning:mlflow.*"]
