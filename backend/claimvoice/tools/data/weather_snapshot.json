@@ -1,0 +1,9 @@
+{
+  "source": "Environment and Climate Change Canada and NOAA National Weather Service public alerts (bundled snapshot, adapted for the demo calendar)",
+  "note": "dayOffset is relative to the demo day (CLAIMVOICE_DEMO_TODAY). Seed and surge simulation read this file; nothing is fetched at runtime unless WEATHER_SOURCE=live.",
+  "alerts": [
+    {"id": "eccc-ab-calgary-hail", "kind": "hail", "region": "CA-AB", "areaLabel": "Calgary (northeast)", "headline": "Severe thunderstorm with large hail", "tz": "America/Edmonton", "dayOffset": 0, "startLocal": "06:40", "durationHours": 9, "lat": 51.0947, "lon": -113.9789, "radiusKm": 18},
+    {"id": "nws-co-denver-wind", "kind": "wind", "region": "US-CO", "areaLabel": "Denver metro", "headline": "High wind warning", "tz": "America/Denver", "dayOffset": -2, "startLocal": "10:00", "durationHours": 14, "lat": 39.7392, "lon": -104.9903, "radiusKm": 30},
+    {"id": "eccc-qc-montreal-rain", "kind": "rainfall", "region": "CA-QC", "areaLabel": "Montréal", "headline": "Rainfall and rapid snowmelt warning", "tz": "America/Toronto", "dayOffset": -1, "startLocal": "14:00", "durationHours": 20, "lat": 45.5019, "lon": -73.5674, "radiusKm": 25}
+  ]
+}
