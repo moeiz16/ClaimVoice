@@ -1,0 +1,42 @@
+{
+  "name": "claimvoice-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=21.7"
+  },
+  "scripts": {
+    "dev": "nuxt dev --port 3040",
+    "build": "nuxt build",
+    "preview": "PORT=3040 node .output/server/index.mjs",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@vueuse/core": "13.9.0",
+    "@vueuse/nuxt": "13.9.0",
+    "motion-v": "1.10.3",
+    "nuxt": "3.17.7",
+    "vue": "3.5.45",
+    "vue-router": "4.6.5",
+    "wavesurfer.js": "7.12.12"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@tailwindcss/vite": "4.1.18",
+    "@vue/test-utils": "2.4.6",
+    "eslint": "9.39.5",
+    "eslint-plugin-vue": "10.12.1",
+    "globals": "16.5.0",
+    "happy-dom": "20.14.6",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.2",
+    "vitest": "3.2.7",
+    "vue-eslint-parser": "10.4.2",
+    "vue-tsc": "2.2.12"
+  }
+}
