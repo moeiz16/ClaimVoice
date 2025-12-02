@@ -4,6 +4,7 @@ import pytest
 
 from claimvoice.platform import audit
 from claimvoice.platform.permissions import PERMISSIONS, ROLE_LABELS, ROLE_PERMISSIONS, Role, has_permission
+from claimvoice.qa.rubric import RUBRIC
 
 
 def test_every_role_has_a_label_and_only_known_permissions():
@@ -16,8 +17,9 @@ def test_every_role_has_a_label_and_only_known_permissions():
     ("role", "permission", "expected"),
     [
         ("supervisor", "calls:takeover", True),
-        ("supervisor", "models:promote", False),
-        ("compliance", "models:promote", True),
+        ("supervisor", "models:signoff", True),
+        ("compliance", "models:signoff", True),
+        ("adjuster", "models:signoff", False),
         ("adjuster", "siu:read", False),
         ("siu_investigator", "siu:decide", True),
         ("admin", "siu:read", False),
@@ -63,3 +65,16 @@ def test_audit_chain_detects_deletion():
     del rows[1]
     check = audit.verify(rows)
     assert not check.ok and check.first_broken_seq == 3
+
+
+def test_rubric_totals_100_points_with_six_beads():
+    assert sum(item.points for item in RUBRIC) == 100
+    assert [item.label for item in RUBRIC if item.bead] == [
+        "Consent first",
+        "Identity checked",
+        "Required details",
+        "Kind words",
+        "No card numbers",
+        "Right hand-off",
+    ]
+    assert len({item.key for item in RUBRIC}) == len(RUBRIC)

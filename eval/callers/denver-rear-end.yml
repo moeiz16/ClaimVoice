@@ -2,6 +2,7 @@ key: denver-rear-end
 title: Rear-end collision at a red light, Denver
 language: en
 region: US-CO
+caller_name: Kiara Booker
 caller_phone: "+17205550187"
 policy_number: LM-CO-311592
 turns:
@@ -9,9 +10,9 @@ turns:
   - text: "Yeah, go ahead and record it."
   - text: "Policy number is LM-CO-311592."
   - text: "Zip code is 80206."
+  - text: "My neck is a little sore but I'm okay. Nobody else is hurt."
   - text: "About twenty minutes ago, at Colfax and Josephine, I was stopped at the light."
   - text: "A pickup hit me from behind. The other driver gave me his insurance, it's with Front Range Auto."
-  - text: "My neck is a little sore but I'm okay. Nobody else is hurt."
   - text: "Yes, the police came, the report number is DPD 26-004417."
   - text: "The bumper is pushed in and the trunk won't close. It drives."
   - text: "Sure, send the link."
@@ -23,7 +24,7 @@ expect:
   handoff: false
   route: adjuster  # an injury mention is never fast-tracked
   slots:
-    loss_type: auto_collision
+    loss_type: collision
     other_party_involved: true
     police_report_filed: true
     injury_reported: true

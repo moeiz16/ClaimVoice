@@ -71,13 +71,14 @@ async def test_tool_runner_times_out_with_fallback():
     assert value == "fallback" and timing.timed_out and timing.elapsed_ms < 500
 
 
-async def test_bundled_weather_confirms_the_calgary_hail_on_the_demo_day():
+async def test_bundled_weather_confirms_the_calgary_chinook_on_the_demo_morning():
     feed = BundledWeather(date(2026, 1, 8))
-    noon = datetime(2026, 1, 8, 12, 0, tzinfo=ZoneInfo("America/Edmonton"))
-    alerts = await feed.alerts("CA-AB", noon)
-    assert [a.kind for a in alerts] == ["hail"]
-    near = await feed.events_near(51.12, -113.95, noon + timedelta(days=1))
-    assert any(a.kind == "hail" for a in near)
+    morning = datetime(2026, 1, 8, 7, 42, tzinfo=ZoneInfo("America/Edmonton"))
+    alerts = await feed.alerts("CA-AB", morning)
+    assert [a.kind for a in alerts] == ["wind"]
+    near = await feed.events_near(51.12, -113.95, morning + timedelta(days=1))  # Saddle Ridge, reported next day
+    assert any(a.kind == "wind" for a in near)
+    assert not await feed.alerts("CA-AB", morning + timedelta(days=3))
 
 
 async def test_fake_sms_masks_the_number():

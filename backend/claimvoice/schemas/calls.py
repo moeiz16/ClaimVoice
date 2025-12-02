@@ -9,8 +9,7 @@ from claimvoice.schemas.base import Lang, Model, PersonRef, TextSpan
 
 CallMode = Literal["voice", "browser_speech", "typed"]
 LineState = Literal["ringing", "with_line", "waiting_for_person", "with_person", "wrapping_up", "ended"]
-Speaker = Literal["caller", "line", "person", "system"]
-Sentiment = Literal["calm", "stressed", "distressed"]
+Speaker = Literal["caller", "line", "person", "system", "whisper"]  # whisper rows are staff-only
 FlagKind = Literal[
     "urgent_safety",
     "distress",
@@ -35,8 +34,10 @@ class Flag(Model):
 class StageInfo(Model):
     key: str  # dialogue Stage value
     label: str
-    index: int  # 0-based position in the script; hand-off and ended keep the index they interrupted
-    count: int  # number of scripted stages (10)
+    step: int  # 1..7 on the script track; hand-off and ended keep the step they interrupted
+    step_label: str  # "What happened"
+    steps: int  # 7
+    next_label: str | None  # "Photos next"
 
 
 class Listener(Model):
@@ -66,14 +67,36 @@ class HandoffInfo(Model):
     waiting_seconds: int
     accepted_by: PersonRef | None
     accepted_at: datetime | None
-    caller_label: str  # "Amélie Tremblay" or "Unverified caller"
+    caller_label: str  # "Martine Gagnon" or "Unverified caller"
+    line_label: str  # "Line 4"
+    place: str | None  # "Airdrie"
     loss_type_label: str | None
     language: Lang
+    summary: str  # two lines, so nobody asks the caller twice
+    actions_taken: list[str]  # what ClaimVoice already did ("Told him to leave the house and call 911")
+    to: PersonRef | None  # a named person, when the hand-off was addressed to someone
+    team: Literal["intake", "adjusters", "siu"] | None
 
 
-class LastLine(Model):
-    speaker: Speaker
-    text: str  # redacted, at most 140 characters
+class LastAsked(Model):
+    text: str  # the line's last question, in the call's language
+    text_en: str | None  # English under it for French calls
+
+
+class Mood(Model):
+    """One plain word per line, from what the caller says and how the conversation goes; never a score."""
+
+    key: Literal["calm", "unsettled", "shaken", "upset"]
+    label: str  # "Sounds shaken"
+    detail: str | None  # "speaking slower", "repeating questions"
+
+
+class HeardPill(Model):
+    """A fact heard on the call, for the strip ("Roof shingles torn off"); caution = amber (e.g. "Sore neck")."""
+
+    key: str
+    text: str
+    tone: Literal["normal", "caution"]
 
 
 class LiveLine(Model):
@@ -95,18 +118,20 @@ class LiveLine(Model):
     loss_type_label: str | None
     answered_at: datetime
     flags: list[Flag]
-    sentiment: Sentiment
+    mood: Mood
     handoff: HandoffInfo | None
     listeners: list[Listener]
     in_surge: bool
-    last_line: LastLine | None
+    last_asked: LastAsked | None
+    place: str | None  # "Saddle Ridge, Calgary"
+    heard: list[HeardPill]  # most recent first, at most 4
     claim_file_progress: float  # 0..1 share of required fields filled
     is_sample: bool
 
 
 class CallSummary(Model):
     id: str
-    reference: str  # "CV-260108-0042"
+    reference: str  # "CALL-260108-042"
     started_at: datetime
     ended_at: datetime | None
     duration_seconds: int | None
@@ -156,7 +181,7 @@ class Turn(Model):
     id: str
     seq: int
     speaker: Speaker
-    speaker_label: str  # "Caller", "ClaimVoice", "Dana Whitford (supervisor)"
+    speaker_label: str  # "Caller", "ClaimVoice", "Renée Kowalchuk (supervisor)", "Whisper, ClaimVoice only"
     text: str  # redacted
     language: Lang
     at_ms: int  # offset from answer, for recording sync
@@ -194,8 +219,10 @@ class Slot(Model):
     confidence: float | None
     confidence_label: Literal["sure", "likely", "check"] | None  # ≥0.85 / ≥0.6 / below
     source: Literal["heard", "policy_record", "tool", "person"]
-    source_label: str  # "Heard on the call", "From the policy", "Looked up", "Edited by Dana Whitford"
+    source_label: str  # source chip: "▸ 1:52", "from the policy", "looked up", "edited by Lena Ortiz"
     span: TextSpan | None  # link into the transcript (null for policy_record and tool values)
+    heard_at_seconds: float | None  # where it was said on the recording (the ▸ moment)
+    changed_at_seconds: float | None  # set when the caller corrected it ("Changed at 3:12")
     confirmed: bool  # confirmed by the caller at read-back
     required: bool
     history: list[SlotHistory]
@@ -236,7 +263,7 @@ class CallEvent(Model):
         "notice",
         "ended",
     ]
-    label: str  # plain words: "Policy found in 0.2 s", "Dana Whitford started listening"
+    label: str  # plain words: "Policy found in 0.2 s", "Renée Kowalchuk started listening"
     actor: str | None
     data: dict[str, Any]
 
@@ -272,7 +299,9 @@ class StartCallOut(Model):
 
 
 class HandoffIn(Model):
-    note: str | None = None
+    reason: str  # one line, shown in the tray
+    to_user_id: str | None = None  # a person, or
+    team: Literal["intake", "adjusters", "siu"] | None = None  # a team (default intake)
 
 
 class WhisperIn(Model):
@@ -296,6 +325,11 @@ class HangupIn(Model):
 class ListenOut(Model):
     mode: Literal["audio", "transcript"]  # transcript when the call carries no server audio (browser_speech/typed)
     connect: ConnectInfo | None  # audio: a receive-only WebRTC leg
+
+
+class TakeoverOut(Model):
+    call: CallDetail
+    connect: ConnectInfo | None  # send-receive leg: the person's microphone reaches the caller; null = typed only
 
 
 class SmsMessage(Model):

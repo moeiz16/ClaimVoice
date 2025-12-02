@@ -12,15 +12,17 @@ class RubricItem:
     description: str
     points: float
     critical: bool  # a failed critical item caps the call at "failed"
+    bead: bool = False  # one of the six beads shown on every review-queue row
 
 
 RUBRIC: tuple[RubricItem, ...] = (
     RubricItem(
         "consent_first",
-        "Consent asked first",
+        "Consent first",
         "Recording consent was asked before any question about the loss.",
         15,
         True,
+        bead=True,
     ),
     RubricItem(
         "consent_rule",
@@ -31,52 +33,55 @@ RUBRIC: tuple[RubricItem, ...] = (
     ),
     RubricItem(
         "identity_verified",
-        "Caller and policy verified",
+        "Identity checked",
         "The policy was found and the caller confirmed one identity detail.",
         10,
         False,
+        bead=True,
     ),
     RubricItem(
         "required_fields",
-        "Required details collected",
+        "Required details",
         "Every required claim-file field for the loss type has a value.",
         15,
         False,
+        bead=True,
     ),
+    RubricItem("safety_check", "Safety asked", "The caller was asked whether anyone is hurt or in danger.", 10, True),
+    RubricItem("read_back", "Read back", "The claim summary was read back and confirmed.", 10, False),
     RubricItem(
-        "safety_check", "Safety check done", "The caller was asked whether anyone is hurt or in danger.", 10, True
-    ),
-    RubricItem("read_back", "Summary read back", "The claim summary was read back and confirmed.", 10, False),
-    RubricItem(
-        "empathy", "Empathy shown", "Acknowledgement phrases were used, especially after distress or injury.", 5, False
+        "empathy",
+        "Kind words",
+        "Acknowledgement phrases were used, especially after distress or injury.",
+        5,
+        False,
+        bead=True,
     ),
     RubricItem(
         "no_card_numbers",
-        "No card numbers kept",
+        "No card numbers",
         "No payment card number appears in the transcript, recording or claim file.",
         10,
         True,
+        bead=True,
     ),
     RubricItem(
         "handoff_correct",
-        "Hand-off handled correctly",
-        "A person was offered or reached whenever a hand-off rule applied.",
+        "Right hand-off",
+        "A person was offered or reached, in time, whenever a hand-off rule applied.",
         10,
         True,
+        bead=True,
     ),
     RubricItem(
         "language_honoured",
-        "Caller's language honoured",
-        "The call continued in the caller's language (French first in Quebec).",
+        "Caller's language",
+        "The call continued in the caller's language (French first in Québec).",
         5,
         False,
     ),
     RubricItem(
-        "no_promises",
-        "No coverage promises",
-        "The line never promised payment or said a claim would be denied.",
-        0,
-        True,
+        "no_promises", "No promises", "The line never promised payment or said a claim would be denied.", 0, True
     ),
 )
 

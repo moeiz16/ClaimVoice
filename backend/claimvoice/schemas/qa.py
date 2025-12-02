@@ -23,6 +23,23 @@ class Evidence(Model):
     quote: str  # redacted, ≤ 160 characters
 
 
+class Bead(Model):
+    """One of the six headline rubric beads: Consent first · Identity checked · Required details (9/10) · Kind words ·
+    No card numbers · Right hand-off."""
+
+    key: str
+    label: str
+    passed: bool | None
+    detail: str | None  # "9/10"
+
+
+class Focus(Model):
+    """Where the review opens: "Jumped to 4:10, where the hand-off came 40 seconds late"."""
+
+    at_seconds: float
+    text: str
+
+
 class QaItem(Model):
     key: str
     label: str
@@ -33,6 +50,7 @@ class QaItem(Model):
     method: Literal["rule", "language_check"]
     note: str
     evidence: list[Evidence]
+    at_seconds: float | None  # where the bead pins on the recording
     reviewer_verdict: Literal["agree", "disagree"] | None
     reviewer_note: str | None
 
@@ -45,6 +63,8 @@ class QaScore(Model):
     band_label: str
     status: Literal["needs_review", "reviewed", "auto_passed"]
     items: list[QaItem]
+    beads: list[Bead]
+    focus: Focus | None
     scored_at: datetime
     scorer_version: str
     reviewed_by: PersonRef | None
@@ -64,6 +84,10 @@ class QaQueueItem(Model):
     band: Band
     band_label: str
     failed_items: list[str]  # labels
+    beads: list[Bead]
+    caller_label: str
+    line_label: str | None
+    reviewer: PersonRef | None
     status: Literal["needs_review", "reviewed", "auto_passed"]
     reason_queued: str  # "Critical item failed: safety check" / "Random 10% sample"
 
@@ -77,6 +101,7 @@ class ReviewItemIn(Model):
 class ReviewIn(Model):
     items: list[ReviewItemIn]
     note: str | None = None
+    coaching_note: str | None = None  # sent to the script owner
 
 
 class AgreementRow(Model):

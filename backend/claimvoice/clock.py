@@ -6,7 +6,7 @@ seeded calls, claims, the Calgary hail surge, "received 4 minutes ago" and every
 process starts), so separate processes that read the same setting agree and the time of day still advances normally.
 `CLAIMVOICE_DEMO_TODAY=off` means real time.
 
-`CLAIMVOICE_DEMO_TIME=09:40` also pins the time of day: at the anchor moment the clock reads demo date + demo time in
+`CLAIMVOICE_DEMO_TIME=07:42` also pins the time of day: at the anchor moment the clock reads demo date + demo time in
 `CLAIMVOICE_DEMO_TZ` (default America/Edmonton, Larkspur Mutual's head office) and then runs normally. The anchor
 (real instant <-> demo instant) is shared through `data/demo-clock.json`: `seed`/`reset` write a fresh one and every
 other process reads it, so they all agree. An anchor older than 12 hours, or one for another demo moment, is replaced.

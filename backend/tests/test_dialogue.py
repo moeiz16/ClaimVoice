@@ -1,9 +1,11 @@
 import pytest
 
 from claimvoice.dialogue.stages import (
+    DISPLAY_STEPS,
     GLOBAL_TO_HANDOFF,
     SCRIPT_ORDER,
     STAGE_LABELS,
+    STAGE_STEP,
     Event,
     InvalidTransitionError,
     Stage,
@@ -14,9 +16,9 @@ HAPPY_PATH = [
     Event.GREETED,
     Event.CONSENT_GIVEN,
     Event.IDENTITY_VERIFIED,
+    Event.SAFETY_CLEAR,
     Event.LOSS_TYPE_SET,
     Event.DETAILS_COMPLETE,
-    Event.SAFETY_CLEAR,
     Event.PHOTOS_SENT,
     Event.COVERAGE_EXPLAINED,
     Event.READ_BACK_CONFIRMED,
@@ -61,3 +63,10 @@ def test_out_of_order_event_is_rejected():
 def test_every_stage_has_english_and_french_labels():
     for stage in Stage:
         assert set(STAGE_LABELS[stage]) == {"en", "fr"}
+
+
+def test_seven_display_steps_cover_the_script_in_order():
+    steps = [STAGE_STEP[stage] for stage in SCRIPT_ORDER]
+    assert steps == sorted(steps)
+    assert set(steps) == set(range(1, len(DISPLAY_STEPS) + 1)) == set(range(1, 8))
+    assert DISPLAY_STEPS[STAGE_STEP[Stage.SAFETY] - 1]["en"] == "Safety"

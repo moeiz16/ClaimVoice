@@ -1,18 +1,19 @@
 key: montreal-basement
-title: Sous-sol inondé, Montréal (French)
+title: Tuyau éclaté, sous-sol inondé, Montréal (French)
 language: fr
 region: CA-QC
+caller_name: Martine Gagnon
 caller_phone: "+15145550163"
 policy_number: LM-QC-118407
 turns:
-  - text: "Bonjour, mon sous-sol est inondé depuis cette nuit."
+  - text: "Bonjour, un tuyau a éclaté et mon sous-sol est inondé."
   - text: "Oui, j'accepte."
   - text: "Mon numéro de police, c'est LM-QC-118407."
   - text: "Mon code postal est H2G 1T4."
-  - text: "Je l'ai vu ce matin vers six heures, il y a peut-être dix centimètres d'eau."
-  - text: "Je pense que c'est le drain de plancher qui a refoulé."
-  - text: "Oui, l'eau continue d'entrer un peu."
-  - text: "Le panneau électrique est en haut, l'eau ne s'en approche pas. Personne n'est blessé."
+  - text: "Personne n'est blessé. Le panneau électrique est en haut, l'eau ne s'en approche pas."
+  - text: "Je l'ai vu ce matin vers six heures, avec le grand froid le tuyau a gelé."
+  - text: "Il y a peut-être dix centimètres d'eau dans la salle familiale et la buanderie."
+  - text: "J'ai fermé l'entrée d'eau principale, l'eau n'entre plus."
   - text: "Oui, envoyez-moi le lien."
   - text: "D'accord."
   - text: "Oui, c'est exact."
@@ -22,6 +23,8 @@ expect:
   handoff: false
   route: adjuster
   slots:
-    loss_type: property_water
-    water_still_entering: true
+    loss_type: water
+    water_source: burst_pipe
+    water_still_entering: false
+    mitigation_taken: true
     injury_reported: false

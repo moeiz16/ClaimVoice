@@ -22,7 +22,7 @@ async def seed_org(session: AsyncSession) -> Organization:
             regions=list(ORG["regions"]),
             languages=list(ORG["languages"]),
             is_sample=True,
-            settings={"privacyOfficer": {"name": "Hélène Bouchard", "email": "privacy@larkspur.example"}},
+            settings={"privacyOfficer": {"name": "Priya Sandhu", "email": "privacy@larkspur.example"}},
         )
         session.add(org)
         await session.flush()

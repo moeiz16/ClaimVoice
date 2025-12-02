@@ -15,9 +15,8 @@ BACKEND = Path(__file__).resolve().parents[1]
 
 
 def _alembic_upgrade() -> None:
-    from alembic.config import Config
-
     from alembic import command
+    from alembic.config import Config
 
     cfg = Config(str(BACKEND / "alembic.ini"))
     cfg.set_main_option("script_location", str(BACKEND / "alembic"))

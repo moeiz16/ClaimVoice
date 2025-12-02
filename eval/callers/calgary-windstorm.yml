@@ -1,0 +1,38 @@
+# Scripted test caller (format: docs/API_CONTRACT.md §5.6). Also drives live demo line 1.
+key: calgary-windstorm
+title: Chinook wind damage to a home, Calgary
+language: en
+region: CA-AB
+caller_name: Gord Lindqvist
+caller_phone: "+14035550142"
+policy_number: LM-AB-204118
+turns:
+  - text: "Hi, the wind last night tore up my house."
+  - text: "Yes, that's fine."
+  - text: "Sure, it's LM-AB-204118."
+  - text: "March third, 1971."
+  - text: "Everyone's okay. Nobody's hurt and nothing's dangerous, the power's still on."
+  - text: "It was the Chinook overnight. I heard a bang around two in the morning."
+  - text: "A bunch of shingles are gone off the roof and the siding on the north side is torn."
+    barge_in_after_ms: 600  # caller starts talking while the line is still speaking
+  - text: "Oh, and the skylight in the kitchen got smashed by something blown off the neighbour's deck."
+  - text: "Sorry, it was more like two thirty, not two."  # correction
+  - text: "I taped a tarp over the skylight. We can still live here."
+  - text: "Yes please, text me the link."
+  - text: "Okay, thanks."
+  - text: "Yes, that's all correct."
+  - text: "No, that's everything. Thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  flags: [surge]
+  route: adjuster  # an opening in the roof line (the skylight) goes to an adjuster
+  slots:
+    loss_type: wind
+    loss_date: "{today}"
+    loss_time: "02:30"
+    roof_or_window_damage: true
+    home_livable: true
+    mitigation_taken: true
+    injury_reported: false
+    photos_promised: true

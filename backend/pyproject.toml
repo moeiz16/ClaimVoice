@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "claimvoice"
 version = "0.1.0"
 description = "ClaimVoice: a voice line that takes first notice of loss for auto and property claims, in English and French, and routes every claim with reasons."
-readme = "../README.md"
 requires-python = ">=3.13,<3.14"
 license = "MIT"
 authors = [{ name = "Moeiz Shahzad" }]
@@ -72,6 +71,10 @@ extend-exclude = ["alembic/versions/*"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "SIM", "RUF", "PT", "N", "C4"]
 ignore = ["S101", "B008", "RUF012", "RUF001", "RUF002", "RUF003", "S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["claimvoice"]
+known-third-party = ["alembic"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S", "N802", "PT011", "PT018", "E501"]

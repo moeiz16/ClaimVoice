@@ -27,6 +27,7 @@ ROLE_LABELS: dict[Role, str] = {
 PERMISSIONS: tuple[str, ...] = (
     # switchboard and calls
     "lines:read",  # live lines, hand-off tray, surge banner (SSE stream)
+    "lines:manage",  # surge controls: bring in the standby team, switch surge questions on
     "calls:read",  # call detail, transcript, timeline
     "calls:start",  # ring the line from the browser (test or demo calls)
     "calls:handoff",  # accept a hand-off and talk to the caller
@@ -48,8 +49,8 @@ PERMISSIONS: tuple[str, ...] = (
     "qa:read",
     "qa:review",  # review a scored call, agree/disagree per rubric item
     # models
-    "models:read",
-    "models:promote",  # champion/challenger promotion sign-off
+    "models:read",  # routing checks and their fact sheets
+    "models:signoff",  # sign off a routing-check version (supervisor signs for claims, compliance for model risk)
     # administration
     "settings:read",
     "settings:manage",  # scripts, consent rules, hand-off rules, languages, retention
@@ -78,6 +79,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[str]] = {
     Role.SUPERVISOR: frozenset(
         _READ_CORE
         | {
+            "lines:manage",
             "calls:start",
             "calls:handoff",
             "calls:listen",
@@ -91,6 +93,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[str]] = {
             "qa:read",
             "qa:review",
             "models:read",
+            "models:signoff",
         }
     ),
     Role.INTAKE_AGENT: frozenset(
@@ -101,7 +104,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[str]] = {
     Role.SIU_INVESTIGATOR: frozenset(_READ_CORE | {"recordings:read", "siu:read", "siu:decide", "models:read"}),
     Role.COMPLIANCE: frozenset(
         _READ_CORE
-        | {"recordings:read", "siu:read", "qa:read", "qa:review", "models:read", "models:promote", "audit:read"}
+        | {"recordings:read", "siu:read", "qa:read", "qa:review", "models:read", "models:signoff", "audit:read"}
     ),
 }
 
@@ -111,6 +114,10 @@ def permissions_for(role: str) -> frozenset[str]:
         return ROLE_PERMISSIONS[Role(role)]
     except ValueError:
         return frozenset()
+
+
+# Which side of a routing-check sign-off a role signs for (two different people, one per side).
+SIGNOFF_SIDE: dict[Role, str] = {Role.SUPERVISOR: "claims", Role.COMPLIANCE: "model_risk"}
 
 
 def has_permission(role: str, permission: str) -> bool:

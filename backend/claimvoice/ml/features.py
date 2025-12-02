@@ -21,6 +21,7 @@ SEVERITY_FEATURES: tuple[str, ...] = (
     "police_report_filed",
     "vehicle_drivable",
     "water_still_entering",
+    "roof_or_window_opening",  # the building is open to the weather (roof hole, smashed skylight)
     "rooms_affected",
     "caller_damage_estimate_band",  # 0 none given, 1 < $2k, 2 $2-10k, 3 $10-50k, 4 > $50k
     "vehicle_age_years",
@@ -40,7 +41,7 @@ FRAUD_FEATURES: tuple[str, ...] = (
     "hours_loss_to_report",
     "prior_claims_36m",
     "key_fact_corrections",  # corrections to date, place or sequence of events during the call
-    "weather_contradicts_loss",  # e.g. hail reported where no hail event was recorded
+    "weather_contradicts_loss",  # e.g. storm damage reported where no storm was recorded
     "police_report_filed",
     "theft_without_police_report",
     "round_number_estimate",

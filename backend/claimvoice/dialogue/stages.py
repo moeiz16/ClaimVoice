@@ -15,9 +15,9 @@ class Stage(StrEnum):
     GREETING = "greeting"
     CONSENT = "consent"
     IDENTITY = "identity"  # caller and policy verification
+    SAFETY = "safety"  # asked as soon as the caller is identified; urgent safety is also watched on every turn
     LOSS_TYPE = "loss_type"
     LOSS_DETAILS = "loss_details"  # loss-specific questions from the script for that loss type
-    SAFETY = "safety"
     PHOTOS = "photos"
     COVERAGE = "coverage"  # coverage basics: what the policy includes, deductible, next steps; never a decision
     READ_BACK = "read_back"  # summary read back to the caller for confirmation
@@ -31,9 +31,9 @@ SCRIPT_ORDER: tuple[Stage, ...] = (
     Stage.GREETING,
     Stage.CONSENT,
     Stage.IDENTITY,
+    Stage.SAFETY,
     Stage.LOSS_TYPE,
     Stage.LOSS_DETAILS,
-    Stage.SAFETY,
     Stage.PHOTOS,
     Stage.COVERAGE,
     Stage.READ_BACK,
@@ -53,6 +53,32 @@ STAGE_LABELS: dict[Stage, dict[str, str]] = {
     Stage.WRAP_UP: {"en": "Wrap-up", "fr": "Conclusion"},
     Stage.HANDOFF: {"en": "With a person", "fr": "Avec une personne"},
     Stage.ENDED: {"en": "Ended", "fr": "Terminé"},
+}
+
+
+# The seven steps people see (the script track on a line and the progress on the switchboard). Several stages share a
+# step: greeting and consent are "Consent", what happened and its details are "What happened", read-back and wrap-up
+# are "Read-back". Hand-off and ended keep the step they interrupted.
+DISPLAY_STEPS: tuple[dict[str, str], ...] = (
+    {"en": "Consent", "fr": "Consentement"},
+    {"en": "Policy", "fr": "Police"},
+    {"en": "Safety", "fr": "Sécurité"},
+    {"en": "What happened", "fr": "Ce qui s'est passé"},
+    {"en": "Photos", "fr": "Photos"},
+    {"en": "Coverage", "fr": "Couverture"},
+    {"en": "Read-back", "fr": "Relecture"},
+)
+STAGE_STEP: dict[Stage, int] = {  # 1-based step number
+    Stage.GREETING: 1,
+    Stage.CONSENT: 1,
+    Stage.IDENTITY: 2,
+    Stage.SAFETY: 3,
+    Stage.LOSS_TYPE: 4,
+    Stage.LOSS_DETAILS: 4,
+    Stage.PHOTOS: 5,
+    Stage.COVERAGE: 6,
+    Stage.READ_BACK: 7,
+    Stage.WRAP_UP: 7,
 }
 
 
@@ -122,11 +148,11 @@ TRANSITIONS: dict[tuple[Stage, Event], Stage] = {
     (Stage.GREETING, Event.GREETED): Stage.CONSENT,
     (Stage.CONSENT, Event.CONSENT_GIVEN): Stage.IDENTITY,
     (Stage.CONSENT, Event.CONSENT_REFUSED): Stage.IDENTITY,
-    (Stage.IDENTITY, Event.IDENTITY_VERIFIED): Stage.LOSS_TYPE,
+    (Stage.IDENTITY, Event.IDENTITY_VERIFIED): Stage.SAFETY,
     (Stage.IDENTITY, Event.IDENTITY_FAILED): Stage.HANDOFF,
     (Stage.LOSS_TYPE, Event.LOSS_TYPE_SET): Stage.LOSS_DETAILS,
-    (Stage.LOSS_DETAILS, Event.DETAILS_COMPLETE): Stage.SAFETY,
-    (Stage.SAFETY, Event.SAFETY_CLEAR): Stage.PHOTOS,
+    (Stage.SAFETY, Event.SAFETY_CLEAR): Stage.LOSS_TYPE,
+    (Stage.LOSS_DETAILS, Event.DETAILS_COMPLETE): Stage.PHOTOS,
     (Stage.PHOTOS, Event.PHOTOS_SENT): Stage.COVERAGE,
     (Stage.PHOTOS, Event.PHOTOS_DECLINED): Stage.COVERAGE,
     (Stage.COVERAGE, Event.COVERAGE_EXPLAINED): Stage.READ_BACK,

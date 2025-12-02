@@ -23,6 +23,7 @@ class ScriptQuestion(Model):
     required: bool
     when: str | None  # "other_party_involved == true"
     choices: list[str]
+    surge_only: bool  # asked only while a surge's questions are switched on
 
 
 class Script(Model):
@@ -33,6 +34,11 @@ class Script(Model):
     questions: list[ScriptQuestion]
     updated_at: datetime
     updated_by: PersonRef | None
+
+
+class SurgeScript(Model):
+    loss_type: str  # the loss type whose extra questions switch on in a surge ("wind")
+    on: bool
 
 
 class ScriptIn(Model):
@@ -47,6 +53,7 @@ class ConsentRule(Model):
     rule_label: str
     announcement: Bilingual
     basis: str  # plain citation, e.g. "California Penal Code §632 (all-party consent)"
+    on_refusal: str  # "Recording stops; notes only; a person is offered"
     is_default: bool  # shipped default vs changed by this org
 
 
@@ -56,6 +63,10 @@ class ConsentRuleIn(Model):
 
 
 class HandoffRules(Model):
+    """Shown as sentences with editable blanks ("If the caller mentions [gas, smoke], bring in a person now")."""
+
+    urgent_keywords: list[str]  # EN and FR words that bring in a person now
+    asked_times: int  # caller asks for a person this many times -> bring in a person (default 1)
     low_confidence_turns: int  # 1-5
     distress_threshold: float  # 0.5-0.95
     identity_attempts: int  # 1-5
@@ -66,19 +77,29 @@ class HandoffRules(Model):
 
 class Languages(Model):
     enabled: list[Lang]
+    voices: dict[str, VoiceSetting]  # per language
     default: Lang
     detect_automatically: bool
     french_first_regions: list[str]  # Quebec: French first (Law 25 / Charter of the French language)
 
 
 class Retention(Model):
-    recordings_days: int  # 30-730
-    transcripts_days: int
-    photos_days: int
+    """Written as sentences with editable blanks: "Keep recordings for [7 years]"."""
+
+    recordings_years: int  # 1-10, default 7
+    transcripts_years: int  # 1-10, default 7
+    photos_years: int  # 1-10, default 7
     claim_files_years: int  # read-only 7 (claims records)
+    card_number_moments: Literal["always_removed"]  # read-only: cannot be turned off
     refused_consent_transcripts: Literal["not_kept"]  # read-only
+    deletion_requests_waiting: int  # privacy deletion requests in the queue
     last_purge_at: datetime | None
     next_purge_on: date | None
+
+
+class VoiceSetting(Model):
+    voice: str  # speechSynthesis / cloud voice name, e.g. "Amélie (fr-CA)"
+    speed: float  # 0.8-1.2
 
 
 class Privacy(Model):
