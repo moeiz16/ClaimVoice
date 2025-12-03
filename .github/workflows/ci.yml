@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: API, voice runtime, dialogue and models
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      ENVIRONMENT: test
+      LLM_FAKE: "true"
+      STT_PROVIDER: fake
+      TTS_PROVIDER: fake
+      SMS_PROVIDER: fake
+      WEATHER_SOURCE: bundled
+      MLFLOW_DISABLE_AGENT_HINT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements.lock
+      - name: Install (pinned lock)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock
+          python -m pip install --no-deps -e ".[dev]"
+      - name: Lint
+        run: |
+          python -m ruff check . ../scripts ../eval
+          python -m ruff format --check . ../scripts ../eval
+      - name: Typecheck
+        run: python -m mypy claimvoice
+      - name: Migrations apply cleanly and match the models
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./ci.db
+        run: |
+          python -m alembic upgrade head
+          python -m alembic check
+      - name: Tests
+        run: python -m pytest
+      - name: Demo seed runs offline
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///./ci-seed.db
+          CLAIMVOICE_DEMO_TODAY: "2026-01-08"
+        run: |
+          python -m claimvoice.cli migrate
+          python -m claimvoice.cli seed
+      - name: Voice toolchain smoke (SmallWebRTC loopback, Silero VAD)
+        run: python ../scripts/smoke/voice_smoke.py
+      - name: Evaluation gates
+        run: python ../eval/run.py
+
+  frontend:
+    name: Web app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
