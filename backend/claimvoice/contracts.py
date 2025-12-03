@@ -86,6 +86,7 @@ class TurnRecord:
     redactions: int = 0  # card numbers removed from this turn
     retained: bool = True  # False when recording consent was refused: purged at call end, never shown later
     speaker_name: str | None = None  # for PERSON turns
+    text_en: str | None = None  # English line under a French turn, for staff (null on English calls)
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,6 +192,11 @@ class CallSink(Protocol):
     async def caller_identified(self, call_id: str, policy_id: str, holder_id: str, region: str) -> None: ...
     async def photo_link_sent(self, call_id: str, to_masked: str, link_token: str) -> None: ...
     async def handoff_requested(self, call_id: str, reason: HandoffReason, detail: str) -> HandoffTicket: ...
+    async def reserve_claim_number(self, call_id: str) -> str:
+        """Reserve the claim number the line reads out at wrap-up ("CV-26-01842"). The claim the platform creates at
+        hang-up uses this number. Called at most once per call."""
+        ...
+
     async def call_closed(self, call_id: str, closing: CallClosing) -> None:
         """Platform then: purges unretained turns, creates the claim, runs TriageScorer and CallScorer, opens an SIU
         referral when indicated, publishes `line.closed` and `claim.created`."""
@@ -219,6 +225,60 @@ class LineControl(Protocol):
 
     async def hand_back(self, call_id: str, *, user_id: str) -> None: ...
     async def hang_up(self, call_id: str, *, reason: str, by_user_id: str | None) -> None: ...
+
+
+@runtime_checkable
+class LineRuntime(LineControl, Protocol):
+    """The voice runtime's call lifecycle, called by the platform's HTTP handlers (`voice.lines.get_line_manager()`).
+    The platform authenticates the caller leg (bearer caller token) before calling these."""
+
+    async def prepare(
+        self,
+        call_id: str,
+        *,
+        org_id: str,
+        mode: str,
+        language: str,
+        region: str | None,
+        scenario: str | None,
+        caller_phone: str | None,
+        sink: CallSink,
+        policies: PolicyDirectory,
+        playbook: OrgPlaybook,
+        max_seconds: int,
+    ) -> None:
+        """Get a line ready for a call the platform has created (state ringing)."""
+        ...
+
+    async def answer_offer(
+        self, call_id: str, sdp: str, type: str, pc_id: str | None, restart_pc: bool
+    ) -> Mapping[str, Any]:
+        """SDP offer -> {"sdp", "type": "answer", "pcId"} (SmallWebRTC)."""
+        ...
+
+    async def add_ice(self, call_id: str, pc_id: str, candidates: Sequence[Mapping[str, Any]]) -> None: ...
+    async def run_websocket(self, call_id: str, socket: Any) -> None:
+        """The WebSocket fallback transport; the platform has accepted the socket and checked the token."""
+        ...
+
+    async def adopt_sample_line(
+        self,
+        call_id: str,
+        *,
+        org_id: str,
+        scenario: str,
+        resume_after_turn: int,
+        sink: CallSink,
+        policies: PolicyDirectory,
+        playbook: OrgPlaybook,
+    ) -> None:
+        """Take over a seeded live demo line whose first `resume_after_turn` caller turns are already stored, so the
+        scripted caller carries on when someone listens, whispers or takes over."""
+        ...
+
+    async def nudge(self, call_id: str) -> None:
+        """A scripted or adopted line carries on at a natural pace (someone started listening)."""
+        ...
 
 
 # ---------------------------------------------------------------- data the dialogue needs (platform implements)
@@ -282,6 +342,8 @@ class ScriptQuestion:
     required: bool = True
     when: str | None = None  # simple condition on filled slots, e.g. "other_party_involved == true"
     choices: Sequence[str] = ()
+    label: Mapping[str, str] = field(default_factory=dict)  # the fact it fills, {"en": ..., "fr": ...}
+    surge_only: bool = False  # asked only while the active surge's questions are switched on
 
 
 @dataclass(frozen=True, slots=True)
@@ -306,6 +368,8 @@ class HandoffRules:
     offer_person_on_consent_refusal: bool = True
     max_wait_seconds: int = 90  # then offer a call-back and finish the claim file with the line
     french_first_regions: Sequence[str] = ("CA-QC",)
+    asked_times: int = 1  # hand off after the caller asks for a person this many times
+    urgent_keywords: Sequence[str] = ()  # extra words that bring in a person now, on top of the built-in safety words
 
 
 @runtime_checkable
@@ -340,20 +404,27 @@ class Reason:
     text: Mapping[str, str]  # {"en": "Reported 41 days after the loss", "fr": ...}
     direction: str  # "raises" | "lowers"
     weight: float  # |SHAP| share, 0..1
+    slot_key: str | None = None  # claim-file slot the fact was heard in (the platform links its turn and moment)
+    source: str = "call"  # "call" | "policy" | "claim_history" | "weather"
 
 
 @dataclass(frozen=True, slots=True)
 class RoutingDecision:
     route: str  # "fast_track" | "adjuster" | "special_investigation"
     severity_probability: float  # calibrated P(large or complex loss)
-    severity_band: str  # "low" | "medium" | "high"
+    severity_band: str  # "small" | "moderate" | "large" (the size check's band)
     fraud_score: float  # calibrated 0..1
     fraud_band: str  # "low" | "elevated" | "high"
     siu_referral: bool
-    reasons: Sequence[Reason]  # top 3-5, plain words
-    fraud_indicators: Sequence[Reason]  # shown to SIU only
-    rules_applied: Sequence[str]  # e.g. "Injury reported: never fast-tracked"
-    model_versions: Mapping[str, str]  # {"severity": "3", "fraud": "2"}
+    reasons: Sequence[Reason]  # top 3, plain words ("Why an adjuster, not fast-track")
+    fraud_indicators: Sequence[Reason]  # the signs present ("Signs worth a closer look"); siu:read only
+    rules_applied: Sequence[str]  # e.g. "A possible injury is never fast-tracked"
+    model_versions: Mapping[str, str]  # {"size": "5", "closer_look": "5"}
+    settle_low: float = 0.0  # "Claims like this usually settle at $4,000 to $9,000"
+    settle_high: float = 0.0
+    currency: str = "CAD"
+    signs_checked: int = 14  # "3 of the 14 we check"
+    thresholds: Mapping[str, float] = field(default_factory=dict)  # {"size": ..., "closer_look": ...}
 
 
 @runtime_checkable
@@ -435,6 +506,11 @@ class MemoryCallSink:
         self._handoffs += 1
         self.events.append(("handoff", call_id, (reason, detail)))
         return HandoffTicket(f"handoff-{self._handoffs}", self._handoffs, 60)
+
+    async def reserve_claim_number(self, call_id: str) -> str:
+        number = "CV-26-" + str(1800 + sum(map(ord, call_id)) % 9000).zfill(5)
+        self.events.append(("claim_number", call_id, number))
+        return number
 
     async def call_closed(self, call_id: str, closing: CallClosing) -> None:
         self.events.append(("closed", call_id, closing))

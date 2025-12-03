@@ -152,11 +152,25 @@ class CallHandoff(Msg, tag="call.handoff"):
     handoff: HandoffInfo
 
 
+class RouteReason(Model):
+    text: str
+    at_seconds: float | None = None  # the moment in the call the reason was heard
+
+
+class EndRoute(Model):
+    """The route reveal on the caller's end screen (who looks at the claim first; never a decision on it)."""
+
+    route: Literal["fast_track", "adjuster", "special_investigation"]
+    label: str
+    reasons: list[RouteReason]  # three, plain words
+
+
 class CallEnded(Msg, tag="call.ended"):
     reason: str
     claim_number: str | None
     summary: str | None
     next_steps: list[str]
+    route: EndRoute | None = None
 
 
 class TurnMetrics(Msg, tag="turn.metrics"):
