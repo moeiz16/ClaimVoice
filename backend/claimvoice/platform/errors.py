@@ -96,9 +96,14 @@ def _on_http(request: Request[Any, Any, Any], exc: HTTPException) -> Response[di
         401: "not_authenticated",
         403: "forbidden",
         405: "method_not_allowed",
+        409: "conflict",
+        413: "payload_too_large",
+        415: "unsupported_media_type",
         429: "rate_limited",
     }.get(exc.status_code, "error")
-    return problem_response(request, exc.status_code, code, str(exc.detail), headers=exc.headers)
+    titles = {413: "Too large", 415: "Unsupported file type", 400: "Bad request", 405: "Method not allowed"}
+    title = titles.get(exc.status_code, str(exc.detail))
+    return problem_response(request, exc.status_code, code, title, headers=exc.headers)
 
 
 def _on_unhandled(request: Request[Any, Any, Any], exc: Exception) -> Response[dict[str, Any]]:
