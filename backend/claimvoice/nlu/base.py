@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
@@ -50,6 +51,9 @@ class NluRequest:
     filled: Mapping[str, Any] = field(default_factory=dict)
     recent_turns: Sequence[tuple[str, str]] = ()  # (speaker, text), newest last, at most 6
     loss_type: str | None = None
+    asked: str | None = None  # the field the line's last question asked for (gets the lenient reading)
+    now: datetime | None = None  # business time of the turn (dates like "yesterday" resolve against it)
+    region: str | None = None  # ISO 3166-2; completes a policy number said without its region letters
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +66,7 @@ class NluResult:
     safety_reason: str | None = None
     confidence: float = 1.0
     source: str = "fake"  # "fake" | "llm"
+    topic: str | None = None  # off-script topic ("premium", "covered", "timeline", "robot", ...) for a fixed answer
 
 
 @runtime_checkable
