@@ -12,7 +12,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from claimvoice.config import get_settings
-from claimvoice.platform import models  # noqa: F401  (registers tables)
+from claimvoice.platform import registry  # noqa: F401  (registers every table)
 from claimvoice.platform.db import Base, UTCDateTime
 
 config = context.config
