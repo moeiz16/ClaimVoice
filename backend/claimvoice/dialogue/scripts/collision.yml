@@ -1,0 +1,52 @@
+# Auto collision. A possible injury is asked in the safety step and is never fast-tracked.
+loss_type: collision
+line: auto
+version: 1
+questions:
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When and where did it happen?", fr: "Quand et où est-ce arrivé?"}
+    required: true
+  - slot_key: loss_place
+    kind: address
+    label: {en: "Where", fr: "Lieu"}
+    prompt: {en: "Where did it happen?", fr: "Où est-ce arrivé?"}
+    required: true
+  - slot_key: loss_time
+    kind: time
+    label: {en: "Time of loss", fr: "Heure du sinistre"}
+    prompt: {en: "About what time was that?", fr: "Vers quelle heure?"}
+    required: false
+  - slot_key: other_party_involved
+    kind: yes_no
+    label: {en: "Another party involved", fr: "Autre partie en cause"}
+    prompt: {en: "Was another vehicle or person involved?", fr: "Un autre véhicule ou une autre personne était-il en cause?"}
+    required: true
+  - slot_key: other_party_insurer
+    kind: text
+    label: {en: "Other party's insurer", fr: "Assureur de l'autre partie"}
+    prompt: {en: "Did you get the other driver's insurance company?", fr: "Avez-vous le nom de l'assureur de l'autre conducteur?"}
+    required: false
+    when: "other_party_involved == true"
+  - slot_key: police_report_filed
+    kind: yes_no
+    label: {en: "Police report", fr: "Rapport de police"}
+    prompt: {en: "Did the police come, or did you report it to them?", fr: "La police s'est-elle déplacée, ou avez-vous fait une déclaration?"}
+    required: true
+  - slot_key: police_report_number
+    kind: text
+    label: {en: "Police report number", fr: "Numéro du rapport de police"}
+    prompt: {en: "Do you have the report number?", fr: "Avez-vous le numéro du rapport?"}
+    required: false
+    when: "police_report_filed == true"
+  - slot_key: damage_areas
+    kind: text
+    label: {en: "Damage", fr: "Dommages"}
+    prompt: {en: "Where is the damage on your vehicle?", fr: "Où sont les dommages sur votre véhicule?"}
+    required: true
+  - slot_key: vehicle_drivable
+    kind: yes_no
+    label: {en: "Vehicle can be driven", fr: "Véhicule en état de rouler"}
+    prompt: {en: "Can the vehicle still be driven?", fr: "Le véhicule peut-il encore rouler?"}
+    required: true

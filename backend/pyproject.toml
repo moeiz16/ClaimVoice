@@ -61,7 +61,7 @@ where = ["."]
 include = ["claimvoice*"]
 
 [tool.setuptools.package-data]
-claimvoice = ["**/data/*.json", "**/data/*.jsonl", "**/data/*.yml", "ml/artifacts/*"]
+claimvoice = ["**/data/*.json", "**/data/*.jsonl", "**/data/*.yml", "ml/artifacts/*", "dialogue/scripts/*.yml"]
 
 [tool.ruff]
 line-length = 120

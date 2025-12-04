@@ -1,0 +1,36 @@
+# Theft or break-in, home or vehicle.
+loss_type: theft
+line: property
+version: 1
+questions:
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When did it happen, or when did you notice?", fr: "Quand est-ce arrivé, ou quand l'avez-vous remarqué?"}
+    required: true
+  - slot_key: loss_place
+    kind: address
+    label: {en: "Where", fr: "Lieu"}
+    prompt: {en: "Where did it happen?", fr: "Où est-ce arrivé?"}
+    required: true
+  - slot_key: items_stolen
+    kind: text
+    label: {en: "What was taken", fr: "Ce qui a été volé"}
+    prompt: {en: "What was taken?", fr: "Qu'est-ce qui a été volé?"}
+    required: true
+  - slot_key: forced_entry
+    kind: yes_no
+    label: {en: "Signs of forced entry", fr: "Entrée par effraction"}
+    prompt: {en: "Was anything broken to get in, like a lock or a window?", fr: "Quelque chose a-t-il été brisé pour entrer, comme une serrure ou une fenêtre?"}
+    required: false
+  - slot_key: police_report_filed
+    kind: yes_no
+    label: {en: "Police report", fr: "Rapport de police"}
+    prompt: {en: "Have you reported it to the police?", fr: "L'avez-vous signalé à la police?"}
+    required: true
+  - slot_key: police_report_number
+    kind: text
+    label: {en: "Police report number", fr: "Numéro du rapport de police"}
+    prompt: {en: "Do you have the report number?", fr: "Avez-vous le numéro du rapport?"}
+    required: false
+    when: "police_report_filed == true"

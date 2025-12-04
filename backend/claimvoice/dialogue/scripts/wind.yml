@@ -1,0 +1,68 @@
+# Wind damage to a home (Chinook windstorms, gusts). Seeded into Settings › Scripts; edited there afterwards.
+loss_type: wind
+line: property
+version: 1
+questions:
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When did the damage happen?", fr: "Quand les dommages sont-ils survenus?"}
+    required: true
+  - slot_key: loss_time
+    kind: time
+    label: {en: "Time of loss", fr: "Heure du sinistre"}
+    prompt: {en: "About what time was that?", fr: "Vers quelle heure?"}
+    required: false
+  - slot_key: roof_or_window_damage
+    kind: yes_no
+    label: {en: "Roof, window or skylight damage", fr: "Toit ou fenêtres"}
+    prompt:
+      en: "What was damaged? Start with the roof, windows or skylights."
+      fr: "Qu'est-ce qui a été endommagé? Commençons par le toit, les fenêtres ou les puits de lumière."
+    required: true
+  - slot_key: siding_or_fence_damage
+    kind: yes_no
+    label: {en: "Siding or fence damage", fr: "Revêtement ou clôture"}
+    prompt: {en: "And the siding, eavestroughs or a fence?", fr: "Et le revêtement, les gouttières ou une clôture?"}
+    required: true
+  - slot_key: debris_source
+    kind: text
+    label: {en: "What hit it", fr: "Ce qui a frappé"}
+    prompt:
+      en: "Do you know what hit it, for example something blown off another property?"
+      fr: "Savez-vous ce qui l'a frappé, par exemple un objet venu d'un terrain voisin?"
+    required: false
+    when: "roof_or_window_damage == true"
+  - slot_key: open_to_weather
+    kind: yes_no
+    label: {en: "Open to the weather", fr: "Ouvert aux intempéries"}
+    prompt:
+      en: "Is anything open to the weather right now, like a hole in the roof or a broken window?"
+      fr: "Y a-t-il une ouverture en ce moment, comme un trou dans le toit ou une fenêtre brisée?"
+    required: true
+    when: "roof_or_window_damage == true"
+  - slot_key: mitigation_taken
+    kind: yes_no
+    label: {en: "Steps taken to limit damage", fr: "Mesures prises"}
+    prompt:
+      en: "If it's safe, can you cover the opening with a tarp or plastic for now?"
+      fr: "Si c'est sécuritaire, pouvez-vous couvrir l'ouverture avec une bâche ou du plastique pour l'instant?"
+    required: false
+    when: "open_to_weather == true"
+  - slot_key: home_livable
+    kind: yes_no
+    label: {en: "Home can be lived in", fr: "Logement habitable"}
+    prompt: {en: "Can you still live in the home for now?", fr: "Pouvez-vous continuer d'habiter le logement pour l'instant?"}
+    required: true
+  - slot_key: temporary_lodging_needed
+    kind: yes_no
+    label: {en: "Needs somewhere to stay", fr: "Besoin d'un hébergement temporaire"}
+    prompt: {en: "Do you need somewhere to stay tonight?", fr: "Avez-vous besoin d'un endroit où dormir ce soir?"}
+    required: false
+    when: "home_livable == false"
+  - slot_key: power_out
+    kind: yes_no
+    label: {en: "Power out", fr: "Panne de courant"}
+    prompt: {en: "Is your power out because of the storm?", fr: "Avez-vous une panne de courant à cause de la tempête?"}
+    required: false
+    surge_only: true

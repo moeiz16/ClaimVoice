@@ -1,0 +1,2285 @@
+{
+ "note": "Demo policy book for the scripted callers and the live demo lines. The platform seed creates the same policies (same numbers, names and identity details) so scripted calls verify against the database too. Synthetic people; any resemblance is coincidental.",
+ "policies": [
+  {
+   "policyNumber": "LM-AB-204118",
+   "holderName": "Gord Lindqvist",
+   "dateOfBirth": "1971-03-03",
+   "postalCode": "T3J 0A1",
+   "phone": "+14035550142",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2014-05-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, 52 Saddlebrook Way NE",
+   "place": "Saddle Ridge, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Live line 1 (calgary-windstorm)"
+  },
+  {
+   "policyNumber": "LM-CO-311592",
+   "holderName": "Kiara Booker",
+   "dateOfBirth": "1990-07-14",
+   "postalCode": "80206",
+   "phone": "+17205550187",
+   "line": "auto",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2021-03-15",
+   "coverageChangedAt": null,
+   "insuredItem": "2022 Honda Civic",
+   "place": "Colfax Ave, Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Live line 2 (denver-rear-end)"
+  },
+  {
+   "policyNumber": "LM-QC-118407",
+   "holderName": "Martine Gagnon",
+   "dateOfBirth": "1966-11-02",
+   "postalCode": "H2G 1T4",
+   "phone": "+15145550163",
+   "line": "property",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2011-09-01",
+   "coverageChangedAt": null,
+   "insuredItem": "Maison, rue Beaubien Est",
+   "place": "Rosemont, Montréal",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": true,
+     "limit": 25000,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Live line 3 (montreal-basement)"
+  },
+  {
+   "policyNumber": "LM-AB-187342",
+   "holderName": "Dana Whitcombe",
+   "dateOfBirth": "1984-09-12",
+   "postalCode": "T2S 1H3",
+   "phone": "+14035550118",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2019-12-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, 1418 Elbow Drive SW",
+   "place": "Elbow Park, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "CV-26-01842, the landing page's recorded call (dana-skylight)"
+  },
+  {
+   "policyNumber": "LM-AB-219904",
+   "holderName": "Arjun Bains",
+   "dateOfBirth": "1979-02-21",
+   "postalCode": "T3N 1A6",
+   "phone": "+14035550126",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Standard",
+   "status": "active",
+   "effectiveFrom": "2017-06-12",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Cityscape Drive NE",
+   "place": "Cityscape, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1500
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1500
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1500
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1500
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1500
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1500
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "CV-26-01851 (arjun-shingles)"
+  },
+  {
+   "policyNumber": "LM-AB-230615",
+   "holderName": "Leah Moreau",
+   "dateOfBirth": "1993-05-30",
+   "postalCode": "T1S 2B7",
+   "phone": "+14035550131",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2020-08-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Westmount Drive",
+   "place": "Okotoks",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "CV-26-01853 (leah-fence)"
+  },
+  {
+   "policyNumber": "LM-CO-340021",
+   "holderName": "Tomás Reyes",
+   "dateOfBirth": "1988-01-19",
+   "postalCode": "80205",
+   "phone": "+17205550164",
+   "line": "auto",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2025-12-19",
+   "coverageChangedAt": "2025-12-29",
+   "insuredItem": "2024 Toyota RAV4",
+   "place": "Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 250
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 250
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "CV-26-01856 (tomas-rear-end): new policy, coverage raised last month"
+  },
+  {
+   "policyNumber": "LM-QC-125530",
+   "holderName": "Sophie Tremblay",
+   "dateOfBirth": "1975-04-08",
+   "postalCode": "H7N 3K2",
+   "phone": "+14505550177",
+   "line": "property",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Condo",
+   "status": "active",
+   "effectiveFrom": "2016-02-01",
+   "coverageChangedAt": null,
+   "insuredItem": "Condo, boulevard Saint-Martin",
+   "place": "Laval",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": true,
+     "limit": 25000,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "CV-26-01858 (sophie-frozen-pipe)"
+  },
+  {
+   "policyNumber": "LM-AB-241177",
+   "holderName": "Hal Petrenko",
+   "dateOfBirth": "1958-10-03",
+   "postalCode": "T4B 3L9",
+   "phone": "+14035550190",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2009-04-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Big Springs Drive",
+   "place": "Airdrie",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Waiting line 4 (airdrie-gas): urgent safety"
+  },
+  {
+   "policyNumber": "LM-AB-226640",
+   "holderName": "Wendy Arsenault",
+   "dateOfBirth": "1969-12-15",
+   "postalCode": "T2E 4P5",
+   "phone": "+14035550155",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2015-07-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, 1 Avenue NE",
+   "place": "Bridgeland, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Waiting line 5 (bridgeland-fence-person): asked for a person"
+  },
+  {
+   "policyNumber": "LM-AB-250001",
+   "holderName": "Priya Natarajan",
+   "dateOfBirth": "1985-02-11",
+   "postalCode": "T2P 1J9",
+   "phone": "+14035550201",
+   "line": "auto",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2018-01-10",
+   "coverageChangedAt": null,
+   "insuredItem": "2019 Mazda CX-5",
+   "place": "Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250002",
+   "holderName": "Owen McLeod",
+   "dateOfBirth": "1977-08-23",
+   "postalCode": "T3H 2V1",
+   "phone": "+14035550202",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2012-03-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Aspen Woods",
+   "place": "Aspen Woods, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250003",
+   "holderName": "Mei Chen",
+   "dateOfBirth": "1992-12-01",
+   "postalCode": "T2W 5K4",
+   "phone": "+14035550203",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Standard",
+   "status": "active",
+   "effectiveFrom": "2021-09-15",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Woodbine",
+   "place": "Woodbine, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250004",
+   "holderName": "Frank Kowalski",
+   "dateOfBirth": "1949-06-17",
+   "postalCode": "T1Y 6B8",
+   "phone": "+14035550204",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2003-05-20",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Rundle",
+   "place": "Rundle, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250005",
+   "holderName": "Jasmine Okafor",
+   "dateOfBirth": "1996-03-27",
+   "postalCode": "T3G 4R2",
+   "phone": "+14035550205",
+   "line": "auto",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2022-11-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2020 Ford Escape",
+   "place": "Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250006",
+   "holderName": "Ravi Singh",
+   "dateOfBirth": "1981-10-09",
+   "postalCode": "T4B 1C5",
+   "phone": "+14035550206",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2016-04-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Airdrie",
+   "place": "Airdrie",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CO-350001",
+   "holderName": "Megan Doyle",
+   "dateOfBirth": "1987-07-04",
+   "postalCode": "80211",
+   "phone": "+17205550301",
+   "line": "auto",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2019-05-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2021 Subaru Outback",
+   "place": "Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CO-350002",
+   "holderName": "Carlos Mendoza",
+   "dateOfBirth": "1974-01-30",
+   "postalCode": "80219",
+   "phone": "+17205550302",
+   "line": "property",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2013-08-15",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Barnum",
+   "place": "Barnum, Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CO-350003",
+   "holderName": "Ashley Brooks",
+   "dateOfBirth": "1999-09-19",
+   "postalCode": "80203",
+   "phone": "+17205550303",
+   "line": "auto",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2023-06-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2018 Honda CR-V",
+   "place": "Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CO-350004",
+   "holderName": "Dwayne Carter",
+   "dateOfBirth": "1968-04-12",
+   "postalCode": "80207",
+   "phone": "+17205550304",
+   "line": "property",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Home Standard",
+   "status": "active",
+   "effectiveFrom": "2010-02-01",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Park Hill",
+   "place": "Park Hill, Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-QC-160001",
+   "holderName": "Étienne Lavoie",
+   "dateOfBirth": "1980-05-05",
+   "postalCode": "H2J 2K8",
+   "phone": "+15145550401",
+   "line": "auto",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2017-03-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2020 Hyundai Kona",
+   "place": "Plateau, Montréal",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-QC-160002",
+   "holderName": "Nathalie Roy",
+   "dateOfBirth": "1972-11-21",
+   "postalCode": "H1V 3A6",
+   "phone": "+15145550402",
+   "line": "property",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2008-10-01",
+   "coverageChangedAt": null,
+   "insuredItem": "Maison, Hochelaga",
+   "place": "Hochelaga, Montréal",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": true,
+     "limit": 25000,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-QC-160003",
+   "holderName": "Marc-André Pelletier",
+   "dateOfBirth": "1990-02-14",
+   "postalCode": "H7T 1B3",
+   "phone": "+14505550403",
+   "line": "property",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Condo",
+   "status": "active",
+   "effectiveFrom": "2019-07-01",
+   "coverageChangedAt": null,
+   "insuredItem": "Condo, Chomedey",
+   "place": "Laval",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": true,
+     "limit": 25000,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-QC-160004",
+   "holderName": "Louise Bergeron",
+   "dateOfBirth": "1955-08-30",
+   "postalCode": "H3N 2C1",
+   "phone": "+15145550404",
+   "line": "property",
+   "region": "CA-QC",
+   "preferredLanguage": "fr",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2004-01-15",
+   "coverageChangedAt": null,
+   "insuredItem": "Maison, Parc-Extension",
+   "place": "Parc-Extension, Montréal",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": true,
+     "limit": 25000,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CA-170001",
+   "holderName": "Grace Kim",
+   "dateOfBirth": "1983-03-18",
+   "postalCode": "94110",
+   "phone": "+14155550501",
+   "line": "auto",
+   "region": "US-CA",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2020-04-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2022 Tesla Model 3",
+   "place": "San Francisco",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250007",
+   "holderName": "Tyler Benoit",
+   "dateOfBirth": "1995-06-06",
+   "postalCode": "T2E 7Z1",
+   "phone": "+14035550207",
+   "line": "auto",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2025-12-28",
+   "coverageChangedAt": null,
+   "insuredItem": "2023 Dodge Ram",
+   "place": "Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-250008",
+   "holderName": "Sandra Whitehorse",
+   "dateOfBirth": "1964-01-25",
+   "postalCode": "T3K 0N8",
+   "phone": "+14035550208",
+   "line": "property",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Home Comprehensive",
+   "status": "active",
+   "effectiveFrom": "2011-11-11",
+   "coverageChangedAt": null,
+   "insuredItem": "House, Harvest Hills",
+   "place": "Harvest Hills, Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "dwelling",
+     "label": {
+      "en": "The house itself",
+      "fr": "Le bâtiment"
+     },
+     "included": true,
+     "limit": 650000,
+     "deductible": 1000
+    },
+    {
+     "key": "contents",
+     "label": {
+      "en": "Your belongings",
+      "fr": "Vos biens"
+     },
+     "included": true,
+     "limit": 200000,
+     "deductible": 1000
+    },
+    {
+     "key": "wind_hail",
+     "label": {
+      "en": "Wind and hail",
+      "fr": "Vent et grêle"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "sewer_backup",
+     "label": {
+      "en": "Sewer backup",
+      "fr": "Refoulement d'égout"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "overland_water",
+     "label": {
+      "en": "Water from outside",
+      "fr": "Eaux de surface"
+     },
+     "included": false,
+     "limit": null,
+     "deductible": 1000
+    },
+    {
+     "key": "fence",
+     "label": {
+      "en": "Fences",
+      "fr": "Clôtures"
+     },
+     "included": true,
+     "limit": 5000,
+     "deductible": 1000
+    },
+    {
+     "key": "additional_living_expenses",
+     "label": {
+      "en": "Somewhere to stay while repairs happen",
+      "fr": "Frais de subsistance supplémentaires"
+     },
+     "included": true,
+     "limit": 40000,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-CO-350005",
+   "holderName": "Kevin Walsh",
+   "dateOfBirth": "1979-12-03",
+   "postalCode": "80220",
+   "phone": "+17205550305",
+   "line": "auto",
+   "region": "US-CO",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "active",
+   "effectiveFrom": "2016-09-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2017 Jeep Cherokee",
+   "place": "Denver",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Scripted test caller"
+  },
+  {
+   "policyNumber": "LM-AB-299990",
+   "holderName": "Lapsed Example",
+   "dateOfBirth": "1970-01-01",
+   "postalCode": "T2T 2T2",
+   "phone": "+14035550299",
+   "line": "auto",
+   "region": "CA-AB",
+   "preferredLanguage": "en",
+   "product": "Auto Plus",
+   "status": "lapsed",
+   "effectiveFrom": "2019-01-01",
+   "coverageChangedAt": null,
+   "insuredItem": "2015 Kia Soul",
+   "place": "Calgary",
+   "priorClaims36m": 0,
+   "coverages": [
+    {
+     "key": "collision",
+     "label": {
+      "en": "Collision",
+      "fr": "Collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "comprehensive",
+     "label": {
+      "en": "Comprehensive (theft, hail, wind, fire)",
+      "fr": "Tous risques sauf collision"
+     },
+     "included": true,
+     "limit": null,
+     "deductible": 500
+    },
+    {
+     "key": "liability",
+     "label": {
+      "en": "Liability",
+      "fr": "Responsabilité civile"
+     },
+     "included": true,
+     "limit": 1000000,
+     "deductible": 0
+    },
+    {
+     "key": "rental",
+     "label": {
+      "en": "Rental car",
+      "fr": "Véhicule de location"
+     },
+     "included": true,
+     "limit": 1500,
+     "deductible": 0
+    }
+   ],
+   "note": "Lapsed: verification fails"
+  }
+ ]
+}

@@ -57,3 +57,15 @@ class FakeSms:
 
     def for_call(self, call_id: str) -> list[OutboxMessage]:
         return [m for m in self.outbox if m.call_id == call_id]
+
+
+_SENDER: SmsSender | None = None
+
+
+def get_sms_sender() -> SmsSender:
+    """The process-wide sender (the fake outbox unless SMS_PROVIDER is configured). The platform reads the fake
+    outbox for `GET /calls/{id}/messages` in the demo."""
+    global _SENDER
+    if _SENDER is None:
+        _SENDER = FakeSms()
+    return _SENDER

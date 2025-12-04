@@ -1,0 +1,47 @@
+# Water damage: burst pipes in cold snaps, sewer backup, overland water.
+loss_type: water
+line: property
+version: 1
+questions:
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When did you first notice the water?", fr: "Quand avez-vous remarqué l'eau pour la première fois?"}
+    required: true
+  - slot_key: loss_time
+    kind: time
+    label: {en: "Time of loss", fr: "Heure du sinistre"}
+    prompt: {en: "About what time was that?", fr: "Vers quelle heure?"}
+    required: false
+  - slot_key: water_source
+    kind: choice
+    choices: [burst_pipe, sewer_backup, overland, roof, appliance, other]
+    label: {en: "Where the water came from", fr: "Source de l'eau"}
+    prompt:
+      en: "Where is the water coming from, for example a pipe, a drain backing up, or water from outside?"
+      fr: "D'où vient l'eau, par exemple un tuyau, un drain qui refoule ou de l'eau de l'extérieur?"
+    required: true
+  - slot_key: rooms_affected
+    kind: number
+    label: {en: "Rooms affected", fr: "Pièces touchées"}
+    prompt: {en: "Which rooms are affected?", fr: "Quelles pièces sont touchées?"}
+    required: true
+  - slot_key: water_still_entering
+    kind: yes_no
+    label: {en: "Water still coming in", fr: "L'eau entre encore"}
+    prompt: {en: "Is water still coming in?", fr: "L'eau entre-t-elle encore?"}
+    required: true
+  - slot_key: mitigation_taken
+    kind: yes_no
+    label: {en: "Steps taken to limit damage", fr: "Mesures prises"}
+    prompt:
+      en: "If you can do it safely, can you shut off the main water valve?"
+      fr: "Si c'est sécuritaire, pouvez-vous fermer l'entrée d'eau principale?"
+    required: false
+    when: "water_still_entering == true"
+  - slot_key: home_livable
+    kind: yes_no
+    label: {en: "Home can be lived in", fr: "Logement habitable"}
+    prompt: {en: "Can you still live in the home for now?", fr: "Pouvez-vous continuer d'habiter le logement pour l'instant?"}
+    required: false
+    when: "water_still_entering == true"

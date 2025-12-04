@@ -1,0 +1,43 @@
+# Hail damage to a home or vehicle. Hail season in Alberta and Colorado is roughly June to August.
+loss_type: hail
+line: property
+version: 1
+questions:
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When did the hail come through?", fr: "Quand la grêle est-elle tombée?"}
+    required: true
+  - slot_key: loss_time
+    kind: time
+    label: {en: "Time of loss", fr: "Heure du sinistre"}
+    prompt: {en: "About what time was that?", fr: "Vers quelle heure?"}
+    required: false
+  - slot_key: roof_or_window_damage
+    kind: yes_no
+    label: {en: "Roof, window or skylight damage", fr: "Toit ou fenêtres"}
+    prompt: {en: "Was the roof, a window or a skylight damaged?", fr: "Le toit, une fenêtre ou un puits de lumière ont-ils été endommagés?"}
+    required: true
+  - slot_key: siding_or_fence_damage
+    kind: yes_no
+    label: {en: "Siding or fence damage", fr: "Revêtement ou clôture"}
+    prompt: {en: "And the siding, eavestroughs or a fence?", fr: "Et le revêtement, les gouttières ou une clôture?"}
+    required: true
+  - slot_key: damage_areas
+    kind: text
+    label: {en: "Damage", fr: "Dommages"}
+    prompt: {en: "Was a vehicle damaged too? Tell me where.", fr: "Un véhicule a-t-il aussi été endommagé? Dites-moi où."}
+    required: false
+  - slot_key: open_to_weather
+    kind: yes_no
+    label: {en: "Open to the weather", fr: "Ouvert aux intempéries"}
+    prompt:
+      en: "Is anything open to the weather right now, like a hole in the roof or a broken window?"
+      fr: "Y a-t-il une ouverture en ce moment, comme un trou dans le toit ou une fenêtre brisée?"
+    required: true
+    when: "roof_or_window_damage == true"
+  - slot_key: home_livable
+    kind: yes_no
+    label: {en: "Home can be lived in", fr: "Logement habitable"}
+    prompt: {en: "Can you still live in the home for now?", fr: "Pouvez-vous continuer d'habiter le logement pour l'instant?"}
+    required: true

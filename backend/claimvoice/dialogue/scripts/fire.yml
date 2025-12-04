@@ -1,0 +1,36 @@
+# Fire or smoke damage, after the fact. A fire still burning is urgent safety: a person is brought in at once.
+loss_type: fire
+line: property
+version: 1
+questions:
+  - slot_key: fire_out
+    kind: yes_no
+    label: {en: "Fire is out", fr: "Le feu est éteint"}
+    prompt: {en: "Is the fire completely out?", fr: "Le feu est-il complètement éteint?"}
+    required: true
+  - slot_key: loss_date
+    kind: date
+    label: {en: "Date of loss", fr: "Date du sinistre"}
+    prompt: {en: "When did it happen?", fr: "Quand est-ce arrivé?"}
+    required: true
+  - slot_key: fire_department_attended
+    kind: yes_no
+    label: {en: "Fire department came", fr: "Pompiers sur place"}
+    prompt: {en: "Did the fire department come?", fr: "Les pompiers se sont-ils déplacés?"}
+    required: true
+  - slot_key: rooms_affected
+    kind: number
+    label: {en: "Rooms affected", fr: "Pièces touchées"}
+    prompt: {en: "Which rooms have fire or smoke damage?", fr: "Quelles pièces ont des dommages de feu ou de fumée?"}
+    required: true
+  - slot_key: home_livable
+    kind: yes_no
+    label: {en: "Home can be lived in", fr: "Logement habitable"}
+    prompt: {en: "Can you still live in the home for now?", fr: "Pouvez-vous continuer d'habiter le logement pour l'instant?"}
+    required: true
+  - slot_key: temporary_lodging_needed
+    kind: yes_no
+    label: {en: "Needs somewhere to stay", fr: "Besoin d'un hébergement temporaire"}
+    prompt: {en: "Do you need somewhere to stay tonight?", fr: "Avez-vous besoin d'un endroit où dormir ce soir?"}
+    required: false
+    when: "home_livable == false"
