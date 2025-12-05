@@ -163,6 +163,8 @@ class Consent(Model):
 
 
 class CallDetail(CallSummary):
+    line_label: str | None  # "Line 1" while live
+    place: str | None  # "Saddle Ridge, Calgary"
     stage: StageInfo
     stages: list[StageInfo]  # the scripted path, for the progress rail
     consent: Consent
@@ -183,6 +185,7 @@ class Turn(Model):
     speaker: Speaker
     speaker_label: str  # "Caller", "ClaimVoice", "Renée Kowalchuk (supervisor)", "Whisper, ClaimVoice only"
     text: str  # redacted
+    text_en: str | None  # English line under French turns for staff; null on English calls
     language: Lang
     at_ms: int  # offset from answer, for recording sync
     end_ms: int
@@ -273,7 +276,7 @@ class StartCallIn(Model):
     language: Lang | Literal["auto"] = "auto"
     caller_phone: str | None = None  # demo only: where the photo link is "texted" (fake SMS)
     region: str | None = None  # demo picker: "CA-AB" | "US-CO" | "CA-QC" | "US-CA" ...
-    scenario: str | None = None  # scripted demo caller ("calgary-hail", "denver-rear-end", "montreal-basement")
+    scenario: str | None = None  # scripted demo caller ("calgary-windstorm", "denver-rear-end", "montreal-basement")
 
 
 class IceServer(Model):
@@ -338,3 +341,10 @@ class SmsMessage(Model):
     body: str  # the demo org shows the photo link here, so the demo can open it
     sent_at: datetime
     status: Literal["queued", "sent", "failed"]
+
+
+class HandoffAcceptOut(Model):
+    """POST /calls/{id}/handoff/accept: the hand-off, now yours, and the leg to join the caller."""
+
+    handoff: HandoffInfo
+    listen: ListenOut

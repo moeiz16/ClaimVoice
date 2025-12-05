@@ -16,6 +16,7 @@ class RubricItemInfo(Model):
     description: str
     points: float
     critical: bool
+    bead: bool  # one of the six beads on every queue row
 
 
 class Evidence(Model):
@@ -57,6 +58,7 @@ class QaItem(Model):
 
 class QaScore(Model):
     call_id: str
+    claim_id: str | None  # the recording is also at GET /calls/{callId}/recording
     claim_number: str | None
     score: float  # 0..100
     band: Band
@@ -75,6 +77,7 @@ class QaScore(Model):
 class QaQueueItem(Model):
     call_id: str
     reference: str
+    claim_id: str | None
     claim_number: str | None
     started_at: datetime
     duration_seconds: int
