@@ -8,14 +8,17 @@ from typing import Any
 
 from litestar import Litestar, Response, get
 from litestar.config.cors import CORSConfig
+from litestar.datastructures import State
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import text
 
 from claimvoice import __version__, clock
-from claimvoice.api.middleware import add_response_headers
+from claimvoice.api.context import DEPENDENCIES
+from claimvoice.api.middleware import add_response_headers, guard_middleware
 from claimvoice.config import get_settings
 from claimvoice.platform import db
 from claimvoice.platform.errors import EXCEPTION_HANDLERS
+from claimvoice.platform.ratelimit import RateLimiter
 
 
 @get("/health", include_in_schema=False)
@@ -42,23 +45,38 @@ async def metrics() -> Response[bytes]:
 
 
 @asynccontextmanager
-async def lifespan(_app: Litestar) -> AsyncIterator[None]:
+async def lifespan(app: Litestar) -> AsyncIterator[None]:
+    from claimvoice.calls import runtime
+    from claimvoice.settings import retention
+
     clock.install_from_settings()
     db.get_engine()
+    background = []
+    if app.state.get("background", True):
+        await runtime.adopt_sample_lines()
+        background.append(retention.start_daily())
     try:
         yield
     finally:
+        for task in background:
+            task.cancel()
+        await runtime.shutdown()
         await db.dispose()
 
 
-def create_app() -> Litestar:
+def create_app(*, background: bool = True, sse_close_when_idle: float | None = None) -> Litestar:
+    """`background=False` skips adopting the sample lines and the daily retention job (tests);
+    `sse_close_when_idle` ends SSE streams after that many idle seconds (tests)."""
+    from claimvoice.api.routes import ROUTERS
+
     settings = get_settings()
-    route_handlers: list[Any] = [health, metrics]
-    # Contract routers register here as they land, e.g.:
-    #   from claimvoice.api.routes import auth, orgs, calls, voice, claims, switchboard, qa, models, settings, audit
-    #   route_handlers += [auth.ROUTER, ...]
+    route_handlers: list[Any] = [health, metrics, *ROUTERS]
+    state = State({"limiter": RateLimiter(), "background": background, "sse_close_when_idle": sse_close_when_idle})
     return Litestar(
         route_handlers=route_handlers,
+        dependencies=DEPENDENCIES,
+        middleware=[guard_middleware],
+        state=state,
         lifespan=[lifespan],
         before_send=[add_response_headers],
         exception_handlers=EXCEPTION_HANDLERS,
