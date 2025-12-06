@@ -104,6 +104,7 @@ class SimResult:
     caller: ScriptedCaller
     outs: list[Out]
     played: int  # caller turns played
+    stage_at_end_of_script: str = ""  # where the call stood when the caller's lines ran out (before any hang-up)
 
     @property
     def values(self) -> dict[str, Any]:
@@ -132,7 +133,12 @@ async def run_scenario(
     sink = sink if sink is not None else MemoryCallSink()
     policies = policies or MemoryPolicyDirectory()
     playbook = playbook or YamlPlaybook(surge_questions_on=caller.surge_questions_on)
-    answered_at = answered_at or demo_moment()
+    if answered_at is None:
+        answered_at = demo_moment()
+        local = caller.raw.get("answered_local")
+        if local:  # the call's own time of day on the demo date (Calgary time), e.g. Dana's 2:14 a.m.
+            hh, mm = (int(x) for x in str(local).split(":"))
+            answered_at = answered_at.astimezone(DEMO_ZONE).replace(hour=hh, minute=mm, second=0, microsecond=0)
     if toolbox is None:
         toolbox = Toolbox(
             policies or MemoryPolicyDirectory(),
@@ -165,7 +171,8 @@ async def run_scenario(
     )
     outs: list[Out] = list(await engine.start())
     played = 0
-    whispers = dict(whisper_before_turn or {})
+    whispers = {int(k): str(v) for k, v in (caller.raw.get("whisper_before_turn") or {}).items()}
+    whispers.update(whisper_before_turn or {})
     for i, turn in enumerate(caller.turns, start=1):
         if engine.ended or (upto_caller_turn is not None and played >= upto_caller_turn):
             break
@@ -185,6 +192,7 @@ async def run_scenario(
         played += 1
         if text != turn.text:  # the whispered question took this turn; the script line comes next
             outs += await engine.caller_turn(turn.text, confidence=0.95)
+    stage_at_end = engine.stage.value
     if upto_caller_turn is None and hang_up_after and not engine.ended:
         outs += await engine.hang_up("caller_hung_up")
-    return SimResult(engine, caller, outs, played)
+    return SimResult(engine, caller, outs, played, stage_at_end)

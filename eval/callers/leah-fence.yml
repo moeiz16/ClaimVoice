@@ -1,0 +1,35 @@
+# CV-26-01853, 6:38 a.m.: a fence down in Okotoks, nothing else.
+key: leah-fence
+title: Chinook fence down, Okotoks
+language: en
+region: CA-AB
+caller_name: Leah Moreau
+caller_phone: "+14035550131"
+policy_number: LM-AB-230615
+answered_local: "06:38"
+tags: [story, wind]
+turns:
+  - text: "Hi, the wind knocked my back fence down."
+  - text: "Yes, that's okay."
+  - text: "LM-AB-230615."
+  - text: "May thirtieth, 1993."
+  - text: "Yes, everyone's fine."
+  - text: "Sometime overnight, I found it this morning."
+  - text: "I'm not sure, maybe around four."
+  - text: "No, the roof and windows are fine."
+  - text: "Just the fence, about three panels."
+  - text: "Yes, of course."
+  - text: "Yes."
+  - text: "Got it."
+  - text: "Yes."
+  - text: "That's all, thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  route: fast_track
+  slots:
+    loss_type: wind
+    loss_date: "{today}"
+    roof_or_window_damage: false
+    siding_or_fence_damage: true
+    home_livable: true

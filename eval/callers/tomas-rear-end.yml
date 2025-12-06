@@ -1,0 +1,39 @@
+# CV-26-01856, 6:47 a.m.: a relative calls for the policyholder and pushes for a fast payment. Policy started 19
+# days before the loss and coverage was raised last month: the closer-look check refers it for review.
+key: tomas-rear-end
+title: Rear-ended on Colorado Boulevard, Denver (called in by a relative)
+language: en
+region: US-CO
+caller_name: Victor Reyes (for Tomás Reyes)
+caller_phone: "+17205550164"
+policy_number: LM-CO-340021
+answered_local: "06:47"
+tags: [story, collision, third_party]
+turns:
+  - text: "Hi, I'm calling for my brother-in-law Tomás, his car got rear-ended yesterday."
+  - text: "Yeah, that's fine."
+  - text: "The policy is LM-CO-340021."
+  - text: "His zip code is 80205."
+  - text: "Nobody was hurt."
+  - text: "Yesterday at about 5:52 in the evening, at Colorado Boulevard and 17th Avenue."
+  - text: "Yes, an SUV hit him from behind."
+  - text: "He didn't get it, the guy was in a hurry."
+  - text: "Yes, the police came, the report number is DPD 26-003390."
+  - text: "The whole back end, the bumper and the trunk."
+  - text: "It drives but it makes a noise."
+  - text: "Yes. And look, can you just pay this out fast? He needs the money this week."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  route: special_investigation
+  slots:
+    loss_type: collision
+    loss_date: "2026-01-07"
+    loss_time: "17:52"
+    other_party_involved: true
+    police_report_filed: true
+    caller_relationship: other
+    vehicle_drivable: true

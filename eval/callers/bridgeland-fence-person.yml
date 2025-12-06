@@ -1,0 +1,18 @@
+# Waiting line 5: a fence down onto a neighbour's car; she asks for a person.
+key: bridgeland-fence-person
+title: Fence down onto a neighbour's car, asks for a person, Calgary
+language: en
+region: CA-AB
+caller_name: Wendy Arsenault
+caller_phone: "+14035550155"
+policy_number: LM-AB-226640
+tags: [story, asks_for_person]
+turns:
+  - text: "Hi, my fence blew down onto my neighbour's car."
+  - text: "Yes."
+  - text: "LM-AB-226640."
+  - text: "December fifteenth, 1969."
+  - text: "Can I speak to a person please? This is getting complicated with the neighbour."
+expect:
+  final_stage: handoff
+  handoff: caller_asked

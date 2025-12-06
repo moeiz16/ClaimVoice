@@ -1,0 +1,36 @@
+# CV-26-01858, 7:05 a.m.: une conduite gelée qui a éclaté à Laval; l'eau coule encore.
+key: sophie-frozen-pipe
+title: Conduite gelée éclatée, Laval (French)
+language: fr
+region: CA-QC
+caller_name: Sophie Tremblay
+caller_phone: "+14505550177"
+policy_number: LM-QC-125530
+answered_local: "07:05"
+tags: [story, water, french]
+turns:
+  - text: "Bonjour, un tuyau gelé a éclaté dans ma salle de bain."
+  - text: "Oui, d'accord."
+  - text: "C'est LM-QC-125530."
+  - text: "Le huit avril 1975."
+  - text: "Tout le monde va bien, merci."
+  - text: "Ce matin vers cinq heures."
+  - text: "La salle de bain et le corridor, et ça coule chez le voisin en dessous."
+  - text: "Oui, ça coule encore un peu."
+  - text: "J'ai appelé le concierge pour couper l'eau."
+  - text: "Oui, on peut rester."
+  - text: "Oui, s'il vous plaît."
+  - text: "D'accord."
+  - text: "Oui, c'est ça."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  route: adjuster
+  slots:
+    loss_type: water
+    loss_time: "05:00"
+    water_source: burst_pipe
+    water_still_entering: true
+    mitigation_taken: true
+    rooms_affected: 2

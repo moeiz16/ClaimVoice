@@ -57,6 +57,7 @@ from claimvoice.dialogue.stages import DISPLAY_STEPS, SCRIPT_ORDER, STAGE_LABELS
 from claimvoice.dialogue.summary import read_back, summary
 from claimvoice.nlu.base import Intent, LanguageUnderstanding, NluRequest, NluResult, SlotSpec, SlotValue
 from claimvoice.nlu.fake import SAFETY_REASONS, FakeUnderstanding, detect_language
+from claimvoice.nlu.parse import find_money
 from claimvoice.nlu.redaction import redact_card_numbers
 from claimvoice.tools.sms import mask_phone
 from claimvoice.tools.toolbox import Toolbox
@@ -353,6 +354,7 @@ class CallEngine:
         self.latencies: list[float] = []
         self.first_name = ""
         self.said_sorry = False
+        self.loss_turn: tuple[str, str] | None = None  # the turn the caller first described the loss in
         self._outs: list[Out] = []
         self._turn_tools_ms = 0.0
 
@@ -976,6 +978,7 @@ class CallEngine:
     async def _note_loss(self, r: NluResult, turn_id: str, text: str) -> None:
         lt = next((v for v in r.slots if v.key == "loss_type"), None)
         if lt is not None and self.loss_type is None:
+            self.loss_turn = (turn_id, text)
             self.loss_type = str(lt.value)
             await self.set_slot("loss_type", lt.value, turn_id=turn_id, span=lt.span, confidence=lt.confidence)
             start, end = 0, len(text)
@@ -1181,6 +1184,9 @@ class CallEngine:
         assert self.loss_type is not None
         self.script = await self.playbook.script(self.cfg.org_id, self.loss_type)
         await self._stage_to(Event.LOSS_TYPE_SET)
+        if self.loss_turn is not None and self.loss_turn[0] != turn_id:
+            # the first description often answers script questions already ("a frozen pipe burst in my bathroom")
+            await self._apply(self._reread(self.loss_turn[1]), self.loss_turn[0])
         if heard:
             await self._apply(heard, turn_id)
         region = self.policy.region if self.policy else self.region
@@ -1196,6 +1202,24 @@ class CallEngine:
             if alerts and self.surge and self.loss_type in self.surge.get("lossTypes", []):
                 await self._flag(FlagKind.SURGE, f"Matches the {self.surge.get('title', 'storm')}.")
         await self._next_detail(parts)
+
+    def _reread(self, text: str) -> list[SlotValue]:
+        """Values in an earlier turn for the fields the loss type's script cares about (rules only, no question)."""
+        if self.script is None:
+            return []
+        specs = [SlotSpec(q.slot_key, q.kind, q.required, tuple(q.choices)) for q in self.script.questions]
+        specs += [SlotSpec(k, SLOT_CATALOG[k].kind, False) for k in NOTE_KEYS]
+        req = NluRequest(
+            stage=self.stage.value,
+            utterance=text,
+            language=self.language,
+            expecting=specs,
+            filled=self.values(),
+            now=self.business_now(),
+            asked=None,
+        )
+        found = self._fallback_nlu.understand_sync(req).slots
+        return [v for v in found if v.key not in ("loss_date", "loss_time", "rooms_affected")]
 
     def _next_question(self) -> ScriptQuestion | None:
         if self.script is None:
@@ -1729,17 +1753,35 @@ class CallEngine:
     # ------------------------------------------------------------------ for routing at hang-up
 
     def call_facts(self) -> dict[str, Any]:
-        """Facts the routing checks may use that the claim file alone doesn't carry."""
+        """What the routing checks may use that the claim file alone doesn't carry (stored on the call by the
+        platform as `call.facts`; read by `ml.features.build_features`)."""
+        caller_text = " ".join(t.text for t in self.turns if t.speaker is Speaker.CALLER)
+        pressure = bool(_PAYMENT_PRESSURE.search(caller_text))
+        amounts = [m for m in (find_money(t.text) for t in self.turns if t.speaker is Speaker.CALLER) if m]
+        round_top = any(a >= 50000 and a % 5000 == 0 for a, _ in amounts)
+        relationship = self.slots.get("caller_relationship")
         return {
+            "answered_at": self.answered_at.isoformat(),
             "key_fact_corrections": self.corrections_key_facts,
             "weather_confirms_loss": self.weather_confirms,
             "surge_event_match": bool(self.surge) and self.loss_type in (self.surge or {}).get("lossTypes", []),
+            "third_party_caller": bool(relationship and relationship.value == "other"),
+            "payment_pressure": pressure,
+            "round_number_estimate": round_top,
+            "photos_declined": "photos_promised" in self.slots and self.slots["photos_promised"].value is False,
             "card_numbers_removed": self.redactions,
             "handoff_reason": self.handoff_reason,
             "consent": self.consent_answer,
-            "language": self.language,
-            "region": self.region,
+            "urgent_safety": self.handoff_reason == "urgent_safety",
         }
+
+
+_PAYMENT_PRESSURE = re.compile(
+    r"\b(pay (this|it|that) out|pay (him|her|me|us) (fast|quickly|today|now)|need the money|how (fast|soon) can "
+    r"(you|i|he|she) (get|be) paid|cash (it )?out|just send the (money|cheque|check)|payer (vite|rapidement)|"
+    r"besoin de l'argent)\b",
+    re.I,
+)
 
 
 _ASK_PREFIX = re.compile(

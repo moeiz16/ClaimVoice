@@ -494,7 +494,8 @@ def _mitigation(text: str) -> Hit | None:
         r"\b(shut|turned) (off )?(the )?(main|water|valve|gas|power)",
         r"\b(tarp(ed)?|taped|covered|boarded( up)?|put a (bucket|tarp|garbage bag|plastic)|towels|pumped|"
         r"shop vac|mopped|moved (everything|things|stuff)|dried)\b",
-        r"\b(fermé l'(entrée|eau)|bâche|recouvert|seau|serviettes|pompé|épongé)\b",
+        r"\b(fermé l'(entrée|eau)|fermer l'eau|coupé l'eau|couper l'eau|bâche|recouvert|seau|serviettes|pompé|"
+        r"épongé)\b",
     ).search(text)
     if m:
         return Hit(True, m.span())
@@ -568,8 +569,19 @@ def _roof_window(text: str) -> Hit | None:
     return None
 
 
+_SIDING_WORDS = r"(siding|fences?|eavestroughs?|gutters?|soffits?|revêtement|clôtures?|gouttières?)"
+
+
 def _siding_fence(text: str) -> Hit | None:
-    m = re.search(r"\b(siding|fence|eavestrough|gutters?|soffit|revêtement|clôture|gouttières?)\b", text, I)
+    neg = re.search(
+        r"\b(the )?" + _SIDING_WORDS + r"('s| is| are| look| looks| seems?)? (fine|okay|ok|intact|good)\b"
+        r"|\b(no|not the) " + _SIDING_WORDS + r"\b",
+        text,
+        I,
+    )
+    if neg:
+        return Hit(False, neg.span())
+    m = re.search(r"\b" + _SIDING_WORDS + r"\b", text, I)
     if m:
         return Hit(True, m.span())
     return None
@@ -680,7 +692,7 @@ def _forced(text: str) -> Hit | None:
 
 def _place(text: str) -> Hit | None:
     pats = [
-        r"\bat (?:the corner of )?([A-Z][\w']+(?: [A-Z][\w']+)? and [A-Z][\w']+(?: [A-Z][\w']+)?)",
+        r"\bat (?:the corner of )?([A-Z0-9][\w']+(?: [A-Z][\w']+)? and [A-Z0-9][\w']+(?: [A-Z][\w']+)?)",
         r"\b(?:on|along) ([A-Z][\w']+ (?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Trail|Way|Highway|Hwy)"
         r"(?: [A-Z][\w']+)?)",
         r"\b(?:on|at) ([A-Z][\w']+(?: [A-Z][\w']+)?)(?= (?:near|by|at|and|,|\.))",
@@ -774,7 +786,16 @@ _FILLER = re.compile(
 )
 
 
+_NOT_KNOWN = re.compile(
+    r"\b(don't know|do not know|not sure|no idea|didn't get|did not get|can't remember|don't remember|"
+    r"je ne sais pas|aucune idée|pas sûre?|je ne me souviens pas)\b",
+    re.IGNORECASE,
+)
+
+
 def _whole(text: str) -> Hit | None:
+    if _NOT_KNOWN.search(text) or NO.search(text):
+        return None  # "I don't know" is not an answer to a free-text question
     m = _FILLER.match(text)
     start = m.end() if m else 0
     body = text[start:].strip()

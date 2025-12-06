@@ -1,0 +1,44 @@
+# CV-26-01842, 2:14 a.m.: the landing page's recorded call. Wind debris through the kitchen skylight; card number
+# started and stopped; skylight covered and dry, so nothing is open to the weather.
+key: dana-skylight
+title: Chinook debris through a kitchen skylight, Calgary
+language: en
+region: CA-AB
+caller_name: Dana Whitcombe
+caller_phone: "+14035550118"
+policy_number: LM-AB-187342
+answered_local: "02:14"
+tags: [story, card_number, wind]
+turns:
+  - text: "Hi, the wind just smashed our skylight."
+  - text: "Yes, that's fine."
+  - text: "It's L-M, A-B, one-eight-seven, three-four-two."
+  - text: "September twelfth, 1984."
+  - text: "Yes, we're fine. Nobody's hurt."
+  - text: "About ten past two, just a few minutes ago."
+  - text: "The skylight over the kitchen. Something blew off the neighbour's deck and came right through it."
+  - text: "No, the siding looks fine."
+  - text: "Do you need my card for the deductible? It's four-five"
+  - text: "Oh. Okay. No, I've taped a garbage bag over it and it's dry."
+  - text: "Yes, we can stay here."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "That's right."
+  - text: "No, that's all. Thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  card_numbers: 1
+  route: fast_track
+  slots:
+    loss_type: wind
+    loss_date: "{today}"
+    loss_time: "02:10"
+    roof_or_window_damage: true
+    siding_or_fence_damage: false
+    debris_source: "the neighbour's deck"
+    open_to_weather: false
+    mitigation_taken: true
+    home_livable: true
+    injury_reported: false
+    photos_promised: true

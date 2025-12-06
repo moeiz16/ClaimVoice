@@ -1,0 +1,16 @@
+# Waiting line 4: urgent safety before consent is even answered. The line tells him to leave and call 911.
+key: airdrie-gas
+title: Smells gas after the wind tore off the meter cover, Airdrie
+language: en
+region: CA-AB
+caller_name: Hal Petrenko
+caller_phone: "+14035550190"
+policy_number: LM-AB-241177
+tags: [story, urgent_safety]
+turns:
+  - text: "Hi, the wind tore the cover off my gas meter and I can smell gas in the house."
+  - text: "Okay, okay. I'm outside now, I'm on my cell."
+expect:
+  final_stage: handoff
+  handoff: urgent_safety
+  flags: [urgent_safety]

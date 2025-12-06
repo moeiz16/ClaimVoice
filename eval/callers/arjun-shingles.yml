@@ -1,0 +1,38 @@
+# CV-26-01851, 6:21 a.m.: shingles and siding, part of the roof deck open to the weather.
+key: arjun-shingles
+title: Chinook shingles and siding, Cityscape, Calgary
+language: en
+region: CA-AB
+caller_name: Arjun Bains
+caller_phone: "+14035550126"
+policy_number: LM-AB-219904
+answered_local: "06:21"
+tags: [story, wind]
+turns:
+  - text: "Morning. The Chinook took a bunch of shingles off my roof."
+  - text: "Yes, go ahead."
+  - text: "LM-AB-219904."
+  - text: "February twenty-first, 1979."
+  - text: "Everyone's fine, nothing dangerous."
+  - text: "Overnight, maybe around three in the morning."
+  - text: "Shingles all over the yard, and there's a patch of roof where you can see the boards. The siding on the west side is ripped off too."
+  - text: "No idea, I think it was just the wind."
+  - text: "Yes, there's a spot where the boards are open to the weather."
+  - text: "I can't get up there safely, it's still really windy."
+  - text: "Yes, we can still live here."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yes, that's right."
+  - text: "No, that's it."
+expect:
+  final_stage: ended
+  handoff: false
+  route: adjuster
+  slots:
+    loss_type: wind
+    loss_date: "{today}"
+    loss_time: "03:00"
+    roof_or_window_damage: true
+    siding_or_fence_damage: true
+    open_to_weather: true
+    home_livable: true
