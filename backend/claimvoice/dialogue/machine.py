@@ -1170,10 +1170,7 @@ class CallEngine:
             if topic:
                 await self._ask([*pre, topic], self._l("ask_loss"), asked="loss_type")
                 return True
-            if self.asked_counts.get("loss_type", 0) >= 1 and self.misses == 0:
-                await self._ask(pre, self._l("ask_loss_choices"), asked="loss_type")
-                self.misses += 1
-                return True
+            self.last_prompt = self._l("ask_loss_choices")  # the re-ask names the kinds of loss
             return False
         await self._loss_known(turn_id, [*pre, *([self._sorry()] if not self.said_sorry else [])], heard=r.slots)
         return True
@@ -1292,6 +1289,9 @@ class CallEngine:
             and self.stage is Stage.LOSS_DETAILS
         ):
             parts.append(self._l("injury_care"))
+        if not changed and not topic and r.slots:
+            await self._next_detail(parts)  # said again what we already had: understood, carry on
+            return True
         if not changed and not topic:
             asked = self.asked
             aq = next((x for x in (self.script.questions if self.script else ()) if x.slot_key == asked), None)
@@ -1744,6 +1744,7 @@ class CallEngine:
             summary_en=text_en if self.language != "en" else None,
             turn_count=len(self.turns),
             latency_p95_ms=self.latency_p95(),
+            facts=self.call_facts(),
         )
         self._closing = closing
         self._event("ended", {"reason": reason})

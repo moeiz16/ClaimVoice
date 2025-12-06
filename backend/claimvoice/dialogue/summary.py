@@ -44,7 +44,8 @@ def facts(v: Mapping[str, Any], language: str) -> list[str]:
         out.append(("dommages : " if fr else "damage to the ") + str(v["damage_areas"]))
     elif v.get("roof_or_window_damage"):
         out.append("toit ou fenêtres endommagés" if fr else "damage to the roof or windows")
-    if v.get("siding_or_fence_damage") and not (v.get("damage_areas") and "siding" in str(v["damage_areas"])):
+    areas = str(v.get("damage_areas") or "")
+    if v.get("siding_or_fence_damage") and not any(w in areas for w in ("siding", "fence", "revêtement", "clôture")):
         out.append("revêtement ou clôture endommagé" if fr else "siding or fence damaged")
     if v.get("debris_source"):
         out.append(("frappé par : " if fr else "hit by debris from ") + str(v["debris_source"]))

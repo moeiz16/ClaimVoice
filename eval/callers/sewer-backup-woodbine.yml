@@ -1,0 +1,28 @@
+key: sewer-backup-woodbine
+title: Sewer backup in the basement, Calgary
+language: en
+region: CA-AB
+caller_phone: "+14035550203"
+policy_number: LM-AB-250003
+tags: [water]
+turns:
+  - text: "Hi, the floor drain backed up and there's sewage in my basement."
+  - text: "Yes."
+  - text: "LM-AB-250003."
+  - text: "December first, 1992."
+  - text: "We're all fine, the water's nowhere near the panel."
+  - text: "This morning around five."
+  - text: "The rec room and the laundry room."
+  - text: "No, it's stopped."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: water
+    water_source: sewer_backup
+    water_still_entering: false
+    rooms_affected: 2

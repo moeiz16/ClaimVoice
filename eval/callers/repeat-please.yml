@@ -1,0 +1,30 @@
+key: repeat-please
+title: Asks the line to repeat a question
+language: en
+region: CA-AB
+caller_phone: "+14035550201"
+policy_number: LM-AB-250001
+tags: [repeat, collision]
+turns:
+  - text: "Hi, I slid into a pole on Macleod Trail."
+  - text: "Yes."
+  - text: "LM-AB-250001."
+  - text: "Sorry, can you repeat that?"
+  - text: "February eleventh, 1985."
+  - text: "I'm fine."
+  - text: "This morning around seven, on Macleod Trail."
+  - text: "No, just me, I hit a pole."
+  - text: "No police."
+  - text: "The front bumper."
+  - text: "No, it had to be towed."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: collision
+    other_party_involved: false
+    vehicle_drivable: false

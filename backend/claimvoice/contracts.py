@@ -170,6 +170,7 @@ class CallClosing:
     summary_en: str | None  # English summary for adjusters when the call was in French
     turn_count: int
     latency_p95_ms: float | None
+    facts: Mapping[str, Any] = field(default_factory=dict)  # CallEngine.call_facts(): routing inputs the file lacks
 
 
 @runtime_checkable

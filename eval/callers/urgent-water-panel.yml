@@ -1,0 +1,17 @@
+key: urgent-water-panel
+title: Water reaching the electrical panel (urgent safety) during the safety question
+language: en
+region: CA-AB
+caller_phone: "+14035550206"
+policy_number: LM-AB-250006
+tags: [urgent_safety, water]
+turns:
+  - text: "Hi, my basement is flooding."
+  - text: "Yes."
+  - text: "LM-AB-250006."
+  - text: "October ninth, 1981."
+  - text: "The water is up to the electrical panel and it's sparking."
+expect:
+  final_stage: handoff
+  handoff: urgent_safety
+  flags: [urgent_safety]

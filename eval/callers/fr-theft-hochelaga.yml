@@ -1,0 +1,30 @@
+key: fr-theft-hochelaga
+title: Entrée par effraction, Hochelaga (French)
+language: fr
+region: CA-QC
+caller_phone: "+15145550402"
+policy_number: LM-QC-160002
+tags: [french, theft]
+turns:
+  - text: "Bonjour, quelqu'un est entré chez moi par effraction cette nuit."
+  - text: "Oui, ça va."
+  - text: "Mon numéro de police est LM-QC-160002."
+  - text: "Mon code postal, c'est H1V 3A6."
+  - text: "Non, personne n'est blessé, je suis en sécurité."
+  - text: "Cette nuit, je l'ai vu ce matin en me levant."
+  - text: "À la maison."
+  - text: "Ils ont pris mon ordinateur portable et une télévision."
+  - text: "Oui, la fenêtre de la cuisine est fracassée."
+  - text: "Oui, la police est venue, le numéro de rapport est SPVM 26-0187."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: theft
+    loss_date: "{today}"
+    forced_entry: true
+    police_report_filed: true

@@ -1,0 +1,29 @@
+key: fr-card-number
+title: Numéro de carte dicté pendant l'appel (French)
+language: fr
+region: CA-QC
+caller_phone: "+15145550402"
+policy_number: LM-QC-160002
+tags: [french, card_number, water]
+turns:
+  - text: "Bonjour, mon chauffe-eau a coulé dans le sous-sol."
+  - text: "Oui."
+  - text: "LM-QC-160002."
+  - text: "H1V 3A6."
+  - text: "Personne n'est blessé. Est-ce que je paie la franchise avec ma carte? C'est quatre cinq un deux, zéro un cinq un, deux six trois quatre, sept huit neuf zéro."
+  - text: "D'accord. Ce matin vers sept heures."
+  - text: "Le chauffe-eau."
+  - text: "Le sous-sol seulement."
+  - text: "Non, j'ai fermé l'eau."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  card_numbers: 1
+  slots:
+    loss_type: water
+    water_source: appliance
+    water_still_entering: false

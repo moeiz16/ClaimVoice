@@ -1,0 +1,15 @@
+key: california-refuses
+title: Two-party consent state, caller says no to recording and asks for a person
+language: en
+region: US-CA
+caller_phone: "+14155550501"
+policy_number: LM-CA-170001
+tags: [two_party, consent_refused]
+turns:
+  - text: "Hi, my car was broken into last night."
+  - text: "No, I don't want this recorded."
+  - text: "Yes, a person please."
+expect:
+  final_stage: handoff
+  handoff: consent_refused
+  consent: refused

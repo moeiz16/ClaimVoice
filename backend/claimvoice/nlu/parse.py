@@ -364,8 +364,9 @@ _AMPM = r"(a\.?\s?m\.?|p\.?\s?m\.?)"
 _TIME_DIGITS = re.compile(r"\b(\d{1,2})\s?(?::|h)\s?(\d{2})?\s*" + _AMPM + r"?", re.IGNORECASE)
 _TIME_AMPM = re.compile(r"\b(\d{1,2})\s*" + _AMPM, re.IGNORECASE)
 _HOUR_WORDS = (
-    r"(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|une|deux|trois|quatre|cinq|six|sept|huit|"
-    r"neuf|dix|onze|douze|\d{1,2})"
+    r"(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dix-sept|dix-huit|dix-neuf|vingt-et-une|"
+    r"vingt et une|vingt-deux|vingt-trois|treize|quatorze|quinze|seize|vingt|une|deux|trois|quatre|cinq|six|sept|"
+    r"huit|neuf|dix|onze|douze|\d{1,2})"
 )
 _MIN_WORDS = (
     r"(o'clock|oh[ -]?(?:one|two|three|four|five|six|seven|eight|nine)|fifteen|thirty|forty[ -]?five|forty|twenty|"
@@ -400,8 +401,8 @@ _MORNING = re.compile(
     re.IGNORECASE,
 )
 _EVENING = re.compile(
-    r"\b(this afternoon|this evening|tonight|in the afternoon|in the evening|after work|cet après-midi|ce soir|"
-    r"de l'après-midi|du soir|p\.?m\.?)\b",
+    r"\b(this afternoon|this evening|tonight|in the afternoon|in the evening|after work|yesterday evening|"
+    r"yesterday afternoon|cet après-midi|ce soir|hier soir|hier après-midi|de l'après-midi|du soir|p\.?m\.?)\b",
     re.IGNORECASE,
 )
 
@@ -561,6 +562,8 @@ _DAY_WORD = (
     r"(\d{1,2}(?:st|nd|rd|th|er|e)?|premier|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"
     r"eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|eighteenth|nineteenth|twentieth|"
     r"twenty[ -](?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth)|thirtieth|thirty[ -]first|"
+    r"trente[ -]et[ -]un|trente|vingt[ -](?:et[ -])?(?:un|deux|trois|quatre|cinq|six|sept|huit|neuf)|"
+    r"dix-sept|dix-huit|dix-neuf|"
     r"un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|vingt)(?![\d\w])"
 )
 _MONTH_WORD = (

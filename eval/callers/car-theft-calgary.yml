@@ -1,0 +1,29 @@
+key: car-theft-calgary
+title: Vehicle stolen from a driveway, Calgary
+language: en
+region: CA-AB
+caller_phone: "+14035550205"
+policy_number: LM-AB-250005
+tags: [theft]
+turns:
+  - text: "Hi, my car was stolen from my driveway."
+  - text: "Yes."
+  - text: "It's LM-AB-250005."
+  - text: "March twenty-seventh, 1996."
+  - text: "Nobody's hurt."
+  - text: "Sometime last night, I noticed this morning at seven."
+  - text: "In my driveway in Tuscany."
+  - text: "They took the whole car, a 2020 Ford Escape."
+  - text: "There's broken glass on the driveway."
+  - text: "Yes, the police report number is CPS 26-11873."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "Yes, that's right."
+  - text: "No, that's it."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: theft
+    police_report_filed: true
+    forced_entry: true

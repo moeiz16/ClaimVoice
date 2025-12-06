@@ -1,0 +1,17 @@
+key: identity-fails
+title: Identity can't be confirmed after three tries
+language: en
+region: US-CO
+caller_phone: "+17205550304"
+policy_number: LM-CO-350004
+tags: [identity]
+turns:
+  - text: "Hi, a pipe burst in my house."
+  - text: "Yes."
+  - text: "LM-CO-350004."
+  - text: "80210."
+  - text: "January first, 1970."
+  - text: "80222."
+expect:
+  final_stage: handoff
+  handoff: identity_unverified

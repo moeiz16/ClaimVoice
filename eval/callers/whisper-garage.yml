@@ -1,0 +1,30 @@
+key: whisper-garage
+title: A supervisor whispers a question; the caller answers it
+language: en
+region: CA-AB
+caller_phone: "+14035550142"
+policy_number: LM-AB-204118
+tags: [whisper, wind]
+whisper_before_turn: {8: "Ask if the garage skylight is damaged too"}
+on_whisper: "No, the garage one is fine, just the kitchen."
+turns:
+  - text: "Hi, the wind last night tore up my house."
+  - text: "Yes, that's fine."
+  - text: "Sure, it's LM-AB-204118."
+  - text: "March third, 1971."
+  - text: "Everyone's okay. Nobody's hurt and nothing's dangerous, the power's still on."
+  - text: "It was the Chinook overnight. I heard a bang around two in the morning."
+  - text: "A bunch of shingles are gone off the roof and the siding on the north side is torn."
+  - text: "Oh, and the skylight in the kitchen got smashed by something blown off the neighbour's deck."
+  - text: "I taped a tarp over the skylight. We can still live here."
+  - text: "Yes please, text me the link."
+  - text: "Okay, thanks."
+  - text: "Yes, that's all correct."
+  - text: "No, that's everything. Thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  whisper_asked: true
+  slots:
+    loss_type: wind
+    home_livable: true

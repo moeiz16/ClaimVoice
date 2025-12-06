@@ -1,0 +1,38 @@
+key: interruptions-collision
+title: Caller talks over the line several times (barge-in), Calgary collision
+language: en
+region: CA-AB
+caller_phone: "+14035550201"
+policy_number: LM-AB-250001
+tags: [barge_in, collision]
+turns:
+  - text: "Hi, I got rear-ended on Crowchild Trail."
+  - text: "Yes, fine."
+    barge_in_after_ms: 400
+  - text: "LM-AB-250001."
+    barge_in_after_ms: 300
+  - text: "February eleventh, 1985."
+  - text: "I'm okay, no one's hurt."
+    barge_in_after_ms: 500
+  - text: "About an hour ago, on Crowchild Trail near the university."
+  - text: "Intact Insurance."
+    barge_in_after_ms: 300
+  - text: "Yes, the police came."
+  - text: "Not yet, they said it's coming."
+  - text: "The rear bumper and the tailgate."
+    barge_in_after_ms: 400
+  - text: "Yes, it drives."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  barge_ins: 5
+  slots:
+    loss_type: collision
+    other_party_involved: true
+    other_party_insurer: Intact Insurance
+    police_report_filed: true
+    vehicle_drivable: true

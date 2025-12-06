@@ -1,0 +1,31 @@
+key: california-all-party
+title: "Two-party consent state, San Francisco (all-party: nothing kept before the yes)"
+language: en
+region: US-CA
+caller_phone: "+14155550501"
+policy_number: LM-CA-170001
+tags: [two_party, collision]
+turns:
+  - text: "Hi, someone backed into my car in a parking garage."
+  - text: "Before I answer, is this going to be recorded? Okay, yes, that's fine."
+  - text: "LM-CA-170001."
+  - text: "94110."
+  - text: "No one's hurt."
+  - text: "This morning around nine, in the Mission Street garage."
+  - text: "Yes, a delivery van backed into me."
+  - text: "Pacific Mutual, I think."
+  - text: "No, I didn't call the police."
+  - text: "The front bumper and the hood."
+  - text: "Yes, it drives fine."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No, thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  consent: given
+  slots:
+    loss_type: collision
+    other_party_involved: true
+    police_report_filed: false

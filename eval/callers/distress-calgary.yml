@@ -1,0 +1,18 @@
+key: distress-calgary
+title: Strong distress during the details, Calgary water
+language: en
+region: CA-AB
+caller_phone: "+14035550208"
+policy_number: LM-AB-250008
+tags: [distress, water]
+turns:
+  - text: "The basement is flooding."
+  - text: "Yes."
+  - text: "LM-AB-250008."
+  - text: "January twenty-fifth, 1964."
+  - text: "We're not hurt."
+  - text: "I can't cope with this, I'm falling apart, my husband is away."
+expect:
+  final_stage: handoff
+  handoff: distress
+  flags: [distress]

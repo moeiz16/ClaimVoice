@@ -1,0 +1,16 @@
+key: low-confidence
+title: The line can't understand two turns in a row and brings in a person
+language: en
+region: US-CO
+caller_phone: "+17205550303"
+policy_number: LM-CO-350003
+tags: [low_confidence]
+turns:
+  - text: "Hi, I had an accident."
+  - text: "Yes."
+  - text: "uh"
+  - text: "hmm"
+expect:
+  final_stage: handoff
+  handoff: low_confidence
+  flags: [low_confidence]

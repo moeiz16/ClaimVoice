@@ -1,0 +1,18 @@
+key: urgent-power-line
+title: Downed power line on the car after the windstorm (urgent safety mid-details)
+language: en
+region: CA-AB
+caller_phone: "+14035550207"
+policy_number: LM-AB-250007
+tags: [urgent_safety, wind]
+turns:
+  - text: "The wind blew a tree onto my truck."
+  - text: "Yes."
+  - text: "LM-AB-250007."
+  - text: "June sixth, 1995."
+  - text: "Yeah, we're fine."
+  - text: "Actually there's a power line down on the truck too, it's sparking."
+expect:
+  final_stage: handoff
+  handoff: urgent_safety
+  flags: [urgent_safety]

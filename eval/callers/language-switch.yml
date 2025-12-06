@@ -1,0 +1,31 @@
+key: language-switch
+title: Starts in English, switches to French
+language: en
+region: CA-QC
+call_language: en
+caller_phone: "+15145550404"
+policy_number: LM-QC-160004
+tags: [french, language_switch, water]
+turns:
+  - text: "Hi, I have water in my basement."
+  - text: "Yes, okay."
+  - text: "LM-QC-160004."
+  - text: "Excusez-moi, je préfère continuer en français. Le trente août 1955."
+  - text: "Personne n'est blessé."
+  - text: "Ce matin vers six heures."
+  - text: "C'est un refoulement d'égout."
+  - text: "Le sous-sol et la buanderie."
+  - text: "Non, ça a arrêté."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  flags: [language_switched]
+  final_language: fr
+  slots:
+    loss_type: water
+    water_source: sewer_backup
+    water_still_entering: false

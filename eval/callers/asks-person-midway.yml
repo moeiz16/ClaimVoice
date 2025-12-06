@@ -1,0 +1,18 @@
+key: asks-person-midway
+title: Asks for a person in the middle of the details
+language: en
+region: US-CO
+caller_phone: "+17205550305"
+policy_number: LM-CO-350005
+tags: [asks_for_person, collision]
+turns:
+  - text: "Hi, I hit a deer on I-70."
+  - text: "Sure."
+  - text: "LM-CO-350005."
+  - text: "80220."
+  - text: "I'm okay."
+  - text: "Last night around ten, on I-70 near Golden."
+  - text: "Actually, I'd like to talk to an agent please."
+expect:
+  final_stage: handoff
+  handoff: caller_asked

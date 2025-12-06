@@ -34,7 +34,7 @@ _REPEAT = re.compile(
 )
 _CORRECTION = re.compile(
     r"^\s*(no|nope|sorry|actually|wait|oops|oh wait|hang on|non|pardon|en fait|désolée?|attendez|oups)\b.*"
-    r"\b(it was|it's|more like|i mean|i meant|not|c'était|plutôt|je veux dire|pas)\b"
+    r"\b(it was|it were|more like|i mean|i meant|c'était|plutôt|je veux dire)\b"
     r"|\b(actually it was|i meant|correction|i misspoke|je me suis trompée?|en fait c'était)\b",
     re.IGNORECASE,
 )
@@ -43,6 +43,8 @@ _GOODBYE = re.compile(
     r"bonne journée)\b",
     re.IGNORECASE,
 )
+_LATE_YES = re.compile(r"[.?!,]\s*(okay,?\s+)?(yes|yeah|oui|sure|d'accord)\b[^?]*$", re.IGNORECASE)
+_ANY_NO = re.compile(r"\b(no|not|don't|non|pas|refuse)\b", re.IGNORECASE)
 _QUESTION = re.compile(
     r"\?\s*$|^\s*(what|how|when|why|will|would|can|could|is|are|do|does|should|est-ce|combien|quand|pourquoi|"
     r"comment|qu'est-ce|vais-je|est-ce que)\b",
@@ -298,6 +300,8 @@ def classify_intent(text: str, *, asked_yes_no: bool = False) -> tuple[Intent, s
         return Intent.AFFIRM, None
     if NO.search(text):
         return Intent.DENY, None
+    if _LATE_YES.search(text) and not _ANY_NO.search(text):
+        return Intent.AFFIRM, None  # "Before I answer, is this recorded? Okay, yes, that's fine."
     if _QUESTION.search(text):
         for topic, pattern in TOPICS:
             if pattern.search(text):

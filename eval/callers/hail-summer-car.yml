@@ -1,0 +1,31 @@
+# Hail is a supported loss type all year in the script library, even though the demo season is a winter windstorm.
+key: hail-summer-car
+title: Hail damage to a car and roof reported after a storm (script coverage)
+language: en
+region: US-CO
+caller_phone: "+17205550301"
+policy_number: LM-CO-350001
+tags: [hail]
+turns:
+  - text: "Hi, the hail storm dented my car and cracked a window."
+  - text: "Yes."
+  - text: "LM-CO-350001."
+  - text: "July fourth, 1987."
+  - text: "We're fine."
+  - text: "Yesterday evening around six."
+  - text: "Yes, the back window cracked."
+  - text: "No, the siding is fine."
+  - text: "Yes, the car has dents all over the hood and roof."
+  - text: "No, I put plastic over it."
+  - text: "Yes."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: hail
+    roof_or_window_damage: true
+    open_to_weather: false

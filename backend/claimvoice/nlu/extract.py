@@ -28,6 +28,11 @@ from claimvoice.nlu.parse import (
 
 Span = tuple[int, int]
 I = re.IGNORECASE  # noqa: E741
+# Free-text fields where the caller's own words are the answer (names, insurers and numbers need a pattern).
+FREE_TEXT = frozenset(
+    {"debris_source", "damage_areas", "items_stolen", "loss_place", "extra_notes", "loss_description", "injury_detail"}
+)
+NAME_FIELDS = frozenset({"other_party_insurer", "other_party_name"})
 # Values that describe the situation now (a later mention updates them) or that accumulate (damage seen so far).
 UPDATABLE = frozenset(
     {
@@ -104,14 +109,16 @@ LOSS_TYPE_PATTERNS: list[tuple[re.Pattern[str], str]] = [
         _rx(
             r"\b(rear[- ]ended|rear end|crash(ed)?|collision|collided|accident|fender[- ]bender|hit me|hit my "
             r"(car|truck|van|vehicle)|backed into|t-boned|sideswiped|ran into|accrochage|embouti|frappé|"
-            r"carambolage|accident de voiture)\b"
+            r"carambolage|accident de voiture|slid into|hit a (pole|deer|tree|curb|post|wall|parked car)|scraped|"
+            r"backed (into|out)|car accident)\b"
         ),
         "collision",
     ),
     (
         _rx(
             r"\b(flood(ed|ing)?|burst|pipe|leak(ed|ing)?|water (damage|everywhere|in the)|sewer|backed up|"
-            r"inondé(e)?|inondation|dégât d'eau|tuyau|fuite|refoulement|dégâts d'eau)\b"
+            r"water heater|sewage|water in|inondé(e)?|inondation|dégât d'eau|tuyau|fuite|refoulement|dégâts d'eau|"
+            r"chauffe-eau|a coulé|de l'eau partout|eau dans)\b"
         ),
         "water",
     ),
@@ -125,7 +132,7 @@ LOSS_TYPE_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (
         _rx(
             r"\b(stolen|stole|theft|broke in|break[- ]in|broken into|burglar\w*|robbed|vol|volé(e)?|"
-            r"cambriol\w+|entrée par effraction)\b"
+            r"cambriol\w+|entrée par effraction|par effraction|on m'a volé)\b"
         ),
         "theft",
     ),
@@ -144,7 +151,8 @@ NEG = r"(?:no|not|n't|never|nobody|no one|none|nothing|aucun\w*|personne|pas|jam
 def _injury(text: str) -> Hit | None:
     negative = _rx(
         r"\b(nobody|no one|no-one|none of us)('s| is| was| got)? (hurt|injured)\b",
-        r"\b(everyone|everybody|we|we're|we are|i'm|i am)('s| is| are)? (okay|ok|fine|safe|alright|all right|good)\b",
+        r"\b(everyone|everybody|we|we're|we are|i'm|i am)('s| is| are)? (all )?(okay|ok|fine|safe|alright|all right|"
+        r"good)\b",
         r"\bnot (hurt|injured)\b",
         r"\bpersonne n'(est|a été) bless\w+",
         r"\btout le monde (va bien|est correct|est en sécurité)",
@@ -199,6 +207,7 @@ def _danger(text: str) -> Hit | None:
         r"\brien de dangereux\b",
         r"\baucun danger\b",
         r"\bl'eau ne s'en approche pas\b",
+        r"\bnowhere near\b",
         r"\bpower('s| is) still on\b",
     )
     m = neg.search(text)
@@ -387,6 +396,9 @@ def _damage_areas(text: str) -> Hit | None:
     found: list[tuple[int, int, str]] = []
     for part in _PARTS_EN + _PARTS_FR:
         for m in re.finditer(r"\b" + re.escape(part) + r"s?\b", text, I):
+            after = text[m.end() : m.end() + 24]
+            if re.match(r"('s| is| are| looks?| seems?)? (fine|okay|ok|intact|good|est correct|va bien)", after, I):
+                continue  # "the roof is fine": not damaged
             if not any(a <= m.start() < b for a, b, _ in found):
                 found.append((m.start(), m.end(), part))
     if not found:
@@ -473,7 +485,8 @@ def _water_entering(text: str) -> Hit | None:
         r"\bn'entre plus\b",
         r"\bne coule plus\b",
         r"\bfermé l'(entrée|eau)",
-        r"\bc'est arrêté\b",
+        r"\b(c'est|ça a|ça s'est|ça a) arrêté\b",
+        r"\bit('s| has)? stopped\b",
     )
     yes = _rx(
         r"\bstill (coming in|leaking|entering|running|pouring|dripping)",
@@ -684,7 +697,7 @@ def _items_stolen(text: str) -> Hit | None:
 
 
 def _forced(text: str) -> Hit | None:
-    m = re.search(r"\b(smashed|broken|kicked in|pried|forced|fracassé|forcé)\b", text, I)
+    m = re.search(r"\b(smashed|broken|kicked in|pried|forced|fracass\w*|forcé\w*|brisé\w*)\b", text, I)
     if m:
         return Hit(True, m.span(), 0.75)
     return None
@@ -696,7 +709,7 @@ def _place(text: str) -> Hit | None:
         r"\b(?:on|along) ([A-Z][\w']+ (?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Trail|Way|Highway|Hwy)"
         r"(?: [A-Z][\w']+)?)",
         r"\b(?:on|at) ([A-Z][\w']+(?: [A-Z][\w']+)?)(?= (?:near|by|at|and|,|\.))",
-        r"\bin (?:the |a )?([A-Z][\w' ]+? (?:parking lot|parkade|mall|lot))",
+        r"\b(?:in|at) (?:the |a )?([A-Z][\w' ]+? (?:parking lot|parkade|mall|lot|garage))",
         r"\b(in (?:my|the|our) (?:driveway|garage|parking spot|back yard|yard))",
         r"\b(at (?:home|my house|our house|the house|work))\b",
         r"\bau coin (?:de la |du |de )?([\w' -]+? et [\w' -]+?)(?=[.,]|$)",
@@ -870,20 +883,24 @@ def extract_values(
         if fn is None:
             continue
         hit = fn(text)
+        if hit is None and spec.key == asked and spec.key in NAME_FIELDS:
+            name = re.match(r"^\s*(?:it's |it is |c'est )?((?:[A-Z][\w&'-]*\s?){1,5}?)\s*[.!]?\s*$", text)
+            if name:
+                hit = Hit(name.group(1).strip(), name.span(1), 0.8)
         if hit is None and spec.key == asked:
-            if spec.kind == "yes_no":
+            if spec.kind == "yes_no" and not correcting:
                 hit = yes_no(text)
                 if hit is not None:
                     hit = Hit(hit.value, hit.span, 0.85)
-            elif spec.kind in ("text", "address"):
+            elif spec.kind in ("text", "address") and spec.key in FREE_TEXT:
                 hit = _whole(text)
         add(spec.key, hit)
     if asked and asked not in {v.key for v in out} and asked in keys and asked not in EXTRACTORS:
         spec = keys[asked]
-        if spec.kind == "yes_no":
+        if spec.kind == "yes_no" and not correcting:
             yn = yes_no(text)
             if yn is not None:
                 add(asked, yn)
-        elif spec.kind in ("text", "address"):
+        elif spec.kind in ("text", "address") and asked in FREE_TEXT:
             add(asked, _whole(text))
     return out

@@ -1,0 +1,31 @@
+key: fr-kitchen-fire
+title: Petit feu de cuisine, éteint, Parc-Extension (French)
+language: fr
+region: CA-QC
+caller_phone: "+15145550404"
+policy_number: LM-QC-160004
+tags: [french, fire]
+turns:
+  - text: "Bonjour, j'ai eu un incendie dans ma cuisine hier."
+  - text: "Oui, d'accord."
+  - text: "LM-QC-160004."
+  - text: "Le trente août 1955."
+  - text: "Tout le monde va bien."
+  - text: "Oui, le feu est éteint."
+  - text: "Hier vers dix-sept heures."
+  - text: "Oui, les pompiers sont venus."
+  - text: "La cuisine et le salon ont de la fumée."
+  - text: "Oui, on peut y vivre."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui, c'est exact."
+  - text: "Non, c'est tout."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: fire
+    fire_out: true
+    fire_department_attended: true
+    rooms_affected: 2
+    home_livable: true

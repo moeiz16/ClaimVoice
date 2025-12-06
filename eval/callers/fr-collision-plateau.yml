@@ -1,0 +1,33 @@
+key: fr-collision-plateau
+title: Accrochage au feu rouge, Plateau, Montréal (French)
+language: fr
+region: CA-QC
+caller_phone: "+15145550401"
+policy_number: LM-QC-160001
+tags: [french, collision]
+turns:
+  - text: "Bonjour, une voiture m'a embouti à un feu rouge."
+  - text: "Oui, j'accepte."
+  - text: "LM-QC-160001."
+  - text: "Le cinq mai 1980."
+  - text: "Personne n'est blessé."
+  - text: "Hier soir vers dix-huit heures trente, au coin de Saint-Denis et Mont-Royal."
+  - text: "Il est assuré chez Desjardins."
+  - text: "Non, pas de police."
+  - text: "Le pare-chocs arrière et le coffre."
+  - text: "Oui, elle roule."
+  - text: "Oui, envoyez le lien."
+  - text: "D'accord."
+  - text: "Oui, c'est exact."
+  - text: "Non, c'est tout. Merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: collision
+    loss_date: "2026-01-07"
+    loss_time: "18:30"
+    other_party_involved: true
+    other_party_insurer: Desjardins
+    police_report_filed: false
+    vehicle_drivable: true

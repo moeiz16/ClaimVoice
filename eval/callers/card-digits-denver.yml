@@ -1,0 +1,29 @@
+key: card-digits-denver
+title: Caller reads a full card number aloud (spoken digits), Denver water
+language: en
+region: US-CO
+caller_phone: "+17205550302"
+policy_number: LM-CO-350002
+tags: [card_number, water]
+turns:
+  - text: "Hi, my water heater burst in the basement."
+  - text: "Yes."
+  - text: "LM-CO-350002."
+  - text: "80219."
+  - text: "We're fine. Do you want my credit card for the deductible? It's four one one one, one one one one, one one one one, one one one one."
+  - text: "Oh okay. This morning around six."
+  - text: "The water heater."
+  - text: "Just the basement."
+  - text: "No, I shut off the water."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  card_numbers: 1
+  slots:
+    loss_type: water
+    water_source: appliance
+    water_still_entering: false

@@ -1,0 +1,32 @@
+key: card-typed-numerals
+title: Card number in numerals in a typed call
+language: en
+region: CA-AB
+mode: typed
+caller_phone: "+14035550206"
+policy_number: LM-AB-250006
+tags: [card_number, typed, wind]
+turns:
+  - text: "Hello, the wind blew a tree branch through my window."
+  - text: "Yes."
+  - text: "LM-AB-250006 and my card is 5555 5555 5555 4444 if you need it"
+  - text: "Sorry. October ninth, 1981."
+  - text: "Everyone is fine."
+  - text: "Last night around eleven."
+  - text: "The bedroom window, it's smashed."
+  - text: "No, the siding is fine."
+  - text: "A tree branch from the park."
+  - text: "No, I boarded it up."
+  - text: "Yes, we can stay here."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  card_numbers: 1
+  slots:
+    loss_type: wind
+    roof_or_window_damage: true
+    open_to_weather: false

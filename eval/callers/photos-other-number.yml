@@ -1,0 +1,30 @@
+key: photos-other-number
+title: Photo link to a different number
+language: en
+region: CA-AB
+caller_phone: "+14035550203"
+policy_number: LM-AB-250003
+tags: [photos, wind]
+turns:
+  - text: "Hi, a few shingles blew off my roof."
+  - text: "Yes."
+  - text: "LM-AB-250003."
+  - text: "December first, 1992."
+  - text: "We're fine."
+  - text: "Yesterday afternoon around three."
+  - text: "Just a few shingles on the roof."
+  - text: "No."
+  - text: "Not sure."
+  - text: "No, nothing's open, it's just shingles."
+  - text: "Yes."
+  - text: "No, send it to my husband, 403-555-0199."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: wind
+    photos_promised: true
+    open_to_weather: false

@@ -1,0 +1,32 @@
+key: correction-tuesday
+title: "Correction: no, it was Tuesday (Denver collision)"
+language: en
+region: US-CO
+caller_phone: "+17205550301"
+policy_number: LM-CO-350001
+tags: [correction, collision]
+turns:
+  - text: "Hi, someone sideswiped my car."
+  - text: "Yes."
+  - text: "LM-CO-350001."
+  - text: "80211."
+  - text: "Nobody was hurt."
+  - text: "On Monday, around four in the afternoon, on Federal Boulevard."
+  - text: "No idea, they drove off."
+  - text: "No, wait, it was Tuesday, not Monday."
+  - text: "No, I didn't call the police."
+  - text: "The driver side door and the mirror."
+  - text: "Yes, it drives."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: collision
+    loss_date: "2026-01-06"
+    loss_time: "16:00"
+    other_party_involved: true
+    police_report_filed: false

@@ -1,0 +1,30 @@
+key: photos-declined
+title: Declines photos
+language: en
+region: US-CO
+caller_phone: "+17205550303"
+policy_number: LM-CO-350003
+tags: [photos, collision]
+turns:
+  - text: "Hey, I scraped a parked car backing out."
+  - text: "Yes."
+  - text: "LM-CO-350003."
+  - text: "80203."
+  - text: "No one's hurt."
+  - text: "Today around noon, at the King Soopers parking lot."
+  - text: "Yes, a parked car."
+  - text: "I left a note, I don't know their insurance."
+  - text: "No."
+  - text: "The rear bumper."
+  - text: "Yes."
+  - text: "No."
+  - text: "No, no photos for now."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: collision
+    photos_promised: false

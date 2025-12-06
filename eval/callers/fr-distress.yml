@@ -1,0 +1,17 @@
+key: fr-distress
+title: Dégât d'eau, appelante en détresse (French)
+language: fr
+region: CA-QC
+caller_phone: "+14505550403"
+policy_number: LM-QC-160003
+tags: [french, distress]
+turns:
+  - text: "Bonjour, il y a de l'eau partout dans mon condo."
+  - text: "Oui."
+  - text: "LM-QC-160003."
+  - text: "Le quatorze février 1990."
+  - text: "Je n'en peux plus, je panique, je ne sais pas quoi faire."
+expect:
+  final_stage: handoff
+  handoff: distress
+  flags: [distress]

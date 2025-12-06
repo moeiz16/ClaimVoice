@@ -1,0 +1,30 @@
+key: off-script-questions
+title: Caller asks off-script questions, gets fixed answers, finishes the claim
+language: en
+region: CA-AB
+caller_phone: "+14035550204"
+policy_number: LM-AB-250004
+tags: [off_script, wind]
+turns:
+  - text: "Are you a robot?"
+  - text: "Okay. Yes, you can record it. The wind took part of my fence."
+  - text: "LM-AB-250004."
+  - text: "June seventeenth, 1949."
+  - text: "We're fine."
+  - text: "Will my rates go up because of this?"
+  - text: "Overnight, around one in the morning."
+  - text: "No, the roof is fine."
+  - text: "Can I use my own contractor?"
+  - text: "Yes, the house is fine to live in."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No, thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: wind
+    roof_or_window_damage: false
+    siding_or_fence_damage: true
+    home_livable: true

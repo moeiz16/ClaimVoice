@@ -1,0 +1,31 @@
+key: kitchen-fire-aspen
+title: Kitchen fire, out, smoke damage, Calgary
+language: en
+region: CA-AB
+caller_phone: "+14035550202"
+policy_number: LM-AB-250002
+tags: [fire]
+turns:
+  - text: "Hi, we had a kitchen fire last night. It's out now."
+  - text: "Yes, that's fine."
+  - text: "LM-AB-250002."
+  - text: "August twenty-third, 1977."
+  - text: "Everyone's okay, nothing dangerous now."
+  - text: "Last night around six thirty in the evening."
+  - text: "Yes, the fire department came."
+  - text: "The kitchen and the dining room have smoke damage."
+  - text: "No, we can't stay here, the smell is terrible."
+  - text: "Yes, we need a hotel for a few nights."
+  - text: "Yes."
+  - text: "Sure."
+  - text: "Yes."
+  - text: "No, thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  slots:
+    loss_type: fire
+    fire_out: true
+    fire_department_attended: true
+    home_livable: false
+    temporary_lodging_needed: true
