@@ -4,6 +4,7 @@ moment is Thursday 8 January 2026, 7:42 a.m. Calgary time, the morning after an 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 ORG = {
     "name": "Larkspur Mutual",
@@ -70,11 +71,26 @@ PERSONAS: tuple[Persona, ...] = (
     Persona("intake_agent", "Jamal Haddad", "jamal.haddad@larkspur.example", "Intake agent", "en", "green", demo=True),
     Persona("intake_agent", "Sofía Herrera", "sofia.herrera@larkspur.example", "Intake agent (EN/ES)", "en", "rose"),
     Persona("intake_agent", "Aurélie Fortin", "aurelie.fortin@larkspur.example", "Intake agent (FR/EN)", "fr", "sky"),
+    # The surge standby team: free for hand-offs only once a supervisor brings them in.
+    Persona(
+        "intake_agent", "Marcus Leblanc", "marcus.leblanc@larkspur.example", "Intake agent (standby)", "en", "slate"
+    ),
+    Persona("intake_agent", "Hana Okafor", "hana.okafor@larkspur.example", "Intake agent (standby)", "en", "teal"),
 )
 
 COUNTS = {"policyholders": 170, "policies": 200, "historical_claims": 60, "historical_calls": 72}
 
-SURGE = {
+# Book of business by region and line (docs/DATA.md); the demo policy book's 29 policies count towards it.
+BOOK = {
+    ("CA-AB", "auto"): 70,
+    ("CA-AB", "property"): 40,
+    ("US-CO", "auto"): 40,
+    ("US-CO", "property"): 20,
+    ("CA-QC", "auto"): 12,
+    ("CA-QC", "property"): 18,
+}
+
+SURGE: dict[str, Any] = {
     "kind": "wind",
     "title": "Chinook windstorm, Calgary",
     "headline": "Gusts over 100 km/h overnight: roofs, fences and siding",
@@ -82,15 +98,15 @@ SURGE = {
     "area": "Calgary and Airdrie",
     "alert_id": "eccc-ab-calgary-chinook-wind",
     "started": "06:00",  # local, demo day; the wind warning itself began the evening before
-    "multiplier": 3.4,
-    "usual_calls_per_hour": 4.0,
+    "multiplier": 3.4,  # computed live: Alberta calls since 6 a.m. per hour / usual (9 calls in 1.7 h / 1.55)
+    "usual_calls_per_hour": 1.55,
     "standby_available": 2,
     "wait_for_person_seconds": 60,
     "surge_questions": "wind",
 }
 
 # Live at the demo moment: 3 with the line, 2 waiting for a person. `answered` = minutes before demo now.
-LIVE_LINES = (
+LIVE_LINES: tuple[dict[str, Any], ...] = (
     {
         "line": 1,
         "scenario": "calgary-windstorm",
@@ -168,7 +184,7 @@ LIVE_LINES = (
 )
 
 # "Finished this morning" tickets (claim numbers as the design shows them), plus the SIU-flagged claim.
-FINISHED_THIS_MORNING = (
+FINISHED_THIS_MORNING: tuple[dict[str, Any], ...] = (
     {
         "claim": "CV-26-01842",
         "place": "Calgary",
