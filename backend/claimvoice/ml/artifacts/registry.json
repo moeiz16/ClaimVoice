@@ -1,0 +1,2559 @@
+{
+ "checks": {
+  "size": {
+   "name": "Size check",
+   "question": "How big is this claim likely to be?",
+   "decides": "Decides fast-track or adjuster.",
+   "key": "size",
+   "status": "healthy",
+   "statusLabel": "Working as expected",
+   "versions": [
+    {
+     "version": 4,
+     "stage": "retired",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": "2025-06-02",
+     "trainedOn": "11,557 synthetic claim calls (2023 to 2024)",
+     "split": "Time split: trained on losses before 2025, calibrated on January to March 2025",
+     "metrics": {
+      "auc": 0.8849,
+      "prAuc": 0.7568,
+      "brier": 0.0932,
+      "ece": 0.0219,
+      "recallAtThreshold": 0.9513,
+      "precisionAtThreshold": 0.3051,
+      "threshold": 0.0652,
+      "flaggedRate": 0.687
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.0371,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.0219,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0291,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 0.933,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.051,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.6672,
+      "fast_track": 0.2944,
+      "special_investigation": 0.0384
+     },
+     "stability": {
+      "jaccard": 0.933,
+      "runs": [
+       1.0,
+       1.0,
+       1.0,
+       0.667,
+       1.0
+      ],
+      "top": [
+       "caller_damage_estimate_band",
+       "damage_area_count",
+       "home_not_livable",
+       "injury_reported",
+       "rooms_affected"
+      ]
+     }
+    },
+    {
+     "version": 5,
+     "stage": "in_use",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": "2025-12-01",
+     "trainedOn": "14,734 synthetic claim calls (January 2023 to June 2025) with French motor claim costs (freMTPL2)",
+     "split": "Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025",
+     "metrics": {
+      "auc": 0.8872,
+      "prAuc": 0.7656,
+      "brier": 0.0921,
+      "ece": 0.0119,
+      "recallAtThreshold": 0.9051,
+      "precisionAtThreshold": 0.3584,
+      "threshold": 0.0942,
+      "flaggedRate": 0.5565
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.0459,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.0119,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0352,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 1.0,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.051,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.5446,
+      "fast_track": 0.4203,
+      "special_investigation": 0.035
+     },
+     "stability": {
+      "jaccard": 1.0,
+      "runs": [
+       1.0,
+       1.0,
+       1.0,
+       1.0,
+       1.0
+      ],
+      "top": [
+       "caller_damage_estimate_band",
+       "damage_area_count",
+       "home_not_livable",
+       "injury_reported",
+       "rooms_affected"
+      ]
+     }
+    },
+    {
+     "version": 6,
+     "stage": "candidate",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": null,
+     "trainedOn": "15,496 synthetic claim calls (January 2023 to mid-August 2025) with French motor claim costs (freMTPL2)",
+     "split": "Time split: trained on losses before 16 August 2025, calibrated on 16 August to 30 September, tested on October to December 2025",
+     "metrics": {
+      "auc": 0.8849,
+      "prAuc": 0.7546,
+      "brier": 0.0936,
+      "ece": 0.0164,
+      "recallAtThreshold": 0.9385,
+      "precisionAtThreshold": 0.3327,
+      "threshold": 0.098,
+      "flaggedRate": 0.6215
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.0349,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.0164,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0338,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 1.0,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.052,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.613,
+      "fast_track": 0.361,
+      "special_investigation": 0.026
+     },
+     "stability": {
+      "jaccard": 1.0,
+      "runs": [
+       1.0,
+       1.0,
+       1.0,
+       1.0,
+       1.0
+      ],
+      "top": [
+       "caller_damage_estimate_band",
+       "damage_area_count",
+       "home_not_livable",
+       "injury_reported",
+       "rooms_affected"
+      ]
+     }
+    }
+   ],
+   "technical": {
+    "test": {
+     "auc": 0.8872,
+     "prAuc": 0.7656,
+     "brier": 0.0921,
+     "ece": 0.0119,
+     "recallAtThreshold": 0.9051,
+     "precisionAtThreshold": 0.3584,
+     "threshold": 0.0942,
+     "flaggedRate": 0.5565,
+     "positiveRate": 0.2203
+    },
+    "baseline": {
+     "auc": 0.8488,
+     "prAuc": 0.7197,
+     "brier": 0.1034,
+     "ece": 0.024,
+     "positiveRate": 0.2203,
+     "threshold": 0.1032,
+     "recallAtThreshold": 0.9077,
+     "precisionAtThreshold": 0.3161,
+     "flaggedRate": 0.6328
+    },
+    "randomForest": {
+     "auc": 0.8704,
+     "prAuc": 0.7499,
+     "brier": 0.0965,
+     "ece": 0.0202,
+     "positiveRate": 0.2203,
+     "threshold": 0.105,
+     "recallAtThreshold": 0.9154,
+     "precisionAtThreshold": 0.334,
+     "flaggedRate": 0.604
+    },
+    "uncalibrated": {
+     "brier": 0.0916,
+     "ece": 0.0178
+    },
+    "platt": {
+     "brier": 0.0918,
+     "ece": 0.0168
+    },
+    "roc": [
+     {
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "x": 0.0,
+      "y": 0.2949
+     },
+     {
+      "x": 0.0,
+      "y": 0.3026
+     },
+     {
+      "x": 0.0043,
+      "y": 0.4
+     },
+     {
+      "x": 0.0101,
+      "y": 0.4436
+     },
+     {
+      "x": 0.0138,
+      "y": 0.4487
+     },
+     {
+      "x": 0.0145,
+      "y": 0.4667
+     },
+     {
+      "x": 0.0152,
+      "y": 0.4667
+     },
+     {
+      "x": 0.0152,
+      "y": 0.4692
+     },
+     {
+      "x": 0.0297,
+      "y": 0.5436
+     },
+     {
+      "x": 0.0297,
+      "y": 0.5462
+     },
+     {
+      "x": 0.0457,
+      "y": 0.6026
+     },
+     {
+      "x": 0.0457,
+      "y": 0.6051
+     },
+     {
+      "x": 0.0507,
+      "y": 0.6231
+     },
+     {
+      "x": 0.1065,
+      "y": 0.7282
+     },
+     {
+      "x": 0.1072,
+      "y": 0.7282
+     },
+     {
+      "x": 0.108,
+      "y": 0.7308
+     },
+     {
+      "x": 0.1304,
+      "y": 0.7487
+     },
+     {
+      "x": 0.1312,
+      "y": 0.7487
+     },
+     {
+      "x": 0.1717,
+      "y": 0.7923
+     },
+     {
+      "x": 0.1725,
+      "y": 0.7923
+     },
+     {
+      "x": 0.342,
+      "y": 0.8872
+     },
+     {
+      "x": 0.3435,
+      "y": 0.8872
+     },
+     {
+      "x": 0.3493,
+      "y": 0.8872
+     },
+     {
+      "x": 0.35,
+      "y": 0.8872
+     },
+     {
+      "x": 0.458,
+      "y": 0.9051
+     },
+     {
+      "x": 0.537,
+      "y": 0.9333
+     },
+     {
+      "x": 0.5377,
+      "y": 0.9333
+     },
+     {
+      "x": 0.7116,
+      "y": 0.9846
+     },
+     {
+      "x": 0.7841,
+      "y": 0.9949
+     },
+     {
+      "x": 0.9297,
+      "y": 1.0
+     },
+     {
+      "x": 0.9304,
+      "y": 1.0
+     },
+     {
+      "x": 1.0,
+      "y": 1.0
+     }
+    ],
+    "pr": [
+     {
+      "x": 0.0,
+      "y": 1.0
+     },
+     {
+      "x": 0.2949,
+      "y": 1.0
+     },
+     {
+      "x": 0.2974,
+      "y": 1.0
+     },
+     {
+      "x": 0.3,
+      "y": 1.0
+     },
+     {
+      "x": 0.3026,
+      "y": 1.0
+     },
+     {
+      "x": 0.4,
+      "y": 0.963
+     },
+     {
+      "x": 0.4436,
+      "y": 0.9251
+     },
+     {
+      "x": 0.4487,
+      "y": 0.9021
+     },
+     {
+      "x": 0.4667,
+      "y": 0.901
+     },
+     {
+      "x": 0.4667,
+      "y": 0.8966
+     },
+     {
+      "x": 0.4692,
+      "y": 0.8971
+     },
+     {
+      "x": 0.5436,
+      "y": 0.8379
+     },
+     {
+      "x": 0.5462,
+      "y": 0.8386
+     },
+     {
+      "x": 0.6026,
+      "y": 0.7886
+     },
+     {
+      "x": 0.6051,
+      "y": 0.7893
+     },
+     {
+      "x": 0.6231,
+      "y": 0.7764
+     },
+     {
+      "x": 0.7282,
+      "y": 0.6589
+     },
+     {
+      "x": 0.7282,
+      "y": 0.6574
+     },
+     {
+      "x": 0.7308,
+      "y": 0.6567
+     },
+     {
+      "x": 0.7487,
+      "y": 0.6186
+     },
+     {
+      "x": 0.7487,
+      "y": 0.6173
+     },
+     {
+      "x": 0.7923,
+      "y": 0.5659
+     },
+     {
+      "x": 0.7923,
+      "y": 0.5649
+     },
+     {
+      "x": 0.8872,
+      "y": 0.423
+     },
+     {
+      "x": 0.8872,
+      "y": 0.4225
+     },
+     {
+      "x": 0.8872,
+      "y": 0.422
+     },
+     {
+      "x": 0.8872,
+      "y": 0.4179
+     },
+     {
+      "x": 0.8872,
+      "y": 0.4174
+     },
+     {
+      "x": 0.9051,
+      "y": 0.3584
+     },
+     {
+      "x": 0.9333,
+      "y": 0.3294
+     },
+     {
+      "x": 0.9333,
+      "y": 0.3291
+     },
+     {
+      "x": 0.9846,
+      "y": 0.2811
+     },
+     {
+      "x": 0.9949,
+      "y": 0.2639
+     },
+     {
+      "x": 1.0,
+      "y": 0.2331
+     },
+     {
+      "x": 1.0,
+      "y": 0.233
+     },
+     {
+      "x": 1.0,
+      "y": 0.2203
+     }
+    ],
+    "calibration": [
+     {
+      "predicted": 0.0505,
+      "observed": 0.0468,
+      "count": 941
+     },
+     {
+      "predicted": 0.1521,
+      "observed": 0.1517,
+      "count": 356
+     },
+     {
+      "predicted": 0.2235,
+      "observed": 0.1951,
+      "count": 41
+     },
+     {
+      "predicted": 0.393,
+      "observed": 0.3445,
+      "count": 119
+     },
+     {
+      "predicted": 0.4675,
+      "observed": 0.5333,
+      "count": 15
+     },
+     {
+      "predicted": 0.5102,
+      "observed": 0.5,
+      "count": 44
+     },
+     {
+      "predicted": 0.6268,
+      "observed": 0.597,
+      "count": 67
+     },
+     {
+      "predicted": 0.8571,
+      "observed": 0.68,
+      "count": 25
+     },
+     {
+      "predicted": 0.9796,
+      "observed": 0.963,
+      "count": 162
+     }
+    ],
+    "split": "Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025",
+    "features": [
+     "Auto or home policy",
+     "A collision",
+     "Hail",
+     "Wind",
+     "Water",
+     "Fire or smoke",
+     "Theft or break-in",
+     "Someone hurt",
+     "Another party involved",
+     "Police report",
+     "Vehicle can't be driven",
+     "Airbags went off",
+     "Water still coming in",
+     "Home open to the weather",
+     "Roof, window or skylight damage",
+     "Siding or fence damage",
+     "Home can't be lived in",
+     "Rooms affected",
+     "How many parts are damaged",
+     "Caller's own estimate",
+     "Age of the vehicle",
+     "Deductible",
+     "Coverage limit",
+     "Matches an active storm",
+     "Weather records confirm it",
+     "Photos coming",
+     "How much the caller described",
+     "Time from loss to call"
+    ],
+    "params": {
+     "max_depth": 5,
+     "eta": 0.03833509695320068,
+     "min_child_weight": 1.9748367094480688,
+     "subsample": 0.7357593612648955,
+     "colsample_bytree": 0.6273474822993339,
+     "lambda": 2.510987990323156,
+     "scale_pos_weight": 1.029774294274359
+    },
+    "rounds": 320
+   },
+   "fairness": {
+    "4": {
+     "overallRate": 0.29,
+     "band": 0.05,
+     "passed": true,
+     "maxGap": 0.0291,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.2954,
+       "truePositiveRate": 0.3667,
+       "falsePositiveRate": 0.0431,
+       "gap": 0.0054,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.2609,
+       "truePositiveRate": 0.3338,
+       "falsePositiveRate": 0.037,
+       "gap": 0.0291,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.3002,
+       "truePositiveRate": 0.376,
+       "falsePositiveRate": 0.0385,
+       "gap": 0.0101,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.2946,
+       "truePositiveRate": 0.3672,
+       "falsePositiveRate": 0.0404,
+       "gap": 0.0045,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.2703,
+       "truePositiveRate": 0.3452,
+       "falsePositiveRate": 0.0403,
+       "gap": 0.0197,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.2887,
+       "truePositiveRate": 0.3651,
+       "falsePositiveRate": 0.0371,
+       "gap": 0.0014,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.2898,
+       "truePositiveRate": 0.3604,
+       "falsePositiveRate": 0.0449,
+       "gap": 0.0003,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.293,
+       "truePositiveRate": 0.3616,
+       "falsePositiveRate": 0.0439,
+       "gap": 0.003,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    },
+    "5": {
+     "overallRate": 0.403,
+     "band": 0.05,
+     "passed": true,
+     "maxGap": 0.0352,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.4126,
+       "truePositiveRate": 0.5047,
+       "falsePositiveRate": 0.0866,
+       "gap": 0.0096,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.3678,
+       "truePositiveRate": 0.4657,
+       "falsePositiveRate": 0.0669,
+       "gap": 0.0352,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.4102,
+       "truePositiveRate": 0.5101,
+       "falsePositiveRate": 0.0653,
+       "gap": 0.0072,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.4088,
+       "truePositiveRate": 0.5034,
+       "falsePositiveRate": 0.0777,
+       "gap": 0.0058,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.3777,
+       "truePositiveRate": 0.4782,
+       "falsePositiveRate": 0.0687,
+       "gap": 0.0253,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.4006,
+       "truePositiveRate": 0.5001,
+       "falsePositiveRate": 0.073,
+       "gap": 0.0024,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.4076,
+       "truePositiveRate": 0.5006,
+       "falsePositiveRate": 0.0853,
+       "gap": 0.0046,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.4043,
+       "truePositiveRate": 0.495,
+       "falsePositiveRate": 0.0748,
+       "gap": 0.0013,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    },
+    "6": {
+     "overallRate": 0.3498,
+     "band": 0.05,
+     "passed": true,
+     "maxGap": 0.0338,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.3589,
+       "truePositiveRate": 0.4423,
+       "falsePositiveRate": 0.0637,
+       "gap": 0.0091,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.316,
+       "truePositiveRate": 0.4014,
+       "falsePositiveRate": 0.0535,
+       "gap": 0.0338,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.3569,
+       "truePositiveRate": 0.4456,
+       "falsePositiveRate": 0.0508,
+       "gap": 0.0071,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.3555,
+       "truePositiveRate": 0.4404,
+       "falsePositiveRate": 0.0584,
+       "gap": 0.0057,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.3249,
+       "truePositiveRate": 0.4129,
+       "falsePositiveRate": 0.0545,
+       "gap": 0.0249,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.3478,
+       "truePositiveRate": 0.4368,
+       "falsePositiveRate": 0.0549,
+       "gap": 0.002,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.3501,
+       "truePositiveRate": 0.4333,
+       "falsePositiveRate": 0.0617,
+       "gap": 0.0003,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.3535,
+       "truePositiveRate": 0.4342,
+       "falsePositiveRate": 0.0602,
+       "gap": 0.0037,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    }
+   },
+   "drift": {
+    "weeks": [
+     {
+      "label": "Week of 17 Nov",
+      "psi": 0.04,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 24 Nov",
+      "psi": 0.028,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 1 Dec",
+      "psi": 0.045,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 8 Dec",
+      "psi": 0.037,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 15 Dec",
+      "psi": 0.039,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 22 Dec",
+      "psi": 0.03,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 29 Dec",
+      "psi": 0.051,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 5 Jan",
+      "psi": 0.034,
+      "status": "stable"
+     }
+    ],
+    "simulatedShift": 0.449,
+    "statusRule": "Watch at 0.10, act at 0.25 (act pauses fast-track until a person resumes it)"
+   },
+   "questions": {
+    "right": {
+     "bars": [
+      {
+       "label": "Size check",
+       "value": 0.9543,
+       "ours": true
+      },
+      {
+       "label": "Old rule of thumb",
+       "value": 0.8746,
+       "ours": false
+      }
+     ]
+    },
+    "fair": {
+     "dots": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "rate": 0.4126,
+       "count": 9905,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "rate": 0.3678,
+       "count": 3959,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "rate": 0.4102,
+       "count": 6136,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "rate": 0.4088,
+       "count": 16264,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "rate": 0.3777,
+       "count": 3736,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "rate": 0.4006,
+       "count": 10632,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "rate": 0.4076,
+       "count": 3979,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "rate": 0.4043,
+       "count": 5389,
+       "withinBand": true
+      }
+     ],
+     "overallRate": 0.403,
+     "band": 0.05
+    },
+    "likeLearned": {
+     "weeks": [
+      {
+       "label": "Week of 17 Nov",
+       "psi": 0.04,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 24 Nov",
+       "psi": 0.028,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 1 Dec",
+       "psi": 0.045,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 8 Dec",
+       "psi": 0.037,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 15 Dec",
+       "psi": 0.039,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 22 Dec",
+       "psi": 0.03,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 29 Dec",
+       "psi": 0.051,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 5 Jan",
+       "psi": 0.034,
+       "status": "stable"
+      }
+     ]
+    },
+    "replace": {
+     "compare": [
+      {
+       "key": "right",
+       "label": "Fast-track right",
+       "inUse": "95 in 100",
+       "candidate": "97 in 100",
+       "better": true
+      },
+      {
+       "key": "investigators_agreed",
+       "label": "Found the claims that needed it",
+       "inUse": "91 in 100",
+       "candidate": "94 in 100",
+       "better": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "inUse": "Yes",
+       "candidate": "Yes",
+       "better": null
+      },
+      {
+       "key": "reasons_same",
+       "label": "Reasons stay the same",
+       "inUse": "100 in 100",
+       "candidate": "100 in 100",
+       "better": true
+      }
+     ]
+    }
+   },
+   "factSheet": {
+    "sections": [
+     {
+      "key": "for",
+      "title": "What it is for",
+      "body": [
+       "Estimates how likely a new claim is to be large or complex, so simple claims can be fast-tracked and the rest go straight to an adjuster.",
+       "Runs once, when the call ends. A person can change the route with a reason at any time."
+      ]
+     },
+     {
+      "key": "not_for",
+      "title": "What it is not for",
+      "body": [
+       "Deciding whether a claim is covered or how much is paid.",
+       "Pricing a policy, or judging the caller."
+      ]
+     },
+     {
+      "key": "looks_at",
+      "title": "What it looks at",
+      "body": [
+       "A collision",
+       "Age of the vehicle",
+       "Airbags went off",
+       "Another party involved",
+       "Auto or home policy",
+       "Caller's own estimate",
+       "Coverage limit",
+       "Deductible",
+       "Fire or smoke",
+       "Hail",
+       "Home can't be lived in",
+       "Home open to the weather",
+       "How many parts are damaged",
+       "How much the caller described",
+       "Matches an active storm",
+       "Photos coming",
+       "Police report",
+       "Roof, window or skylight damage",
+       "Rooms affected",
+       "Siding or fence damage",
+       "Someone hurt",
+       "Theft or break-in",
+       "Time from loss to call",
+       "Vehicle can't be driven",
+       "Water",
+       "Water still coming in",
+       "Weather records confirm it",
+       "Wind"
+      ]
+     },
+     {
+      "key": "never_looks_at",
+      "title": "What it never looks at",
+      "body": [
+       "No voice stress, accent, speech-rate or pitch features: unreliable and discriminatory.",
+       "Proxy for protected characteristics; region-level effects are tested for, not learned.",
+       "Age is used only to form age bands for fairness testing.",
+       "Identity is not evidence.",
+       "The caller's language is tested for fairness, never used to route.",
+       "Where the caller lives is tested for fairness, never used to route."
+      ]
+     },
+     {
+      "key": "tested",
+      "title": "How it was tested",
+      "body": [
+       "On 0.89 AUC terms it separates large from small claims well; at the setting in use it sends 91 in 100 of large or complex claims to an adjuster.",
+       "Its scores are calibrated: when it says 30 in 100, about 30 in 100 such claims turn out large (expected calibration error 0.012).",
+       "It beats a simple scorecard on the same data (PR-AUC 0.77 against 0.72)."
+      ]
+     },
+     {
+      "key": "fairness",
+      "title": "Fairness",
+      "body": [
+       "The fast-track rate is 40 in 100 overall. Every region, language and age band stays within 5.0 points of it (largest gap 3.5 points, Québec).",
+       "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+      ]
+     },
+     {
+      "key": "limits",
+      "title": "Limits",
+      "body": [
+       "It learned from synthetic claim calls shaped like the ones the line takes, with real claim costs from French motor insurance data (freMTPL2). Its absolute accuracy describes that data, not a real book of business; what carries over is the method: calibration, reasons, fairness tests, monitoring and sign-off.",
+       "It only knows what the caller said and what the policy shows. Photos and an adjuster's visit come later."
+      ]
+     },
+     {
+      "key": "sign_offs",
+      "title": "Sign-offs",
+      "body": [
+       "A version goes into use only when every gate passes and two different people sign: a claims supervisor and compliance (model risk)."
+      ]
+     },
+     {
+      "key": "technical",
+      "title": "For the technical reviewer",
+      "body": [
+       "Algorithm: Gradient-boosted trees (XGBoost), tuned with Optuna; isotonic calibration on the validation months.",
+       "Split: Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025.",
+       "Test: AUC 0.887, PR-AUC 0.766, Brier 0.0921, ECE 0.0119.",
+       "Logistic baseline: AUC 0.849, PR-AUC 0.720; random forest: AUC 0.870, PR-AUC 0.750.",
+       "Before calibration: Brier 0.0916, ECE 0.0178; Platt scaling: Brier 0.0918, ECE 0.0168.",
+       "Reasons: exact TreeSHAP values; top-5 overlap across 5 bootstrap refits 1.00 (Jaccard).",
+       "Public benchmark on freMTPL2 alone (top tenth of claim cost from policy fields): logistic AUC 0.61, XGBoost AUC 0.62. Real French motor claims, policy fields only (no driver age, no region). Whether a claim lands in the top tenth of cost is only weakly predictable from the policy alone; the size of a loss depends on what happened, which is why the size check is trained on what the caller tells the line."
+      ]
+     }
+    ]
+   }
+  },
+  "closer_look": {
+   "name": "Closer-look check",
+   "question": "Should someone in special investigations look at it?",
+   "decides": "Asks special investigations to look. Never denies.",
+   "key": "closer_look",
+   "status": "healthy",
+   "statusLabel": "Working as expected",
+   "versions": [
+    {
+     "version": 4,
+     "stage": "retired",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": "2025-06-02",
+     "trainedOn": "11,557 synthetic claim calls (2023 to 2024)",
+     "split": "Time split: trained on losses before 2025, calibrated on January to March 2025",
+     "metrics": {
+      "auc": 0.8603,
+      "prAuc": 0.338,
+      "brier": 0.0306,
+      "ece": 0.009,
+      "recallAtThreshold": 0.4571,
+      "precisionAtThreshold": 0.4706,
+      "threshold": 0.1429,
+      "flaggedRate": 0.0384
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.1136,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.009,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0042,
+       "limit": 0.015,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 0.8,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.052,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.6672,
+      "fast_track": 0.2944,
+      "special_investigation": 0.0384
+     },
+     "stability": {
+      "jaccard": 0.8,
+      "runs": [
+       0.667,
+       1.0,
+       1.0,
+       0.667,
+       0.667
+      ],
+      "top": [
+       "days_policy_start_to_loss",
+       "hours_loss_to_report",
+       "key_fact_corrections",
+       "third_party_pressure",
+       "weather_contradicts_loss"
+      ]
+     }
+    },
+    {
+     "version": 5,
+     "stage": "in_use",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": "2025-12-01",
+     "trainedOn": "14,734 synthetic claim calls (January 2023 to June 2025) with French motor claim costs (freMTPL2)",
+     "split": "Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025",
+     "metrics": {
+      "auc": 0.8571,
+      "prAuc": 0.3886,
+      "brier": 0.0293,
+      "ece": 0.0072,
+      "recallAtThreshold": 0.4286,
+      "precisionAtThreshold": 0.4839,
+      "threshold": 0.2222,
+      "flaggedRate": 0.035
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.1642,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.0072,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0031,
+       "limit": 0.015,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 0.8,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.045,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.5446,
+      "fast_track": 0.4203,
+      "special_investigation": 0.035
+     },
+     "stability": {
+      "jaccard": 0.8,
+      "runs": [
+       0.667,
+       1.0,
+       1.0,
+       0.667,
+       0.667
+      ],
+      "top": [
+       "days_policy_start_to_loss",
+       "hours_loss_to_report",
+       "key_fact_corrections",
+       "third_party_pressure",
+       "weather_contradicts_loss"
+      ]
+     }
+    },
+    {
+     "version": 6,
+     "stage": "candidate",
+     "algorithm": "Gradient-boosted trees (XGBoost)",
+     "inUseSince": null,
+     "trainedOn": "15,496 synthetic claim calls (January 2023 to mid-August 2025) with French motor claim costs (freMTPL2)",
+     "split": "Time split: trained on losses before 16 August 2025, calibrated on 16 August to 30 September, tested on October to December 2025",
+     "metrics": {
+      "auc": 0.8503,
+      "prAuc": 0.3352,
+      "brier": 0.0295,
+      "ece": 0.0075,
+      "recallAtThreshold": 0.3571,
+      "precisionAtThreshold": 0.5435,
+      "threshold": 0.25,
+      "flaggedRate": 0.026
+     },
+     "gates": [
+      {
+       "key": "beats_baseline",
+       "label": "Better than the simple scorecard",
+       "value": 0.1108,
+       "limit": 0.02,
+       "passed": true
+      },
+      {
+       "key": "calibrated",
+       "label": "Scores mean what they say",
+       "value": 0.0075,
+       "limit": 0.05,
+       "passed": true
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "value": 0.0034,
+       "limit": 0.015,
+       "passed": true
+      },
+      {
+       "key": "reasons_stable",
+       "label": "Reasons stay the same",
+       "value": 0.8,
+       "limit": 0.7,
+       "passed": true
+      },
+      {
+       "key": "inputs_stable",
+       "label": "Inputs look like what it learned",
+       "value": 0.063,
+       "limit": 0.25,
+       "passed": true
+      }
+     ],
+     "gatesPassed": true,
+     "routes": {
+      "adjuster": 0.613,
+      "fast_track": 0.361,
+      "special_investigation": 0.026
+     },
+     "stability": {
+      "jaccard": 0.8,
+      "runs": [
+       0.667,
+       1.0,
+       1.0,
+       0.667,
+       0.667
+      ],
+      "top": [
+       "days_policy_start_to_loss",
+       "hours_loss_to_report",
+       "key_fact_corrections",
+       "third_party_pressure",
+       "weather_contradicts_loss"
+      ]
+     }
+    }
+   ],
+   "technical": {
+    "test": {
+     "auc": 0.8571,
+     "prAuc": 0.3886,
+     "brier": 0.0293,
+     "ece": 0.0072,
+     "recallAtThreshold": 0.4286,
+     "precisionAtThreshold": 0.4839,
+     "threshold": 0.2222,
+     "flaggedRate": 0.035,
+     "positiveRate": 0.0395
+    },
+    "baseline": {
+     "auc": 0.8062,
+     "prAuc": 0.2244,
+     "brier": 0.0338,
+     "ece": 0.0112,
+     "positiveRate": 0.0395,
+     "threshold": 0.12,
+     "recallAtThreshold": 0.3429,
+     "precisionAtThreshold": 0.3636,
+     "flaggedRate": 0.0373
+    },
+    "randomForest": {
+     "auc": 0.8557,
+     "prAuc": 0.2218,
+     "brier": 0.0331,
+     "ece": 0.0078,
+     "positiveRate": 0.0395,
+     "threshold": 0.1429,
+     "recallAtThreshold": 0.4,
+     "precisionAtThreshold": 0.4444,
+     "flaggedRate": 0.0356
+    },
+    "uncalibrated": {
+     "brier": 0.0562,
+     "ece": 0.1216
+    },
+    "platt": {
+     "brier": 0.0289,
+     "ece": 0.0051
+    },
+    "roc": [
+     {
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "x": 0.0,
+      "y": 0.0143
+     },
+     {
+      "x": 0.0,
+      "y": 0.0429
+     },
+     {
+      "x": 0.0006,
+      "y": 0.1143
+     },
+     {
+      "x": 0.0006,
+      "y": 0.1286
+     },
+     {
+      "x": 0.0018,
+      "y": 0.1286
+     },
+     {
+      "x": 0.0035,
+      "y": 0.1857
+     },
+     {
+      "x": 0.0041,
+      "y": 0.1857
+     },
+     {
+      "x": 0.0041,
+      "y": 0.2286
+     },
+     {
+      "x": 0.0094,
+      "y": 0.3143
+     },
+     {
+      "x": 0.0094,
+      "y": 0.3286
+     },
+     {
+      "x": 0.01,
+      "y": 0.3286
+     },
+     {
+      "x": 0.0159,
+      "y": 0.3714
+     },
+     {
+      "x": 0.0159,
+      "y": 0.3857
+     },
+     {
+      "x": 0.0176,
+      "y": 0.3857
+     },
+     {
+      "x": 0.0176,
+      "y": 0.4
+     },
+     {
+      "x": 0.0188,
+      "y": 0.4
+     },
+     {
+      "x": 0.0224,
+      "y": 0.4286
+     },
+     {
+      "x": 0.0241,
+      "y": 0.4286
+     },
+     {
+      "x": 0.0324,
+      "y": 0.4429
+     },
+     {
+      "x": 0.0324,
+      "y": 0.4571
+     },
+     {
+      "x": 0.0329,
+      "y": 0.4571
+     },
+     {
+      "x": 0.0471,
+      "y": 0.5429
+     },
+     {
+      "x": 0.0476,
+      "y": 0.5429
+     },
+     {
+      "x": 0.0924,
+      "y": 0.6286
+     },
+     {
+      "x": 0.0953,
+      "y": 0.6286
+     },
+     {
+      "x": 0.1818,
+      "y": 0.8
+     },
+     {
+      "x": 0.1824,
+      "y": 0.8
+     },
+     {
+      "x": 0.2371,
+      "y": 0.8429
+     },
+     {
+      "x": 0.8612,
+      "y": 0.9714
+     },
+     {
+      "x": 0.8618,
+      "y": 0.9714
+     },
+     {
+      "x": 1.0,
+      "y": 1.0
+     }
+    ],
+    "pr": [
+     {
+      "x": 0.0,
+      "y": 1.0
+     },
+     {
+      "x": 0.0143,
+      "y": 1.0
+     },
+     {
+      "x": 0.0286,
+      "y": 1.0
+     },
+     {
+      "x": 0.0429,
+      "y": 1.0
+     },
+     {
+      "x": 0.1143,
+      "y": 0.8889
+     },
+     {
+      "x": 0.1286,
+      "y": 0.9
+     },
+     {
+      "x": 0.1286,
+      "y": 0.8182
+     },
+     {
+      "x": 0.1286,
+      "y": 0.75
+     },
+     {
+      "x": 0.1857,
+      "y": 0.6842
+     },
+     {
+      "x": 0.1857,
+      "y": 0.65
+     },
+     {
+      "x": 0.2,
+      "y": 0.6667
+     },
+     {
+      "x": 0.2143,
+      "y": 0.6818
+     },
+     {
+      "x": 0.2286,
+      "y": 0.6957
+     },
+     {
+      "x": 0.3143,
+      "y": 0.5789
+     },
+     {
+      "x": 0.3286,
+      "y": 0.5897
+     },
+     {
+      "x": 0.3286,
+      "y": 0.575
+     },
+     {
+      "x": 0.3714,
+      "y": 0.4906
+     },
+     {
+      "x": 0.3857,
+      "y": 0.5
+     },
+     {
+      "x": 0.3857,
+      "y": 0.4909
+     },
+     {
+      "x": 0.3857,
+      "y": 0.4821
+     },
+     {
+      "x": 0.3857,
+      "y": 0.4737
+     },
+     {
+      "x": 0.4,
+      "y": 0.4828
+     },
+     {
+      "x": 0.4,
+      "y": 0.4746
+     },
+     {
+      "x": 0.4,
+      "y": 0.4667
+     },
+     {
+      "x": 0.4286,
+      "y": 0.4412
+     },
+     {
+      "x": 0.4286,
+      "y": 0.4348
+     },
+     {
+      "x": 0.4286,
+      "y": 0.4286
+     },
+     {
+      "x": 0.4286,
+      "y": 0.4225
+     },
+     {
+      "x": 0.4429,
+      "y": 0.3605
+     },
+     {
+      "x": 0.4571,
+      "y": 0.3678
+     },
+     {
+      "x": 0.4571,
+      "y": 0.3636
+     },
+     {
+      "x": 0.5429,
+      "y": 0.322
+     },
+     {
+      "x": 0.5429,
+      "y": 0.3193
+     },
+     {
+      "x": 0.6286,
+      "y": 0.2189
+     },
+     {
+      "x": 0.6286,
+      "y": 0.2136
+     },
+     {
+      "x": 0.8,
+      "y": 0.1534
+     },
+     {
+      "x": 0.8,
+      "y": 0.153
+     },
+     {
+      "x": 0.8429,
+      "y": 0.1277
+     },
+     {
+      "x": 0.9714,
+      "y": 0.0444
+     },
+     {
+      "x": 1.0,
+      "y": 0.0395
+     }
+    ],
+    "calibration": [
+     {
+      "predicted": 0.017,
+      "observed": 0.0194,
+      "count": 1651
+     },
+     {
+      "predicted": 0.1078,
+      "observed": 0.2121,
+      "count": 33
+     },
+     {
+      "predicted": 0.2189,
+      "observed": 0.1515,
+      "count": 33
+     },
+     {
+      "predicted": 0.3035,
+      "observed": 0.2667,
+      "count": 15
+     },
+     {
+      "predicted": 0.4455,
+      "observed": 0.4375,
+      "count": 16
+     },
+     {
+      "predicted": 0.5453,
+      "observed": 0.6667,
+      "count": 3
+     },
+     {
+      "predicted": 0.6204,
+      "observed": 0.5,
+      "count": 10
+     },
+     {
+      "predicted": 0.7341,
+      "observed": 0.8571,
+      "count": 7
+     },
+     {
+      "predicted": 0.8728,
+      "observed": 1.0,
+      "count": 1
+     },
+     {
+      "predicted": 1.0,
+      "observed": 1.0,
+      "count": 1
+     }
+    ],
+    "split": "Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025",
+    "features": [
+     "Auto or home policy",
+     "A collision",
+     "Wind",
+     "Water",
+     "Theft or break-in",
+     "Fire or smoke",
+     "Time since the policy started",
+     "Time since coverage last changed",
+     "Time from loss to call",
+     "Claims in the last 3 years",
+     "Changes to when, where or what happened",
+     "Weather records don't show the storm",
+     "Police report",
+     "Theft not reported to police",
+     "Round-number estimate in the top band",
+     "Someone else pushing for a fast payment",
+     "Caller's own estimate",
+     "Photos declined",
+     "Night-time loss with no witness or report",
+     "Policy not in force on the loss date"
+    ],
+    "params": {
+     "max_depth": 2,
+     "eta": 0.18804006884917301,
+     "min_child_weight": 1.763032055499701,
+     "subsample": 0.9450911259157643,
+     "colsample_bytree": 0.8048167164567106,
+     "lambda": 1.147116736046775,
+     "scale_pos_weight": 8.580128067173257
+    },
+    "rounds": 80
+   },
+   "fairness": {
+    "4": {
+     "overallRate": 0.0395,
+     "band": 0.015,
+     "passed": true,
+     "maxGap": 0.0042,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.04,
+       "truePositiveRate": 0.441,
+       "falsePositiveRate": 0.022,
+       "gap": 0.0005,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.0399,
+       "truePositiveRate": 0.4122,
+       "falsePositiveRate": 0.0255,
+       "gap": 0.0004,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.0385,
+       "truePositiveRate": 0.4144,
+       "falsePositiveRate": 0.0216,
+       "gap": 0.001,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.0394,
+       "truePositiveRate": 0.4265,
+       "falsePositiveRate": 0.0219,
+       "gap": 0.0001,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.0401,
+       "truePositiveRate": 0.4328,
+       "falsePositiveRate": 0.0255,
+       "gap": 0.0006,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.0369,
+       "truePositiveRate": 0.3904,
+       "falsePositiveRate": 0.0217,
+       "gap": 0.0026,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.0437,
+       "truePositiveRate": 0.4599,
+       "falsePositiveRate": 0.0232,
+       "gap": 0.0042,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.0416,
+       "truePositiveRate": 0.4762,
+       "falsePositiveRate": 0.0239,
+       "gap": 0.0021,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    },
+    "5": {
+     "overallRate": 0.0364,
+     "band": 0.015,
+     "passed": true,
+     "maxGap": 0.0031,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.0369,
+       "truePositiveRate": 0.441,
+       "falsePositiveRate": 0.0188,
+       "gap": 0.0005,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.0351,
+       "truePositiveRate": 0.3919,
+       "falsePositiveRate": 0.0213,
+       "gap": 0.0012,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.0363,
+       "truePositiveRate": 0.4259,
+       "falsePositiveRate": 0.0189,
+       "gap": 0.0,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.0365,
+       "truePositiveRate": 0.4322,
+       "falsePositiveRate": 0.0186,
+       "gap": 0.0001,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.0359,
+       "truePositiveRate": 0.403,
+       "falsePositiveRate": 0.0222,
+       "gap": 0.0005,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.0342,
+       "truePositiveRate": 0.395,
+       "falsePositiveRate": 0.0187,
+       "gap": 0.0021,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.0395,
+       "truePositiveRate": 0.4545,
+       "falsePositiveRate": 0.019,
+       "gap": 0.0031,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.0382,
+       "truePositiveRate": 0.4714,
+       "falsePositiveRate": 0.0207,
+       "gap": 0.0019,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    },
+    "6": {
+     "overallRate": 0.0283,
+     "band": 0.015,
+     "passed": true,
+     "maxGap": 0.0034,
+     "rows": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "count": 9905,
+       "flaggedRate": 0.0298,
+       "truePositiveRate": 0.3821,
+       "falsePositiveRate": 0.014,
+       "gap": 0.0015,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "count": 3959,
+       "flaggedRate": 0.0275,
+       "truePositiveRate": 0.3378,
+       "falsePositiveRate": 0.0155,
+       "gap": 0.0007,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "count": 6136,
+       "flaggedRate": 0.0262,
+       "truePositiveRate": 0.3384,
+       "falsePositiveRate": 0.0123,
+       "gap": 0.002,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "count": 16264,
+       "flaggedRate": 0.0285,
+       "truePositiveRate": 0.3652,
+       "falsePositiveRate": 0.0133,
+       "gap": 0.0002,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "count": 3736,
+       "flaggedRate": 0.0273,
+       "truePositiveRate": 0.3358,
+       "falsePositiveRate": 0.0158,
+       "gap": 0.0009,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "count": 10632,
+       "flaggedRate": 0.0263,
+       "truePositiveRate": 0.3265,
+       "falsePositiveRate": 0.0134,
+       "gap": 0.0019,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "count": 3979,
+       "flaggedRate": 0.0317,
+       "truePositiveRate": 0.3797,
+       "falsePositiveRate": 0.0145,
+       "gap": 0.0034,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "count": 5389,
+       "flaggedRate": 0.0295,
+       "truePositiveRate": 0.4143,
+       "falsePositiveRate": 0.0139,
+       "gap": 0.0013,
+       "withinBand": true
+      }
+     ],
+     "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+    }
+   },
+   "drift": {
+    "weeks": [
+     {
+      "label": "Week of 17 Nov",
+      "psi": 0.045,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 24 Nov",
+      "psi": 0.002,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 1 Dec",
+      "psi": 0.013,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 8 Dec",
+      "psi": 0.013,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 15 Dec",
+      "psi": 0.005,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 22 Dec",
+      "psi": 0.018,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 29 Dec",
+      "psi": 0.016,
+      "status": "stable"
+     },
+     {
+      "label": "Week of 5 Jan",
+      "psi": 0.035,
+      "status": "stable"
+     }
+    ],
+    "simulatedShift": 0.695,
+    "statusRule": "Watch at 0.10, act at 0.25 (act pauses fast-track until a person resumes it)"
+   },
+   "questions": {
+    "right": {
+     "bars": [
+      {
+       "label": "Closer-look check",
+       "value": 0.4839,
+       "ours": true
+      },
+      {
+       "label": "Old rule of thumb",
+       "value": 0.202,
+       "ours": false
+      }
+     ]
+    },
+    "fair": {
+     "dots": [
+      {
+       "dimension": "region",
+       "group": "CA-AB",
+       "label": "Alberta",
+       "rate": 0.0369,
+       "count": 9905,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "CA-QC",
+       "label": "Québec",
+       "rate": 0.0351,
+       "count": 3959,
+       "withinBand": true
+      },
+      {
+       "dimension": "region",
+       "group": "US-CO",
+       "label": "Colorado",
+       "rate": 0.0363,
+       "count": 6136,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "en",
+       "label": "English",
+       "rate": 0.0365,
+       "count": 16264,
+       "withinBand": true
+      },
+      {
+       "dimension": "language",
+       "group": "fr",
+       "label": "French",
+       "rate": 0.0359,
+       "count": 3736,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "35_64",
+       "label": "35 to 64",
+       "rate": 0.0342,
+       "count": 10632,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "65_plus",
+       "label": "65 and over",
+       "rate": 0.0395,
+       "count": 3979,
+       "withinBand": true
+      },
+      {
+       "dimension": "age_band",
+       "group": "under_35",
+       "label": "Under 35",
+       "rate": 0.0382,
+       "count": 5389,
+       "withinBand": true
+      }
+     ],
+     "overallRate": 0.0364,
+     "band": 0.015
+    },
+    "likeLearned": {
+     "weeks": [
+      {
+       "label": "Week of 17 Nov",
+       "psi": 0.045,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 24 Nov",
+       "psi": 0.002,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 1 Dec",
+       "psi": 0.013,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 8 Dec",
+       "psi": 0.013,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 15 Dec",
+       "psi": 0.005,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 22 Dec",
+       "psi": 0.018,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 29 Dec",
+       "psi": 0.016,
+       "status": "stable"
+      },
+      {
+       "label": "Week of 5 Jan",
+       "psi": 0.035,
+       "status": "stable"
+      }
+     ]
+    },
+    "replace": {
+     "compare": [
+      {
+       "key": "right",
+       "label": "Referrals that found something",
+       "inUse": "48 in 100",
+       "candidate": "54 in 100",
+       "better": true
+      },
+      {
+       "key": "investigators_agreed",
+       "label": "Found the claims that needed it",
+       "inUse": "43 in 100",
+       "candidate": "36 in 100",
+       "better": false
+      },
+      {
+       "key": "fair",
+       "label": "Fair across groups",
+       "inUse": "Yes",
+       "candidate": "Yes",
+       "better": null
+      },
+      {
+       "key": "reasons_same",
+       "label": "Reasons stay the same",
+       "inUse": "80 in 100",
+       "candidate": "80 in 100",
+       "better": true
+      }
+     ]
+    }
+   },
+   "factSheet": {
+    "sections": [
+     {
+      "key": "for",
+      "title": "What it is for",
+      "body": [
+       "Asks someone in special investigations to look at a claim when several documented signs line up.",
+       "A referral is a request for review. It is not a finding of fraud and never denies a claim."
+      ]
+     },
+     {
+      "key": "not_for",
+      "title": "What it is not for",
+      "body": [
+       "Denying, delaying or reducing a claim.",
+       "Judging a person by who they are: it never sees age, language, region or anything about their voice."
+      ]
+     },
+     {
+      "key": "looks_at",
+      "title": "What it looks at",
+      "body": [
+       "A collision",
+       "Auto or home policy",
+       "Caller's own estimate",
+       "Changes to when, where or what happened",
+       "Claims in the last 3 years",
+       "Fire or smoke",
+       "Night-time loss with no witness or report",
+       "Photos declined",
+       "Police report",
+       "Policy not in force on the loss date",
+       "Round-number estimate in the top band",
+       "Someone else pushing for a fast payment",
+       "Theft not reported to police",
+       "Theft or break-in",
+       "Time from loss to call",
+       "Time since coverage last changed",
+       "Time since the policy started",
+       "Water",
+       "Weather records don't show the storm",
+       "Wind"
+      ]
+     },
+     {
+      "key": "never_looks_at",
+      "title": "What it never looks at",
+      "body": [
+       "No voice stress, accent, speech-rate or pitch features: unreliable and discriminatory.",
+       "Proxy for protected characteristics; region-level effects are tested for, not learned.",
+       "Age is used only to form age bands for fairness testing.",
+       "Identity is not evidence.",
+       "The caller's language is tested for fairness, never used to route.",
+       "Where the caller lives is tested for fairness, never used to route."
+      ]
+     },
+     {
+      "key": "tested",
+      "title": "How it was tested",
+      "body": [
+       "It refers 4 in 100 claims for review and needs at least two signs before it can refer one.",
+       "Of the claims it refers, 48 in 100 turn out to need a closer look in testing; it finds 43 in 100 of those that do.",
+       "It beats a simple scorecard on the same data (PR-AUC 0.39 against 0.22); scores are calibrated (expected calibration error 0.007)."
+      ]
+     },
+     {
+      "key": "fairness",
+      "title": "Fairness",
+      "body": [
+       "The closer-look rate is 4 in 100 overall. Every region, language and age band stays within 1.5 points of it (largest gap 0.3 points, 65 and over).",
+       "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+      ]
+     },
+     {
+      "key": "limits",
+      "title": "Limits",
+      "body": [
+       "It learned from synthetic claim calls shaped like the ones the line takes, with real claim costs from French motor insurance data (freMTPL2). Its absolute accuracy describes that data, not a real book of business; what carries over is the method: calibration, reasons, fairness tests, monitoring and sign-off.",
+       "It only knows what the caller said and what the policy shows. Photos and an adjuster's visit come later.",
+       "The closer-look labels come from documented patterns injected into the synthetic data, with 3 in 100 labels flipped to mimic investigators disagreeing."
+      ]
+     },
+     {
+      "key": "sign_offs",
+      "title": "Sign-offs",
+      "body": [
+       "A version goes into use only when every gate passes and two different people sign: a claims supervisor and compliance (model risk)."
+      ]
+     },
+     {
+      "key": "technical",
+      "title": "For the technical reviewer",
+      "body": [
+       "Algorithm: Gradient-boosted trees (XGBoost), tuned with Optuna; isotonic calibration on the validation months.",
+       "Split: Time split: trained on losses before 1 July 2025, calibrated on July to September, tested on October to December 2025.",
+       "Test: AUC 0.857, PR-AUC 0.389, Brier 0.0293, ECE 0.0072.",
+       "Logistic baseline: AUC 0.806, PR-AUC 0.224; random forest: AUC 0.856, PR-AUC 0.222.",
+       "Before calibration: Brier 0.0562, ECE 0.1216; Platt scaling: Brier 0.0289, ECE 0.0051.",
+       "Reasons: exact TreeSHAP values; top-5 overlap across 5 bootstrap refits 0.80 (Jaccard)."
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "never": [
+  "denies a claim",
+  "uses age, gender, language or postcode to route",
+  "stops a person changing the route",
+  "changes version without two sign-offs"
+ ],
+ "benchmark": {
+  "rows": 26444,
+  "positiveRate": 0.1,
+  "logistic": {
+   "auc": 0.609,
+   "prAuc": 0.149
+  },
+  "xgboost": {
+   "auc": 0.621,
+   "prAuc": 0.157
+  },
+  "note": "Real French motor claims, policy fields only (no driver age, no region). Whether a claim lands in the top tenth of cost is only weakly predictable from the policy alone; the size of a loss depends on what happened, which is why the size check is trained on what the caller tells the line."
+ },
+ "costSource": "freMTPL2"
+}

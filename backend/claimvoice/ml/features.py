@@ -19,6 +19,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 from typing import Any
+from zoneinfo import ZoneInfo
 
 # Never model inputs. Used only to compute fairness gaps (eval and the fairness endpoint).
 PROTECTED_FOR_TESTING_ONLY: tuple[str, ...] = ("region", "language", "age_band")
@@ -179,6 +180,17 @@ FEATURE_SOURCE: dict[str, str] = {
     "weather_contradicts_loss": "weather",
 }
 
+# Loss dates and times are said in the caller's local time.
+REGION_TZ = {
+    "CA-AB": "America/Edmonton",
+    "US-CO": "America/Denver",
+    "CA-QC": "America/Toronto",
+    "CA-ON": "America/Toronto",
+    "US-CA": "America/Los_Angeles",
+    "US-WA": "America/Los_Angeles",
+    "US-FL": "America/New_York",
+    "US-IL": "America/Chicago",
+}
 _BANDS = {None: 0, "under_2k": 1, "2k_10k": 2, "10k_50k": 3, "over_50k": 4}
 NO_CHANGE_DAYS = 3650.0  # "never changed": far in the past
 
@@ -229,7 +241,9 @@ def build_features(
         except ValueError:
             loss_t = None
     if loss_day is not None and answered is not None:
-        tz = answered.tzinfo
+        region = str(pol.get("region") or facts.get("region") or "")
+        tz = ZoneInfo(REGION_TZ.get(region, "America/Edmonton")) if region else answered.tzinfo
+        answered = answered.astimezone(tz)
         when = datetime.combine(loss_day, loss_t or time(12, 0), tz)
         hours = max(0.0, (answered - when).total_seconds() / 3600)
     else:
