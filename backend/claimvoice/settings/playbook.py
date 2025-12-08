@@ -93,12 +93,13 @@ class SqlPlaybook:
         return {
             "id": row.id,
             "kind": row.kind,
-            "loss_type": row.loss_type,
             "title": row.title,
-            "area_label": row.area_label,
             "region": row.region,
-            "surge_questions_on": row.surge_questions_on,
-            "alert_id": row.alert_id,
+            "areaLabel": row.area_label,
+            "lossTypes": [row.loss_type],
+            "surgeQuestionsOn": row.surge_questions_on,
+            "startedAt": row.started_at.isoformat(),
+            "alertId": row.alert_id,
         }
 
 

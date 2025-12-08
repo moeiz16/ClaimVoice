@@ -19,9 +19,9 @@ from claimvoice.policies.models import Policy, Policyholder
 _LOSS_COVERAGE: dict[str, tuple[str, ...]] = {
     "collision": ("collision", "liability", "rental"),
     "hail": ("wind_hail", "dwelling", "comprehensive"),
-    "wind": ("wind_hail", "dwelling", "fences", "comprehensive"),
+    "wind": ("wind_hail", "dwelling", "fence", "comprehensive"),
     "water": ("water_escape", "sewer_backup", "overland_water", "dwelling"),
-    "fire": ("dwelling", "contents", "additional_living", "comprehensive"),
+    "fire": ("dwelling", "contents", "additional_living_expenses", "comprehensive"),
     "theft": ("comprehensive", "contents"),
 }
 

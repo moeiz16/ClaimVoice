@@ -151,14 +151,17 @@ COVERAGES: dict[str, Bi] = {
     "comprehensive": {"en": "Comprehensive", "fr": "Tous risques"},
     "accident_benefits": {"en": "Accident benefits", "fr": "Indemnités d'accident"},
     "rental": {"en": "Rental car", "fr": "Voiture de location"},
-    "dwelling": {"en": "Dwelling", "fr": "Bâtiment"},
-    "contents": {"en": "Contents", "fr": "Biens meubles"},
+    "dwelling": {"en": "The house itself", "fr": "Le bâtiment"},
+    "contents": {"en": "Your belongings", "fr": "Vos biens"},
     "wind_hail": {"en": "Wind and hail", "fr": "Vent et grêle"},
     "sewer_backup": {"en": "Sewer backup", "fr": "Refoulement d'égout"},
-    "overland_water": {"en": "Overland water", "fr": "Inondation terrestre"},
+    "overland_water": {"en": "Water from outside", "fr": "Eaux de surface"},
     "water_escape": {"en": "Burst pipes and water escape", "fr": "Dégâts d'eau soudains"},
-    "fences": {"en": "Fences and detached structures", "fr": "Clôtures et dépendances"},
-    "additional_living": {"en": "Additional living expenses", "fr": "Frais de subsistance supplémentaires"},
+    "fence": {"en": "Fences", "fr": "Clôtures"},
+    "additional_living_expenses": {
+        "en": "Somewhere to stay while repairs happen",
+        "fr": "Frais de subsistance supplémentaires",
+    },
 }
 
 TEAMS: dict[str, Bi] = {

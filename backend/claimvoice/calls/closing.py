@@ -14,6 +14,7 @@ comes from the same scorers as a live call."""
 from __future__ import annotations
 
 import asyncio
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Any
@@ -29,10 +30,13 @@ from claimvoice.claims.models import Claim, ClaimPhoto, RoutingDecisionRow, SiuR
 from claimvoice.dialogue.slots import KEY_FACTS
 from claimvoice.platform import auditlog, db
 from claimvoice.platform.events import bus, call_key, org_key
+from claimvoice.platform.models import Organization
 from claimvoice.policies.models import Coverage, InsuredItem, Policy, Policyholder
 from claimvoice.schemas.switchboard import LineClosed
 
 log = structlog.get_logger("claimvoice.closing")
+# The seed writes its back-dated trail in time order itself, so it switches these per-call entries off.
+AUDIT_ON_CLOSE: ContextVar[bool] = ContextVar("audit_on_close", default=True)
 PUBLIC_DEMO_KEEP = timedelta(minutes=10)
 
 COVERAGE_FOR_LOSS: dict[str, tuple[str, ...]] = {
@@ -270,6 +274,11 @@ async def finalize(session: Any, call: Call) -> Closed:
         await session.flush()
         result.claim_id, result.claim_number = claim.id, number
         call.outcome = "claim_created"
+        org = await session.get(Organization, call.org_id)
+        if org is not None and number.rsplit("-", 1)[-1].isdigit():
+            settings = dict(org.settings or {})
+            settings["claimSeq"] = max(int(settings.get("claimSeq", 0)), int(number.rsplit("-", 1)[-1]))
+            org.settings = settings
         await session.execute(
             update(ClaimPhoto)
             .where(ClaimPhoto.call_id == call.id, ClaimPhoto.claim_id.is_(None))
@@ -287,10 +296,10 @@ async def finalize(session: Any, call: Call) -> Closed:
             "region": call.region,
             "surge_match": call.surge_id is not None,
             "urgent_safety": urgent,
-            "key_fact_corrections": corrections,
+            "key_fact_corrections": max(corrections, int((call.facts or {}).get("key_fact_corrections") or 0)),
             "photos_declined": _value(parts, "photos_promised") is False,
             "flags": [{"kind": f.get("kind"), "detail": f.get("detail")} for f in call.flags or []],
-            **(call.facts or {}),
+            "facts": dict(call.facts or {}),
         }
         claim_file = {k: r.value for k, r in parts.current.items()}
         features = scoring.build_features(claim_file, policy_facts, call_facts)
@@ -362,13 +371,6 @@ async def finalize(session: Any, call: Call) -> Closed:
         .all()
     )
     events_in = quality.events_for_scorer(events)
-    events_in.append(
-        {
-            "kind": "ended",
-            "atMs": int((at - call.answered_at).total_seconds() * 1000),
-            "data": {"reason": call.end_reason or "completed"},
-        }
-    )
     qa_result = scoring.call_scorer().score(quality.turn_records(turns), events_in, quality.slot_records(parts.current))
     existing = (await session.execute(select(QaScoreRow).where(QaScoreRow.call_id == call.id))).scalar_one_or_none()
     if existing is not None:
@@ -409,6 +411,9 @@ async def close_call(
                 closing.final_stage if closing.final_stage not in ("ended", "handoff") else call.resume_stage
             )
             call.latency_p95_ms = closing.latency_p95_ms if closing.latency_p95_ms is not None else latency_p95_ms
+            facts = getattr(closing, "facts", None)
+            if facts:
+                call.facts = {**(call.facts or {}), **dict(facts)}
         else:
             call.ended_at = clock.now()
             call.end_reason = reason or "ended_by_person"
@@ -433,7 +438,7 @@ async def close_call(
         result = await finalize(session, call)
         await session.commit()
         await publish_closed(session, call, result)
-    if result.claim_id:
+    if result.claim_id and AUDIT_ON_CLOSE.get():
         await auditlog.record(
             org_id,
             auditlog.Entry(
@@ -444,7 +449,7 @@ async def close_call(
                 target_label=result.claim_number,
             ),
         )
-    if result.siu_opened:
+    if result.siu_opened and AUDIT_ON_CLOSE.get():
         await auditlog.record(
             org_id,
             auditlog.Entry(

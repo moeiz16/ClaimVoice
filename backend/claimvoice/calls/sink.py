@@ -95,19 +95,40 @@ class _Live:
 
 
 _claim_locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
+_claim_next: dict[str, int] = {}
 
 
 async def allocate_claim_number(org_id: str, year: int) -> str:
-    """The next claim number for the organisation: CV-<yy>-<running number> (the running number never resets)."""
-    async with _claim_locks[org_id], db.sessionmaker()() as session:
-        org = await session.get(Organization, org_id)
-        assert org is not None
-        settings = dict(org.settings or {})
-        n = int(settings.get("claimSeq", 1800)) + 1
-        settings["claimSeq"] = n
-        org.settings = settings
-        await session.commit()
+    """The next claim number for the organisation: CV-<yy>-<running number> (the running number never resets).
+
+    Kept in memory and seeded from the database once (a read, so it never waits on another writer); the counter is
+    persisted with the claim it numbers (`calls.closing`). A reserved number whose call ends without a claim leaves a
+    gap, as on any claims system."""
+    async with _claim_locks[org_id]:
+        if org_id not in _claim_next:
+            from claimvoice.claims.models import Claim
+
+            async with db.sessionmaker()() as session:
+                org = await session.get(Organization, org_id)
+                seq = (org.settings or {}).get("claimSeq") if org else None
+                if seq is None:  # no counter yet: continue after the highest number on file
+                    numbers = (
+                        await session.execute(select(Claim.claim_number).where(Claim.org_id == org_id))
+                    ).scalars()
+                    tails = [int(n.rsplit("-", 1)[-1]) for n in numbers if n.rsplit("-", 1)[-1].isdigit()]
+                    seq = max(tails, default=1800)
+            _claim_next[org_id] = int(seq)
+        _claim_next[org_id] += 1
+        n = _claim_next[org_id]
     return f"CV-{year % 100:02d}-{n:05d}"
+
+
+def forget_claim_counter(org_id: str | None = None) -> None:
+    """Re-read the counter from the database on next use (after the seed or a test changes it)."""
+    if org_id is None:
+        _claim_next.clear()
+    else:
+        _claim_next.pop(org_id, None)
 
 
 class SqlCallSink:
@@ -189,6 +210,7 @@ class SqlCallSink:
             if row is None:
                 row = Call(id=call.call_id, org_id=self.org_id, reference=await next_reference(session, self.org_id))
                 row.line_number = await next_line_number(session, self.org_id)
+                row.answered_at = clock.now()
                 session.add(row)
             row.state = "with_line"
             row.mode = call.mode.value
@@ -197,7 +219,6 @@ class SqlCallSink:
             row.caller_phone_e164 = call.caller_phone or row.caller_phone_e164
             row.region = row.region or call.region_hint
             row.scenario = call.scenario or row.scenario
-            row.answered_at = clock.now()
             session.add(
                 CallEvent(
                     org_id=self.org_id,

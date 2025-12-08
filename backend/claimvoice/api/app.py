@@ -64,14 +64,24 @@ async def lifespan(app: Litestar) -> AsyncIterator[None]:
         await db.dispose()
 
 
-def create_app(*, background: bool = True, sse_close_when_idle: float | None = None) -> Litestar:
+def create_app(
+    *, background: bool = True, sse_close_when_idle: float | None = None, rate_limits: bool = True
+) -> Litestar:
     """`background=False` skips adopting the sample lines and the daily retention job (tests);
     `sse_close_when_idle` ends SSE streams after that many idle seconds (tests)."""
     from claimvoice.api.routes import ROUTERS
 
     settings = get_settings()
     route_handlers: list[Any] = [health, metrics, *ROUTERS]
-    state = State({"limiter": RateLimiter(), "background": background, "sse_close_when_idle": sse_close_when_idle})
+    state = State(
+        {
+            "limiter": RateLimiter()
+            if rate_limits
+            else RateLimiter(limits=dict.fromkeys(("auth", "public", "public_call", "api"), (10 ** 9, 60.0))),
+            "background": background,
+            "sse_close_when_idle": sse_close_when_idle,
+        }
+    )
     return Litestar(
         route_handlers=route_handlers,
         dependencies=DEPENDENCIES,

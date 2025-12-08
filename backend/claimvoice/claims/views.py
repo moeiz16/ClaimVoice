@@ -195,7 +195,10 @@ async def detail(db: AsyncSession, c: Claim, lang: str, *, siu: bool) -> w.Claim
         description_en=c.description_en,
         in_short=w.InShort(
             text=text or "",
-            links=[w.SummaryLink(**link) for link in links],
+            links=[
+                w.SummaryLink(start=x["start"], end=x["end"], turn_id=x["turnId"], at_seconds=x.get("atSeconds"))
+                for x in links
+            ],
             checked_by=PersonRef(id=checked["id"], name=checked["name"]) if checked else None,
             checked_at=datetime.fromisoformat(ins["checkedAt"]) if ins.get("checkedAt") else None,
         ),
