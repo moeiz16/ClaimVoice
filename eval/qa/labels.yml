@@ -1,0 +1,41 @@
+# A reviewer's verdicts on the six beads for every scripted call (pass, fail or na = not applicable).
+# Written from the call scripts by hand, independently of the scorer; eval/suites/qa.py measures agreement.
+calls:
+  arjun-shingles: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  calgary-windstorm: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  california-all-party: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  car-theft-calgary: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  card-digits-denver: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  card-typed-numerals: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  correction-tuesday: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  dana-skylight: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  denver-rear-end: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  fr-card-number: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  fr-collision-plateau: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  fr-consent-refused: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  fr-kitchen-fire: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  fr-theft-hochelaga: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  hail-summer-car: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  interruptions-collision: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  kitchen-fire-aspen: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  language-switch: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  leah-fence: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  montreal-basement: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  off-script-questions: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  photos-declined: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  photos-other-number: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  repeat-please: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  sewer-backup-woodbine: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  sophie-frozen-pipe: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  tomas-rear-end: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  whisper-garage: {consent_first: pass, identity_verified: pass, required_fields: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na}
+  asks-person-midway: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  bridgeland-fence-person: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  distress-calgary: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  fr-distress: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  urgent-power-line: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  urgent-water-panel: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  airdrie-gas: {consent_first: pass, identity_verified: na, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  california-refuses: {consent_first: pass, identity_verified: na, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  low-confidence: {consent_first: pass, identity_verified: na, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
+  identity-fails: {consent_first: pass, identity_verified: pass, required_fields: na, empathy: pass, no_card_numbers: pass, handoff_correct: pass}
