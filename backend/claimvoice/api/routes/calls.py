@@ -794,7 +794,7 @@ async def handoff(ctx: Ctx, call_id: str, data: w.HandoffIn) -> w.HandoffInfo:
         "handoff",
         f"{_who(ctx)} handed the call off: {reason}",
         ctx,
-        {"reason": "supervisor", "priority": "normal", "state": "waiting"},
+        {"reason": "supervisor", "priority": "normal", "state": "requested"},
     )
     people = await views.users_by_id(ctx.db, [h.to_user_id])
     info = views.handoff_out(h, call, ctx.lang, people)

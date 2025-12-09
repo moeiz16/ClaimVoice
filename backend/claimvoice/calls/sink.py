@@ -88,6 +88,7 @@ class _Live:
     language: str = "en"
     caller_name: str | None = None
     turn_ms: dict[str, int] = field(default_factory=dict)
+    last_ms: int = 0  # end of the latest turn (virtual time for scripted calls, real time for live ones)
     latencies: list[float] = field(default_factory=list)
     queue: asyncio.Queue[tuple[Op | None, asyncio.Future[None] | None, bool]] = field(default_factory=asyncio.Queue)
     task: asyncio.Task[None] | None = None
@@ -187,6 +188,12 @@ class SqlCallSink:
                 line = await views.live_line(session, call, EVENT_LANG, siu=True)
                 bus.publish(org_key(self.org_id), "line.updated", line, org_id=self.org_id, call_id=call.id)
 
+    def _elapsed(self, call: Call) -> int:
+        """Milliseconds into the call now: the wall clock for a live call, the latest turn for a scripted replay."""
+        live = self._calls.get(call.id)
+        by_clock = int((clock.now() - call.answered_at).total_seconds() * 1000)
+        return max(0, by_clock, live.last_ms if live else 0)
+
     def _publish_call(self, call_id: str, type_: str, data: Any, *, transient: bool = False) -> None:
         bus.publish(call_key(call_id), type_, data, org_id=self.org_id, call_id=call_id, transient=transient)
 
@@ -233,7 +240,7 @@ class SqlCallSink:
                     at_ms=0,
                     kind="answered",
                     label="ClaimVoice answered",
-                    data={},
+                    data={"region": row.region, "language": row.language},
                 )
             )
             await session.flush()
@@ -280,6 +287,7 @@ class SqlCallSink:
     async def turn(self, call_id: str, turn: TurnRecord) -> None:
         live = self._live(call_id)
         live.turn_ms[turn.turn_id] = turn.at_ms
+        live.last_ms = max(live.last_ms, turn.end_ms)
         text_en = getattr(turn, "text_en", None)
         if turn.retained:
             speaker_label = (
@@ -412,6 +420,18 @@ class SqlCallSink:
                     data={"stage": change.stage, "previous": change.previous, "event": change.event},
                 )
             )
+            if change.event == "read_back_confirmed":
+                session.add(
+                    CallEvent(
+                        org_id=self.org_id,
+                        call_id=call_id,
+                        at=call.answered_at + timedelta(milliseconds=change.at_ms),
+                        at_ms=change.at_ms,
+                        kind="read_back",
+                        label="Caller confirmed the read-back",
+                        data={"confirmed": True},
+                    )
+                )
 
         self._put(call_id, op)
 
@@ -482,6 +502,19 @@ class SqlCallSink:
             if holder is not None and not call.place:
                 call.place = holder.city
             await _match_surge(session, call)
+            at_ms = self._elapsed(call)
+            now = call.answered_at + timedelta(milliseconds=at_ms)
+            session.add(
+                CallEvent(
+                    org_id=self.org_id,
+                    call_id=call_id,
+                    at=now,
+                    at_ms=at_ms,
+                    kind="identity",
+                    label="Caller and policy confirmed",
+                    data={"verified": True, "region": region},
+                )
+            )
 
         self._put(call_id, op)
 
@@ -489,7 +522,8 @@ class SqlCallSink:
         self._publish_call(call_id, "notice", {"kind": "photo_link_sent", "text": f"Photo link texted to {to_masked}"})
 
         async def op(session: AsyncSession, call: Call) -> None:
-            now = clock.now()
+            at_ms = self._elapsed(call)
+            now = call.answered_at + timedelta(milliseconds=at_ms)
             session.add(
                 PhotoLink(
                     org_id=self.org_id,
@@ -509,13 +543,12 @@ class SqlCallSink:
                     sent_at=now,
                 )
             )
-            at_ms = int((now - call.answered_at).total_seconds() * 1000)
             session.add(
                 CallEvent(
                     org_id=self.org_id,
                     call_id=call_id,
                     at=now,
-                    at_ms=max(0, at_ms),
+                    at_ms=at_ms,
                     kind="photo_link",
                     label=f"Photo link texted to {to_masked}",
                     data={"toMasked": to_masked},
@@ -532,7 +565,8 @@ class SqlCallSink:
         priority = labels.HANDOFF_PRIORITY.get(code, "normal")
 
         async def op(session: AsyncSession, call: Call) -> None:
-            now = clock.now()
+            at_ms = self._elapsed(call)
+            now = call.answered_at + timedelta(milliseconds=at_ms)
             summary = await handoff_summary(session, call, detail)
             session.add(
                 Handoff(
@@ -549,7 +583,6 @@ class SqlCallSink:
                 )
             )
             call.state = "waiting_for_person"
-            at_ms = max(0, int((now - call.answered_at).total_seconds() * 1000))
             session.add(
                 CallEvent(
                     org_id=self.org_id,
@@ -558,7 +591,7 @@ class SqlCallSink:
                     at_ms=at_ms,
                     kind="handoff",
                     label=f"Hand-off asked: {labels.pick(labels.HANDOFF_REASONS[code], EVENT_LANG)}",
-                    data={"reason": code, "priority": priority, "atMs": at_ms, "state": "waiting"},
+                    data={"reason": code, "priority": priority, "atMs": at_ms, "state": "requested"},
                 )
             )
             await session.flush()

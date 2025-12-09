@@ -254,6 +254,7 @@ class CallEvent(Model):
     kind: Literal[
         "answered",
         "consent",
+        "identity",
         "stage",
         "tool",
         "flag",
@@ -263,6 +264,7 @@ class CallEvent(Model):
         "takeover",
         "returned",
         "photo_link",
+        "read_back",
         "notice",
         "ended",
     ]

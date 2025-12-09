@@ -154,7 +154,7 @@ class SqlPolicyDirectory:
                 "en": f"Your policy includes {first.label.lower()} coverage with a {ded_en} deductible. "
                 "An adjuster confirms what's covered; nothing is decided on this call.",
                 "fr": f"Votre police comprend la garantie {label_fr.lower()} avec une franchise de {ded_fr}. "
-                "Un expert confirmera ce qui est couvert; rien n'est décidé pendant cet appel.",
+                "Un expert vérifiera la couverture avec vous; rien n'est décidé pendant cet appel.",
             }
         return contracts.CoverageSummary(policy.id, loss_type, in_force, lines, words)
 
