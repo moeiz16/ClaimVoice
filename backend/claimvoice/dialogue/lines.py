@@ -151,15 +151,15 @@ LINES: dict[str, dict[str, str]] = {
         "que vous n'ayez pas à le répéter.",
     },
     "handoff_urgent_gas": {
-        "en": "Please leave the house now, don't use light switches, and call 911 from outside. I'm bringing in a "
+        "en": "I'm sorry, that sounds frightening. Please leave the house now, don't use light switches, and call 911 from outside. I'm bringing in a "
         "person from Larkspur right away. Please stay on the line.",
-        "fr": "Sortez de la maison maintenant, ne touchez pas aux interrupteurs et appelez le 911 de l'extérieur. "
+        "fr": "Je suis désolée, ça doit être inquiétant. Sortez de la maison maintenant, ne touchez pas aux interrupteurs et appelez le 911 de l'extérieur. "
         "Je fais venir une personne de Larkspur tout de suite. Restez en ligne.",
     },
     "handoff_urgent": {
-        "en": "Please get to safety now and call 911. I'm bringing in a person from Larkspur right away. Please stay "
+        "en": "I'm sorry, that sounds frightening. Please get to safety now and call 911. I'm bringing in a person from Larkspur right away. Please stay "
         "on the line.",
-        "fr": "Mettez-vous en sécurité maintenant et appelez le 911. Je fais venir une personne de Larkspur tout "
+        "fr": "Je suis désolée, ça doit être inquiétant. Mettez-vous en sécurité maintenant et appelez le 911. Je fais venir une personne de Larkspur tout "
         "de suite. Restez en ligne.",
     },
     "handoff_distress": {

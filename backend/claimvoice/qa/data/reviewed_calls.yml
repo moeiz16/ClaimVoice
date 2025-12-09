@@ -1,0 +1,237 @@
+# Calls handled by people (or by an older script) with known problems, reviewed by the quality lead. Used to test the
+# call-quality scorer against human verdicts, and by the seed for the review queue. Times are seconds into the call.
+# Turn: [speaker, seconds, text, stage]. Speakers: line, person, caller.
+calls:
+  - key: missed-consent
+    title: Agent asked for the policy before recording consent
+    region: CA-AB
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [person, 0, "Larkspur Mutual claims, this is Jamal. What's your policy number?", identity]
+      - [caller, 4, "It's LM-AB-250004. A branch came through my garage window last night.", identity]
+      - [person, 11, "Thanks. Oh, I should say this call is recorded. Is that okay?", consent]
+      - [caller, 15, "Sure.", consent]
+      - [person, 18, "I'm sorry about the window. Is everyone safe?", safety]
+      - [caller, 22, "Yes, we're fine.", safety]
+      - [person, 26, "When did it happen?", loss_details]
+      - [caller, 29, "Around midnight.", loss_details]
+      - [person, 33, "Was the roof, a window or a skylight damaged?", loss_details]
+      - [caller, 37, "Just the garage window.", loss_details]
+      - [person, 41, "Siding or a fence?", loss_details]
+      - [caller, 44, "No.", loss_details]
+      - [person, 47, "Is anything open to the weather?", loss_details]
+      - [caller, 50, "I boarded it up.", loss_details]
+      - [person, 53, "Can you still live in the home?", loss_details]
+      - [caller, 56, "Yes.", loss_details]
+      - [person, 60, "Here's what I have: wind damage to the garage window last night around midnight, boarded up, nobody hurt. Is that right?", read_back]
+      - [caller, 66, "Yes.", read_back]
+      - [person, 69, "Your claim number is CV-26-01790. An adjuster will call you within one business day. Take care.", wrap_up]
+    events:
+      - {kind: consent, atMs: 15000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 9000, data: {verified: true}}
+    slots: {loss_type: wind, loss_date: "2026-01-02", policy_number: LM-AB-250004, injury_reported: false, roof_or_window_damage: true, siding_or_fence_damage: false, open_to_weather: false, home_livable: true, identity_check: passed}
+    labels: {consent_first: fail, consent_rule: pass, identity_verified: pass, required_fields: pass, safety_check: pass, read_back: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: pass}
+  - key: late-handoff
+    title: Gas mentioned, a person reached 40 seconds later
+    region: CA-AB
+    language: en
+    person: Sofía Herrera
+    turns:
+      - [line, 0, "Larkspur Mutual claims, this is ClaimVoice, an automated assistant. This call is recorded so we get your claim right. Is that okay?", consent]
+      - [caller, 6, "Yes. The wind knocked something loose and I think I smell gas by the furnace.", consent]
+      - [line, 12, "Thank you. What's your policy number, or the phone number on your policy?", identity]
+      - [caller, 17, "Uh, LM-AB-250008. It really smells like gas.", identity]
+      - [line, 24, "Thanks, Sandra. To confirm it's you, what's your date of birth?", identity]
+      - [caller, 30, "January twenty-fifth, 1964.", identity]
+      - [line, 36, "Thank you, that matches. Before anything else: is everyone safe?", safety]
+      - [caller, 41, "I told you, there's a gas smell!", safety]
+      - [line, 52, "I'm sorry. Please leave the house now and call 911. I'm bringing in a person right away.", handoff]
+      - [person, 70, "Hi Sandra, it's Sofía from Larkspur. Are you outside now?", handoff]
+      - [caller, 74, "Yes, I'm outside.", handoff]
+    events:
+      - {kind: consent, atMs: 6000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 33000, data: {verified: true}}
+      - {kind: flag, atMs: 11000, data: {kind: urgent_safety, detail: "Smells gas by the furnace"}}
+      - {kind: handoff, atMs: 52000, data: {reason: urgent_safety, priority: urgent, state: requested}}
+    slots: {policy_number: LM-AB-250008, identity_check: passed, danger_now: true}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: na, safety_check: pass, read_back: na, empathy: pass, no_card_numbers: pass, handoff_correct: fail, language_honoured: pass, no_promises: pass}
+  - key: card-left-in
+    title: An older recording kept the digits a caller read out
+    region: US-CO
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [person, 0, "Larkspur Mutual claims, this is Jamal. This call is recorded. Is that okay?", consent]
+      - [caller, 4, "Yes.", consent]
+      - [person, 7, "What's your policy number?", identity]
+      - [caller, 10, "LM-CO-350001. Can I just pay the deductible now? My card is 4111 1111 1111 1111.", identity]
+      - [person, 19, "Thanks. What's your date of birth?", identity]
+      - [caller, 22, "July fourth, 1987.", identity]
+      - [person, 26, "Is anyone hurt?", safety]
+      - [caller, 28, "No.", safety]
+    events:
+      - {kind: consent, atMs: 4000, data: {rule: one_party, answer: given, recording: true, region: US-CO}}
+      - {kind: identity, atMs: 24000, data: {verified: true}}
+    slots: {policy_number: LM-CO-350001, identity_check: passed, injury_reported: false}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: na, safety_check: pass, read_back: na, empathy: fail, no_card_numbers: fail, handoff_correct: na, language_honoured: pass, no_promises: pass}
+  - key: promised-payment
+    title: Agent told the caller the claim was covered
+    region: US-CO
+    language: en
+    person: Sofía Herrera
+    turns:
+      - [person, 0, "Larkspur Mutual claims, Sofía speaking. This call is recorded. Is that okay?", consent]
+      - [caller, 4, "Yes. My basement flooded from a burst pipe.", consent]
+      - [person, 9, "I'm so sorry to hear that. What's your policy number?", identity]
+      - [caller, 13, "LM-CO-350002.", identity]
+      - [person, 16, "And your ZIP code?", identity]
+      - [caller, 18, "80219.", identity]
+      - [person, 21, "Is everyone safe, and is water near the electrical panel?", safety]
+      - [caller, 26, "We're fine, it's away from the panel.", safety]
+      - [person, 30, "When did you notice it?", loss_details]
+      - [caller, 33, "This morning around six.", loss_details]
+      - [person, 36, "Where is the water coming from?", loss_details]
+      - [caller, 39, "A burst pipe in the laundry room.", loss_details]
+      - [person, 43, "Which rooms are affected?", loss_details]
+      - [caller, 46, "The laundry room and the rec room.", loss_details]
+      - [person, 50, "Is water still coming in?", loss_details]
+      - [caller, 53, "No, I shut it off. Will this be covered?", loss_details]
+      - [person, 58, "Don't worry, this is covered and you'll be paid in full.", coverage]
+      - [person, 63, "Here's what I have: a burst pipe this morning, two rooms affected, the water has stopped. Is that right?", read_back]
+      - [caller, 69, "Yes.", read_back]
+      - [person, 72, "Your claim number is CV-26-01801. Take care.", wrap_up]
+    events:
+      - {kind: consent, atMs: 4000, data: {rule: one_party, answer: given, recording: true, region: US-CO}}
+      - {kind: identity, atMs: 19000, data: {verified: true}}
+    slots: {policy_number: LM-CO-350002, identity_check: passed, loss_type: water, loss_date: "2026-01-05", water_source: burst_pipe, rooms_affected: 2, water_still_entering: false, injury_reported: false}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: pass, safety_check: pass, read_back: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: fail}
+  - key: no-read-back
+    title: Claim number given without a read-back
+    region: CA-AB
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [person, 0, "Larkspur Mutual claims, this is Jamal. This call is recorded. Is that okay?", consent]
+      - [caller, 3, "Yes.", consent]
+      - [person, 5, "Policy number please.", identity]
+      - [caller, 8, "LM-AB-250005. Someone stole my car.", identity]
+      - [person, 12, "I'm sorry. Date of birth?", identity]
+      - [caller, 15, "March twenty-seventh, 1996.", identity]
+      - [person, 18, "Is everyone safe?", safety]
+      - [caller, 20, "Yes.", safety]
+      - [person, 23, "When did it happen and where?", loss_details]
+      - [caller, 27, "Last night, from my driveway.", loss_details]
+      - [person, 30, "What was taken?", loss_details]
+      - [caller, 32, "The car, a 2020 Ford Escape.", loss_details]
+      - [person, 35, "Have you reported it to the police?", loss_details]
+      - [caller, 38, "Yes.", loss_details]
+      - [person, 41, "Your claim number is CV-26-01812. Bye now.", wrap_up]
+    events:
+      - {kind: consent, atMs: 3000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 16000, data: {verified: true}}
+    slots: {policy_number: LM-AB-250005, identity_check: passed, loss_type: theft, loss_date: "2026-01-04", loss_place: "driveway", items_stolen: "2020 Ford Escape", police_report_filed: true, injury_reported: false}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: pass, safety_check: pass, read_back: fail, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: pass}
+  - key: english-to-quebec-caller
+    title: A French-speaking Québec caller answered in English throughout
+    region: CA-QC
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [person, 0, "Larkspur Mutual claims, this is Jamal. This call is recorded. Is that okay?", consent]
+      - [caller, 4, "Oui, d'accord. J'ai un dégât d'eau dans mon sous-sol.", consent]
+      - [person, 9, "Thanks. What's your policy number?", identity]
+      - [caller, 13, "C'est LM-QC-160002.", identity]
+      - [person, 16, "And your postal code?", identity]
+      - [caller, 19, "H1V 3A6.", identity]
+      - [person, 22, "Is everyone safe?", safety]
+      - [caller, 25, "Oui, tout le monde va bien.", safety]
+    events:
+      - {kind: consent, atMs: 4000, data: {rule: all_party, answer: given, recording: true, region: CA-QC}}
+      - {kind: identity, atMs: 20000, data: {verified: true}}
+    slots: {policy_number: LM-QC-160002, identity_check: passed, injury_reported: false}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: na, safety_check: pass, read_back: na, empathy: fail, no_card_numbers: pass, handoff_correct: na, language_honoured: fail, no_promises: pass}
+  - key: missing-details
+    title: Details skipped before the photo link
+    region: CA-AB
+    language: en
+    person: Sofía Herrera
+    turns:
+      - [person, 0, "Larkspur Mutual claims, Sofía here. This call is recorded. Is that okay?", consent]
+      - [caller, 3, "Yes. The wind blew shingles off my roof.", consent]
+      - [person, 7, "I'm sorry to hear that. Policy number?", identity]
+      - [caller, 10, "LM-AB-250003.", identity]
+      - [person, 13, "Date of birth?", identity]
+      - [caller, 15, "December first, 1992.", identity]
+      - [person, 18, "Is everyone safe?", safety]
+      - [caller, 20, "Yes.", safety]
+      - [person, 23, "When did it happen?", loss_details]
+      - [caller, 25, "Last night.", loss_details]
+      - [person, 28, "I'll text you a photo link.", photos]
+      - [caller, 30, "Okay.", photos]
+      - [person, 33, "Here's what I have: wind damage to the roof last night, nobody hurt. Is that right?", read_back]
+      - [caller, 38, "Yes.", read_back]
+      - [person, 41, "Your claim number is CV-26-01815. Take care.", wrap_up]
+    events:
+      - {kind: consent, atMs: 3000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 16000, data: {verified: true}}
+    slots: {policy_number: LM-AB-250003, identity_check: passed, loss_type: wind, loss_date: "2026-01-07", injury_reported: false, roof_or_window_damage: true}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: fail, safety_check: pass, read_back: pass, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: pass}
+  - key: asked-person-ignored
+    title: The caller asked for a person and the agent carried on
+    region: US-CO
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [line, 0, "Larkspur Mutual claims, this is ClaimVoice, an automated assistant. This call is recorded so we get your claim right. Is that okay?", consent]
+      - [caller, 6, "Yes, but can I talk to a real person please?", consent]
+      - [line, 10, "Thank you. What's your policy number, or the phone number on your policy?", identity]
+      - [caller, 14, "I want a human.", identity]
+      - [line, 17, "What's your policy number, or the phone number on your policy?", identity]
+      - [caller, 21, "LM-CO-350005.", identity]
+    events:
+      - {kind: consent, atMs: 6000, data: {rule: one_party, answer: given, recording: true, region: US-CO}}
+    slots: {}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: na, required_fields: na, safety_check: na, read_back: na, empathy: fail, no_card_numbers: pass, handoff_correct: fail, language_honoured: pass, no_promises: pass}
+  - key: card-removed-human
+    title: A caller read card digits; they were removed and the agent explained
+    region: CA-AB
+    language: en
+    person: Sofía Herrera
+    turns:
+      - [person, 0, "Larkspur Mutual claims, Sofía speaking. This call is recorded. Is that okay?", consent]
+      - [caller, 4, "Yes. My fence blew down.", consent]
+      - [person, 7, "I'm sorry to hear that. What's your policy number?", identity]
+      - [caller, 10, "LM-AB-250006. Do you want my card for the deductible? It's [card number removed]", identity]
+      - [person, 18, "Please stop there, we never take card numbers on this line. That part of the recording is removed. What's your date of birth?", identity]
+      - [caller, 25, "October ninth, 1981.", identity]
+      - [person, 28, "Thank you. Is everyone safe?", safety]
+      - [caller, 31, "Yes.", safety]
+    redacted_turns: [3]
+    events:
+      - {kind: consent, atMs: 4000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 27000, data: {verified: true}}
+      - {kind: flag, atMs: 17000, data: {kind: card_number_removed, detail: "Caller started reading a card number; it was removed."}}
+    slots: {policy_number: LM-AB-250006, identity_check: passed, injury_reported: false}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: na, safety_check: pass, read_back: na, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: pass}
+  - key: kind-but-no-safety
+    title: Friendly agent who skipped the safety question
+    region: CA-AB
+    language: en
+    person: Jamal Haddad
+    turns:
+      - [person, 0, "Larkspur Mutual claims, Jamal here. This call is recorded. Is that okay?", consent]
+      - [caller, 3, "Yes. There's water coming through my ceiling.", consent]
+      - [person, 7, "Oh no, I'm sorry, that must be stressful. Policy number?", identity]
+      - [caller, 11, "LM-AB-250002.", identity]
+      - [person, 14, "Date of birth?", identity]
+      - [caller, 16, "August twenty-third, 1977.", identity]
+      - [person, 19, "When did you notice it?", loss_details]
+      - [caller, 22, "An hour ago.", loss_details]
+      - [person, 25, "Where's the water coming from?", loss_details]
+      - [caller, 28, "The roof, I think.", loss_details]
+    events:
+      - {kind: consent, atMs: 3000, data: {rule: all_party, answer: given, recording: true, region: CA-AB}}
+      - {kind: identity, atMs: 17000, data: {verified: true}}
+    slots: {policy_number: LM-AB-250002, identity_check: passed, loss_type: water, loss_date: "2026-01-08", water_source: roof}
+    labels: {consent_first: pass, consent_rule: pass, identity_verified: pass, required_fields: na, safety_check: fail, read_back: na, empathy: pass, no_card_numbers: pass, handoff_correct: na, language_honoured: pass, no_promises: pass}
