@@ -159,6 +159,7 @@ class SqlCallSink:
         await done
 
     async def _writer(self, live: _Live) -> None:
+        dirty = False  # a write changed the line since the desk last heard about it
         while True:
             op, done, refresh = await live.queue.get()
             try:
@@ -168,18 +169,23 @@ class SqlCallSink:
                         if call is not None or getattr(op, "creates", False):
                             await op(session, call)
                             await session.commit()
-                            if refresh and live.queue.empty():
-                                call = await session.get(Call, live.call_id)
-                                if call is not None and call.state != "ended":
-                                    line = await views.live_line(session, call, EVENT_LANG, siu=True)
-                                    bus.publish(
-                                        org_key(self.org_id), "line.updated", line, org_id=self.org_id, call_id=call.id
-                                    )
+                            dirty = dirty or refresh
+                if dirty and (live.queue.empty() or op is None):
+                    dirty = False
+                    await self._publish_line(live.call_id)
             except Exception:  # a failed write must never take the call down
                 log.exception("sink_write_failed", call_id=live.call_id)
             finally:
                 if done is not None and not done.done():
                     done.set_result(None)
+
+    async def _publish_line(self, call_id: str) -> None:
+        """`line.updated` for the desk, after the writes it reflects (coalesced while writes are queued)."""
+        async with db.sessionmaker()() as session:
+            call = await session.get(Call, call_id)
+            if call is not None and call.state != "ended":
+                line = await views.live_line(session, call, EVENT_LANG, siu=True)
+                bus.publish(org_key(self.org_id), "line.updated", line, org_id=self.org_id, call_id=call.id)
 
     def _publish_call(self, call_id: str, type_: str, data: Any, *, transient: bool = False) -> None:
         bus.publish(call_key(call_id), type_, data, org_id=self.org_id, call_id=call_id, transient=transient)

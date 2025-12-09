@@ -22,6 +22,7 @@ from claimvoice.schemas import ml as w
 from claimvoice.schemas.base import PersonRef
 
 CHECK_ORDER = ("size", "closer_look")
+REGISTRY_DAY = date(2026, 1, 8)  # the registry's dates are written for this demo day and shift with the demo clock
 SIDE_LABELS = {"claims": "Claims", "model_risk": "Model risk"}
 STATUS_LABELS = {"healthy": "Working as expected", "watch": "Watch: storm week", "act": "Act"}
 NEVER = [
@@ -83,8 +84,13 @@ async def mirror_registry(
             row.trained_on = v.get("trainedOn", "")
             row.metrics = v.get("metrics") or {}
             row.gates = v.get("gates") or []
-            row.fact_sheet = {**shared, "fairness": v.get("fairness") or shared["fairness"]}
+            fairness = shared["fairness"]
+            if isinstance(fairness, dict) and str(v["version"]) in fairness:
+                fairness = fairness[str(v["version"])]
+            row.fact_sheet = {**shared, "fairness": v.get("fairness") or fairness}
             row.mlflow_run_id = v.get("runId")
+            if v.get("inUseSince"):
+                row.in_use_since = date.fromisoformat(v["inUseSince"]) + (today - REGISTRY_DAY)
             rows.append(row)
     await db.flush()
     return rows
@@ -253,14 +259,14 @@ async def questions(db: AsyncSession, org_id: str) -> list[w.Question]:
                 foot=given.get("foot") or FAIRNESS_NOTE,
                 dots=[
                     w.Dot(
-                        dimension=r["dimension"],
-                        group=r["group"],
-                        label=r["label"],
-                        rate=float(r["flaggedRate"]),
-                        count=int(r["count"]),
-                        within_band=bool(r["withinBand"]),
+                        dimension=d["dimension"],
+                        group=d["group"],
+                        label=d["label"],
+                        rate=float(d.get("rate", d.get("flaggedRate", 0))),
+                        count=int(d["count"]),
+                        within_band=bool(d["withinBand"]),
                     )
-                    for r in rows
+                    for d in (given.get("dots") or rows)
                 ],
                 overall_rate=float(fair.get("overallRate", 0)),
                 band=float(fair.get("band", 0.015)),
@@ -268,7 +274,8 @@ async def questions(db: AsyncSession, org_id: str) -> list[w.Question]:
         )
     if size_in is not None:
         weeks = (size_in.fact_sheet.get("drift") or {}).get("weeks") or []
-        given = (size_in.fact_sheet.get("questions") or {}).get("like_learned") or {}
+        qs = size_in.fact_sheet.get("questions") or {}
+        given = qs.get("likeLearned") or qs.get("like_learned") or {}
         status = drift_status(size_in)
         out.append(
             w.Question(
@@ -281,7 +288,10 @@ async def questions(db: AsyncSession, org_id: str) -> list[w.Question]:
                     "act": "**No.** Fast-track is paused for this check until a person resumes it.",
                 }[status],
                 foot=given.get("foot") or "Weekly shift: Watch at 0.10, Act at 0.25.",
-                weeks=[w.WeekColumn(label=x["label"], psi=float(x["psi"]), status=x["status"]) for x in weeks],
+                weeks=[
+                    w.WeekColumn(label=x["label"], psi=float(x["psi"]), status=x["status"])
+                    for x in (given.get("weeks") or weeks)
+                ],
             )
         )
     candidate = next((r for r in size if r.stage == "candidate"), None) or next(
@@ -340,11 +350,27 @@ async def questions(db: AsyncSession, org_id: str) -> list[w.Question]:
                 answer=f"Version {candidate.version} is **waiting for two sign-offs**: one for claims, one for "
                 "model risk.",
                 foot="A version goes into use only when every gate passes and two different people sign it off.",
-                compare=rows,
+                compare=_given_compare(candidate) or rows,
                 sign_offs=[_signoff_out(side, by_side.get(side), people) for side in ("claims", "model_risk")],
             )
         )
     return out
+
+
+def _given_compare(candidate: ModelVersion) -> list[w.CompareRow] | None:
+    rows = ((candidate.fact_sheet.get("questions") or {}).get("replace") or {}).get("compare")
+    if not rows:
+        return None
+    return [
+        w.CompareRow(
+            key=r["key"],
+            label=r["label"],
+            in_use=str(r["inUse"]),
+            candidate=str(r["candidate"]),
+            better=r.get("better"),
+        )
+        for r in rows
+    ]
 
 
 async def page(db: AsyncSession, org_id: str) -> w.RoutingChecks:

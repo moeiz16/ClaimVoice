@@ -11,6 +11,18 @@ import pytest
 from litestar.testing import AsyncTestClient
 
 
+def demo_clock() -> None:
+    """The demo moment: Thursday 8 January 2026, 7:42 a.m. Calgary time (from now on, in this process)."""
+    from claimvoice import clock
+
+    clock.install("2026-01-08", "07:42", tz="America/Edmonton")
+
+
+@pytest.fixture(autouse=True)
+def _demo_moment() -> None:
+    demo_clock()
+
+
 @pytest.fixture(scope="module")
 def seeded(migrated_db: str) -> str:
     """Seed once per module (about 2 s), so tests in other modules start from the same story."""
@@ -24,6 +36,7 @@ def seeded(migrated_db: str) -> str:
         await run()
         await db.dispose()
 
+    demo_clock()
     runtime.use_runtime(None, disabled=True)
     forget_claim_counter()
     bus.reset()

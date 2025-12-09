@@ -39,13 +39,14 @@ log = structlog.get_logger("claimvoice.closing")
 AUDIT_ON_CLOSE: ContextVar[bool] = ContextVar("audit_on_close", default=True)
 PUBLIC_DEMO_KEEP = timedelta(minutes=10)
 
+# The coverage whose deductible and limit the routing checks read (the main one for the policy line).
 COVERAGE_FOR_LOSS: dict[str, tuple[str, ...]] = {
     "collision": ("collision",),
-    "hail": ("wind_hail", "comprehensive", "dwelling"),
-    "wind": ("wind_hail", "dwelling", "comprehensive"),
-    "water": ("water_escape", "sewer_backup", "dwelling"),
-    "fire": ("dwelling", "comprehensive"),
-    "theft": ("comprehensive", "contents"),
+    "hail": ("comprehensive", "dwelling"),
+    "wind": ("comprehensive", "dwelling"),
+    "water": ("dwelling", "comprehensive"),
+    "fire": ("comprehensive", "dwelling"),
+    "theft": ("comprehensive", "contents", "dwelling"),
 }
 
 NEXT_STEPS: dict[str, dict[str, list[str]]] = {
@@ -289,21 +290,27 @@ async def finalize(session: Any, call: Call) -> Closed:
         # 3. routing checks
         holder = await session.get(Policyholder, policy.holder_id)
         policy_facts = await _policy_facts(session, policy, loss_type, loss_date)
-        corrections = sum(1 for k, rows in parts.history.items() if k in KEY_FACTS for _ in rows)
+        facts = dict(call.facts or {})
+        corrections = int(
+            facts["key_fact_corrections"]
+            if "key_fact_corrections" in facts
+            else sum(1 for k, rows in parts.history.items() if k in KEY_FACTS for r in rows if r.corrects)
+            + sum(1 for k, r in parts.current.items() if k in KEY_FACTS and r.corrects)
+        )
         call_facts = {
             "answered_at": call.answered_at.isoformat(),
             "language": call.language,
             "region": call.region,
             "surge_match": call.surge_id is not None,
             "urgent_safety": urgent,
-            "key_fact_corrections": max(corrections, int((call.facts or {}).get("key_fact_corrections") or 0)),
+            "key_fact_corrections": corrections,
             "photos_declined": _value(parts, "photos_promised") is False,
             "flags": [{"kind": f.get("kind"), "detail": f.get("detail")} for f in call.flags or []],
             "facts": dict(call.facts or {}),
         }
         claim_file = {k: r.value for k, r in parts.current.items()}
         features = scoring.build_features(claim_file, policy_facts, call_facts)
-        features.setdefault("currency", policy.currency)
+        features.update(currency=policy.currency, region=policy.region, urgent_safety=urgent)
         groups = {
             "region": policy.region,
             "language": call.language,

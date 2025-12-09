@@ -235,7 +235,7 @@ async def audio_for(ctx: Ctx, call: Call, target: tuple[str, str, str]) -> Respo
         )
         path = await asyncio.to_thread(audio.render_placeholder, call, turns, rec.duration_seconds or 1.0)
     range_header = ctx.request.headers.get("range")
-    if not range_header or range_header.strip() in ("bytes=0-", "bytes=0-1"):
+    if not range_header or range_header.strip().startswith("bytes=0-"):  # the first request of a play
         kind, ident, label = target
         await ctx.audit(
             "recording.played",

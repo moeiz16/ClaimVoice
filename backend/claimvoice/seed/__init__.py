@@ -783,15 +783,15 @@ async def _governance(session: AsyncSession, org_id: str, people: dict[str, User
         by_check.setdefault(r.check_key, []).append(r)
     for key, versions in by_check.items():
         versions.sort(key=lambda v: v.version)
-        in_use_days = {"in_use": 24, "retired": 86}
+        starts = {v.version: v.in_use_since for v in versions}
         for v in versions:
-            if v.stage == "candidate":
+            if v.stage == "candidate" or v.in_use_since is None:
                 continue
-            days = in_use_days.get(v.stage, 120)
+            days = (m.today() - v.in_use_since).days
             since = m.at(days, "10:00")
-            v.in_use_since = since.astimezone(TZ).date()
             if v.stage == "retired":
-                v.retired_at = m.at(24, "10:00")
+                later = [d for ver, d in starts.items() if ver > v.version and d is not None]
+                v.retired_at = m.at((m.today() - min(later)).days, "10:00") if later else None
             label = f"{names[key].capitalize()} v{v.version}"
             for side, person, offset, note in (
                 ("model_risk", people["compliance"], 2, "Gates pass; fairness within band; fact sheet reviewed."),
