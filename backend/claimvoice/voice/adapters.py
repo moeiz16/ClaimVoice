@@ -70,7 +70,7 @@ class FakeTextToSpeech:
     """Deterministic TTS: a quiet 220 Hz tone, 55 ms per character up to 12 s, in 20 ms chunks, no network.
 
     Gives the recording real duration and the latency harness a real first-chunk time; the words themselves travel
-    as captions (`agent.say`)."""
+    as captions (`line.say`)."""
 
     name: str = "fake-tts"
     sample_rate: int = 24000
@@ -84,3 +84,40 @@ class FakeTextToSpeech:
             base = chunk_index * per_chunk
             samples = (int(600 * math.sin(2 * math.pi * 220 * (base + i) / self.sample_rate)) for i in range(per_chunk))
             yield struct.pack(f"<{per_chunk}h", *samples)
+
+
+def get_speech_adapters() -> tuple[SpeechToText, TextToSpeech]:
+    """The configured speech services: fakes unless STT_PROVIDER / TTS_PROVIDER name a provider and its key is set.
+    Voices for cloud speech come from CARTESIA_VOICE_EN/FR or ELEVENLABS_VOICE_EN/FR."""
+    import os
+
+    from claimvoice.config import get_settings
+
+    s = get_settings()
+    stt: SpeechToText = FakeSpeechToText()
+    tts: TextToSpeech = FakeTextToSpeech()
+    stt_provider = os.environ.get("STT_PROVIDER", s.stt_provider)
+    tts_provider = os.environ.get("TTS_PROVIDER", s.tts_provider)
+    if stt_provider == "groq" and s.groq_api_key:
+        from claimvoice.voice.cloud import GroqWhisperSTT
+
+        stt = GroqWhisperSTT(s.groq_api_key)
+    elif stt_provider == "deepgram" and s.deepgram_api_key:
+        from claimvoice.voice.cloud import DeepgramSTT
+
+        stt = DeepgramSTT(s.deepgram_api_key)
+    if tts_provider == "cartesia" and s.cartesia_api_key:
+        from claimvoice.voice.cloud import CartesiaTTS
+
+        tts = CartesiaTTS(
+            s.cartesia_api_key,
+            {"en": os.environ.get("CARTESIA_VOICE_EN", ""), "fr": os.environ.get("CARTESIA_VOICE_FR", "")},
+        )
+    elif tts_provider == "elevenlabs" and os.environ.get("ELEVENLABS_API_KEY"):
+        from claimvoice.voice.cloud import ElevenLabsTTS
+
+        tts = ElevenLabsTTS(
+            os.environ["ELEVENLABS_API_KEY"],
+            {"en": os.environ.get("ELEVENLABS_VOICE_EN", ""), "fr": os.environ.get("ELEVENLABS_VOICE_FR", "")},
+        )
+    return stt, tts

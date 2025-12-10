@@ -26,6 +26,22 @@ PROMISES = re.compile(
     r"vous serez (payée?|remboursée?)|c'est couvert|(sera|est) (couvert|remboursé|refusé|refusée)|garanti)\b",
     re.I,
 )
+# A sentence that defers the decision is not a promise: "An adjuster confirms what is covered; nothing is decided."
+_DEFERS = re.compile(
+    r"\b(can't|cannot|can not|won't decide|not decide|confirm\w*|whether|what's covered|what is covered|if it'?s "
+    r"covered|nothing (is|was) decided|ne peux pas|ce qui est couvert|rien n'est décidé|confirmer\w*|"
+    r"si c'est couvert)\b",
+    re.I,
+)
+
+
+def promises_in(text: str) -> bool:
+    for sentence in re.split(r"(?<=[.!?;])\s+", text):
+        if PROMISES.search(sentence) and not _DEFERS.search(sentence):
+            return True
+    return False
+
+
 _EXTRA_KIND = re.compile(r"\b(sorry|désolée?|that must be|ça doit être|i understand|je comprends)\b", re.I)
 
 
@@ -62,9 +78,11 @@ class RuleLanguageChecker:
             empathy, e_note = True, f"Kind words used {len(kind)} time{'s' if len(kind) > 1 else ''}."
         else:
             empathy, e_note = False, "No acknowledgement of what the caller went through."
-        promised = [t for t in speaking if PROMISES.search(t.text)]
+        promised = [t for t in speaking if promises_in(t.text)]
         if promised:
-            quote = PROMISES.search(promised[0].text)
+            quote = next(
+                (PROMISES.search(x) for x in re.split(r"(?<=[.!?;])\s+", promised[0].text) if promises_in(x)), None
+            )
             p_note = f'Promised an outcome: "{quote.group(0) if quote else ""}".'
         else:
             p_note = "No payment promised and no claim decision given."

@@ -6,6 +6,7 @@ region: CA-AB
 caller_name: Gord Lindqvist
 caller_phone: "+14035550142"
 policy_number: LM-AB-204118
+on_whisper: "No, the garage one is fine, it's just the kitchen."  # what the scripted caller says when the line asks a supervisor's whispered question
 turns:
   - text: "Hi, the wind last night tore up my house."
   - text: "Yes, that's fine."

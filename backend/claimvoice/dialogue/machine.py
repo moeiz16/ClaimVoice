@@ -270,6 +270,12 @@ class SimClock:
         if self.virtual:
             self._ms += max(0, int(ms))
 
+    def go_live(self) -> None:
+        """Continue in real time from the current position (a replayed demo line becoming live)."""
+        if self.virtual:
+            self._t0 = time.perf_counter() - self._ms / 1000
+            self.virtual = False
+
 
 def speech_ms(text: str) -> int:
     """Roughly how long a line takes to say (about 14 characters a second)."""
@@ -282,6 +288,7 @@ class _Held:
 
     turns: list[TurnRecord] = field(default_factory=list)
     slots: list[SlotRecord] = field(default_factory=list)
+    latencies: list[TurnLatency] = field(default_factory=list)
 
 
 class CallEngine:
@@ -355,6 +362,8 @@ class CallEngine:
         self.first_name = ""
         self.said_sorry = False
         self.loss_turn: tuple[str, str] | None = None  # the turn the caller first described the loss in
+        # the voice runtime's recorder: (relative path, seconds) once the call ends, or (None, None)
+        self.recording_provider: Callable[[], tuple[str | None, float | None]] | None = None
         self._outs: list[Out] = []
         self._turn_tools_ms = 0.0
 
@@ -423,6 +432,8 @@ class CallEngine:
             if s.turn_id in unretained:
                 s = replace(s, turn_id=None, span=None)
             await self.sink.slot(self.call_id, s)
+        for sample in held.latencies:
+            await self.sink.latency(self.call_id, sample)
         if not retained:
             for t in self.turns:
                 if t.turn_id in unretained:
@@ -760,7 +771,10 @@ class CallEngine:
         total = stt_ms + understand_ms + tools_ms + plan_ms + first_audio_ms
         sample = TurnLatency(turn_id, stt_ms, understand_ms, tools_ms, plan_ms, first_audio_ms, total)
         self.latencies.append(total)
-        await self.sink.latency(self.call_id, sample)
+        if self.holding:
+            self.held.latencies.append(sample)  # reported after the turn it measures is kept
+        else:
+            await self.sink.latency(self.call_id, sample)
         return sample
 
     def _expecting(self) -> tuple[list[SlotSpec], str | None]:
@@ -795,7 +809,7 @@ class CallEngine:
         for spec in specs:
             if all(u.key != spec.key for u in uniq):
                 uniq.append(spec)
-        if self.pending_whisper is not None:
+        if self.substate == "whisper":  # the line has just asked a supervisor's question
             asked = "extra_notes"
             uniq.append(SlotSpec("extra_notes", "text", False))
         return uniq, asked
@@ -1260,10 +1274,10 @@ class CallEngine:
             q = self.pending_whisper or ""
             self.pending_whisper = None
             self.substate = None
-            if note is not None:
-                prev = self.slots.get("extra_notes")
-                val = f"{q} {note.value}" if not prev else f"{prev.value}; {q} {note.value}"
-                await self.set_slot("extra_notes", val, turn_id=turn_id, span=note.span, confidence=note.confidence)
+            answer, span = (str(note.value), note.span) if note is not None else (text.strip(), (0, len(text)))
+            prev = self.slots.get("extra_notes")
+            val = f"{q} {answer}" if not prev else f"{prev.value}; {q} {answer}"
+            await self.set_slot("extra_notes", val, turn_id=turn_id, span=span, confidence=0.8)
             await self._apply([v for v in r.slots if v.key != "extra_notes"], turn_id)
             parts.append(self._l("noted"))
             await self._next_detail(parts)
@@ -1505,10 +1519,8 @@ class CallEngine:
 
     async def _urgent(self, reason: str, text: str, turn_id: str, r: NluResult) -> None:
         label = SAFETY_REASONS.get(reason, SAFETY_REASONS["keyword"])["en"]
-        quote = text.strip()
-        if len(quote) > 120:
-            quote = quote[:117] + "…"
-        detail = f'{label}: "{quote}". Told to get to safety and call 911.'
+        # a paraphrase, never the caller's words: before consent nothing they said may be kept
+        detail = f"{label}. Told to get to safety and call 911."
         await self._apply(r.slots, turn_id)
         await self.set_slot("danger_now", True, turn_id=turn_id, span=(0, len(text)), confidence=0.95)
         if reason == "injury":
@@ -1726,6 +1738,8 @@ class CallEngine:
         if self.ended:
             return
         await self._flush_line()
+        if recording_path is None and self.recording_provider is not None:
+            recording_path, recording_seconds = self.recording_provider()
         if self.holding:  # never answered consent in an all-party region: nothing is kept
             await self._release_held(retained=False)
         self.ended = True

@@ -5,6 +5,7 @@ region: CA-QC
 caller_name: Martine Gagnon
 caller_phone: "+15145550163"
 policy_number: LM-QC-118407
+on_whisper: "Non, seulement le sous-sol."  # what the scripted caller says when the line asks a supervisor's whispered question
 turns:
   - text: "Bonjour, un tuyau a éclaté et mon sous-sol est inondé."
   - text: "Oui, j'accepte."

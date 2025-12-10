@@ -5,6 +5,7 @@ region: US-CO
 caller_name: Kiara Booker
 caller_phone: "+17205550187"
 policy_number: LM-CO-311592
+on_whisper: "No, nothing like that."  # what the scripted caller says when the line asks a supervisor's whispered question
 turns:
   - text: "Hey, I just got rear-ended on Colfax."
   - text: "Yeah, go ahead and record it."
