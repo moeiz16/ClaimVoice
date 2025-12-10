@@ -4,7 +4,7 @@ filtering, and the two HTTP streams."""
 import json
 
 from claimvoice.platform import events
-from claimvoice.platform.events import EventBus, Event, frame, parse_last_event_id, retry_frame, visible
+from claimvoice.platform.events import Event, EventBus, frame, parse_last_event_id, retry_frame, visible
 
 
 def test_retry_field_is_an_integer():
@@ -24,7 +24,9 @@ def test_frame_layout():
 def test_last_event_id_parsing():
     assert parse_last_event_id("12") == 12
     assert parse_last_event_id(" 3 ") == 3
-    assert parse_last_event_id("abc") is None and parse_last_event_id("-1") is None and parse_last_event_id(None) is None
+    assert (
+        parse_last_event_id("abc") is None and parse_last_event_id("-1") is None and parse_last_event_id(None) is None
+    )
 
 
 def test_ids_increase_per_stream_and_replay_after_a_reconnect():
@@ -53,7 +55,7 @@ def test_gap_older_than_the_replay_window_asks_for_a_resync(monkeypatch):
     stream = bus._streams["org:a"]
     stream.recent.popleft()  # event 1 aged out
     stream.recent.popleft()  # event 2 aged out
-    _, replay, resync = bus.subscribe("org:a", 0)
+    _, _replay, resync = bus.subscribe("org:a", 0)
     assert resync
 
 

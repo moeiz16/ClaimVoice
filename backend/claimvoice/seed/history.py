@@ -325,6 +325,11 @@ def fire_details(rng: random.Random, s: Story) -> tuple[str, list[Detail]]:
             [("fire_department_attended", True, None)],
         ),
         (
+            _t(lang, "How many rooms were affected?", "Combien de pièces ont été touchées?"),
+            _t(lang, "Just 1, the kitchen.", "Seulement 1, la cuisine."),
+            [("rooms_affected", 1, "1")],
+        ),
+        (
             _t(lang, "Can you still live in the home?", "Pouvez-vous encore habiter le logement?"),
             _t(lang, "Yes, just the smell is bad.", "Oui, c'est surtout l'odeur."),
             [("home_livable", True, None)],
@@ -564,8 +569,8 @@ def build_turns(rng: random.Random, s: Story, today: date) -> list[Say]:
         lang,
         "Your policy includes coverage for this kind of loss. An adjuster confirms "
         "what's covered; nothing is decided on this call.",
-        "Votre police comprend une garantie pour ce type de sinistre. Un expert confirmera ce qui "
-        "est couvert; rien n'est décidé pendant cet appel.",
+        "Votre police comprend une garantie pour ce type de sinistre. Un expert vérifiera la couverture avec "
+        "vous; rien n'est décidé pendant cet appel.",
     )
     out.append(Say("line", "coverage", cov, [("coverage_lines_mentioned", s.extra.get("coverage_label", ""), None)]))
     out.append(Say("caller", "coverage", t(lang, "Okay, thanks.", "D'accord, merci.")))
@@ -640,7 +645,7 @@ def write_call(
             at_ms=0,
             kind="answered",
             label="ClaimVoice answered",
-            data={},
+            data={"region": s.policy.region, "language": s.language},
         )
     ]
     seq = 0
@@ -770,6 +775,30 @@ def write_call(
                     data={"tool": "policy_lookup", "ok": True, "timedOut": False},
                 )
             )
+        if any(k == "identity_check" for k, _, _ in say.slots):
+            events.append(
+                CallEvent(
+                    org_id=org_id,
+                    call_id=call.id,
+                    at=s.answered_at + timedelta(milliseconds=at + dur),
+                    at_ms=at + dur,
+                    kind="identity",
+                    label="Caller and policy confirmed",
+                    data={"verified": True, "region": s.policy.region},
+                )
+            )
+        if say.stage == "read_back" and say.speaker == "caller":
+            events.append(
+                CallEvent(
+                    org_id=org_id,
+                    call_id=call.id,
+                    at=s.answered_at + timedelta(milliseconds=at + dur),
+                    at_ms=at + dur,
+                    kind="read_back",
+                    label="Caller confirmed the read-back",
+                    data={"confirmed": True},
+                )
+            )
         if say.stage == "photos" and say.speaker == "caller":
             events.append(
                 CallEvent(
@@ -791,7 +820,7 @@ def write_call(
                     at_ms=at,
                     kind="handoff",
                     label="Hand-off asked: Asked for a person",
-                    data={"reason": "caller_asked", "priority": "normal", "atMs": at, "state": "waiting"},
+                    data={"reason": "caller_asked", "priority": "normal", "atMs": at, "state": "requested"},
                 )
             )
             rows.append(

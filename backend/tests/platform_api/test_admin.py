@@ -39,8 +39,9 @@ async def test_saving_a_script_makes_a_new_version(api_factory):
     assert res.status_code == 200, res.text
     assert res.json()["version"] == current["version"] + 1
     assert res.json()["updatedBy"]["name"] == "Nadia Kassem"
-    bad = await admin.put("/api/v1/settings/scripts/theft",
-                          {"questions": [{**questions[0], "slotKey": "favourite_colour"}], "note": "x"})
+    bad = await admin.put(
+        "/api/v1/settings/scripts/theft", {"questions": [{**questions[0], "slotKey": "favourite_colour"}], "note": "x"}
+    )
     assert bad.status_code == 422
     no_note = await admin.put("/api/v1/settings/scripts/theft", {"questions": questions, "note": " "})
     assert no_note.status_code == 422
@@ -50,14 +51,20 @@ async def test_saving_a_script_makes_a_new_version(api_factory):
 
 async def test_all_party_consent_cannot_be_weakened(api_factory):
     admin = await api_factory("admin")
-    weaken = await admin.put("/api/v1/settings/consent-rules/US-CA",
-                             {"rule": "one_party", "announcement": {"en": "We record.", "fr": "Nous enregistrons."}})
+    weaken = await admin.put(
+        "/api/v1/settings/consent-rules/US-CA",
+        {"rule": "one_party", "announcement": {"en": "We record.", "fr": "Nous enregistrons."}},
+    )
     assert weaken.status_code == 422
     rules = {r["region"]: r for r in await admin.j("/api/v1/settings/consent-rules")}
     assert rules["US-CA"]["rule"] == "all_party" and "§632" in rules["US-CA"]["basis"]
-    co = await admin.put("/api/v1/settings/consent-rules/US-CO",
-                         {"rule": "all_party", "announcement": {"en": "This call is recorded. Okay?",
-                                                                "fr": "Cet appel est enregistré. D'accord?"}})
+    co = await admin.put(
+        "/api/v1/settings/consent-rules/US-CO",
+        {
+            "rule": "all_party",
+            "announcement": {"en": "This call is recorded. Okay?", "fr": "Cet appel est enregistré. D'accord?"},
+        },
+    )
     assert co.status_code == 200 and co.json()["rule"] == "all_party" and co.json()["isDefault"] is False
 
 
@@ -65,15 +72,19 @@ async def test_handoff_rules_languages_retention_privacy_validation(api_factory)
     admin = await api_factory("admin")
     rules = await admin.j("/api/v1/settings/handoff-rules")
     assert (await admin.put("/api/v1/settings/handoff-rules", {**rules, "lowConfidenceTurns": 9})).status_code == 422
-    ok = await admin.put("/api/v1/settings/handoff-rules", {**rules, "maxWaitSeconds": 120, "urgentSafetyAlways": False})
+    ok = await admin.put(
+        "/api/v1/settings/handoff-rules", {**rules, "maxWaitSeconds": 120, "urgentSafetyAlways": False}
+    )
     assert ok.status_code == 200 and ok.json()["maxWaitSeconds"] == 120 and ok.json()["urgentSafetyAlways"] is True
     langs = await admin.j("/api/v1/settings/languages")
     no_fr = await admin.put("/api/v1/settings/languages", {**langs, "enabled": ["en"], "default": "en"})
     assert no_fr.status_code == 422  # Québec is served
     retention = await admin.j("/api/v1/settings/retention")
     assert (await admin.put("/api/v1/settings/retention", {**retention, "recordingsYears": 30})).status_code == 422
-    privacy = await admin.put("/api/v1/settings/privacy", {"privacyOfficerName": "Priya Sandhu",
-                                                           "privacyOfficerEmail": "not-an-email", "privacyNoticeUrl": None})
+    privacy = await admin.put(
+        "/api/v1/settings/privacy",
+        {"privacyOfficerName": "Priya Sandhu", "privacyOfficerEmail": "not-an-email", "privacyNoticeUrl": None},
+    )
     assert privacy.status_code == 422
 
 
@@ -111,14 +122,17 @@ async def test_two_different_people_sign_off_a_candidate(api_factory):
     priya = await api_factory("compliance")
     mismatch = await renee.post("/api/v1/routing-checks/size/versions/6/sign-off", {"version": 5, "note": "ok"})
     assert mismatch.status_code == 422
-    first = await renee.post("/api/v1/routing-checks/size/versions/6/sign-off",
-                             {"version": 6, "note": "Fast-track mix still right for storm week."})
+    first = await renee.post(
+        "/api/v1/routing-checks/size/versions/6/sign-off",
+        {"version": 6, "note": "Fast-track mix still right for storm week."},
+    )
     assert first.status_code == 200, first.text
     assert first.json()["candidate"]["version"] == 6
     twice = await renee.post("/api/v1/routing-checks/size/versions/6/sign-off", {"version": 6, "note": "again"})
     assert twice.status_code == 409 and twice.json()["code"] == "already_signed"
-    second = await priya.post("/api/v1/routing-checks/size/versions/6/sign-off",
-                              {"version": 6, "note": "Gates pass; fairness within band."})
+    second = await priya.post(
+        "/api/v1/routing-checks/size/versions/6/sign-off", {"version": 6, "note": "Gates pass; fairness within band."}
+    )
     assert second.status_code == 200
     assert second.json()["inUse"]["version"] == 6 and second.json()["candidate"] is None
     retired = await priya.post("/api/v1/routing-checks/size/versions/5/sign-off", {"version": 5, "note": "late"})
@@ -132,8 +146,11 @@ async def test_a_failed_gate_blocks_sign_off(api_factory):
     from claimvoice.claims.models import ModelVersion
 
     async with db.sessionmaker()() as s:
-        row = (await s.execute(select(ModelVersion).where(ModelVersion.check_key == "closer_look",
-                                                          ModelVersion.version == 6))).scalar_one()
+        row = (
+            await s.execute(
+                select(ModelVersion).where(ModelVersion.check_key == "closer_look", ModelVersion.version == 6)
+            )
+        ).scalar_one()
         row.gates = [{**g, "passed": g["key"] != "fair"} for g in row.gates]
         await s.commit()
     await db.dispose()
@@ -147,8 +164,17 @@ async def test_regulator_pack(api_factory):
     res = await priya.get("/api/v1/routing-checks/regulator-pack")
     assert res.status_code == 200 and res.headers["content-type"] == "application/zip"
     names = set(zipfile.ZipFile(io.BytesIO(res.content)).namelist())
-    assert {"README.md", "fact-sheets/size.md", "fact-sheets/closer_look.md", "fairness.csv", "drift.csv",
-            "sign-offs.csv", "routing-summary.csv", "audit-extract.csv", "manifest.json"} <= names
+    assert {
+        "README.md",
+        "fact-sheets/size.md",
+        "fact-sheets/closer_look.md",
+        "fairness.csv",
+        "drift.csv",
+        "sign-offs.csv",
+        "routing-summary.csv",
+        "audit-extract.csv",
+        "manifest.json",
+    } <= names
     z = zipfile.ZipFile(io.BytesIO(res.content))
     assert "Renée Kowalchuk" in z.read("sign-offs.csv").decode()
     assert "never denies a claim" in z.read("README.md").decode()
@@ -185,8 +211,9 @@ async def test_reviewing_a_call_and_agreement(api_factory):
     call_id = queue[-1]["callId"]
     score = await owen.j(f"/api/v1/qa/calls/{call_id}")
     items = [i for i in score["items"] if i["passed"] is not None]
-    no_note = await owen.post(f"/api/v1/qa/calls/{call_id}/review",
-                              {"items": [{"key": items[0]["key"], "verdict": "disagree"}]})
+    no_note = await owen.post(
+        f"/api/v1/qa/calls/{call_id}/review", {"items": [{"key": items[0]["key"], "verdict": "disagree"}]}
+    )
     assert no_note.status_code == 422
     body = {"items": [{"key": i["key"], "verdict": "agree"} for i in items[1:]] +
             [{"key": items[0]["key"], "verdict": "disagree", "note": "The line did ask, just later."}],
@@ -221,8 +248,11 @@ async def test_activity_log_is_hash_chained_and_tamper_evident(api_factory):
     assert csv.status_code == 200 and csv.text.startswith("seq,at,person,action")
     org_id = (await admin.j("/api/v1/org"))["id"]
     async with db.sessionmaker()() as s:
-        row = (await s.execute(select(AuditEvent).where(AuditEvent.org_id == org_id).order_by(AuditEvent.seq).limit(1)
-                               .offset(3))).scalar_one()
+        row = (
+            await s.execute(
+                select(AuditEvent).where(AuditEvent.org_id == org_id).order_by(AuditEvent.seq).limit(1).offset(3)
+            )
+        ).scalar_one()
         original = row.summary
         row.summary = "Nothing happened here."
         await s.commit()

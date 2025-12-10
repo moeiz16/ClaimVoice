@@ -49,23 +49,58 @@ async def _drive(sink, org_id, policy, *, consent="given", refuse=False):
     call_id = new_id()
     ids: list[str] = []
     await sink.call_opened(CallOpened(call_id, org_id, CallMode.TYPED, "en", "test", "+14035550142", "CA-AB"))
-    await sink.turn(call_id, _turn(ids, 1, Speaker.LINE, "Larkspur Mutual claims. Is it okay that this call is recorded?", "consent", 0))
-    await sink.turn(call_id, _turn(ids, 2, Speaker.CALLER, "No thanks." if refuse else "Yes, that's fine.", "consent", 3000,
-                                   retained=not refuse))
-    await sink.consent(call_id, ConsentRecord("all_party", "CA-AB", 1000, "refused" if refuse else consent, not refuse, ids[1]))
-    await sink.stage(call_id, StageChange("identity", "consent", "consent_refused" if refuse else "consent_given", 4000))
+    await sink.turn(
+        call_id,
+        _turn(ids, 1, Speaker.LINE, "Larkspur Mutual claims. Is it okay that this call is recorded?", "consent", 0),
+    )
+    await sink.turn(
+        call_id,
+        _turn(
+            ids,
+            2,
+            Speaker.CALLER,
+            "No thanks." if refuse else "Yes, that's fine.",
+            "consent",
+            3000,
+            retained=not refuse,
+        ),
+    )
+    await sink.consent(
+        call_id, ConsentRecord("all_party", "CA-AB", 1000, "refused" if refuse else consent, not refuse, ids[1])
+    )
+    await sink.stage(
+        call_id, StageChange("identity", "consent", "consent_refused" if refuse else "consent_given", 4000)
+    )
     await sink.turn(call_id, _turn(ids, 3, Speaker.CALLER, "It's LM-AB-204118.", "identity", 6000, retained=not refuse))
-    await sink.slot(call_id, SlotRecord("policy_number", "LM-AB-204118", "LM-AB-204118", 0.97, "heard", ids[2], (5, 17)))
+    await sink.slot(
+        call_id, SlotRecord("policy_number", "LM-AB-204118", "LM-AB-204118", 0.97, "heard", ids[2], (5, 17))
+    )
     await sink.tool_called(call_id, ToolCallRecord("policy_lookup", True, 120.0, 300, False, 6500, "Policy found"))
     await sink.caller_identified(call_id, policy.id, policy.holder_id, "CA-AB")
-    await sink.turn(call_id, _turn(ids, 4, Speaker.CALLER, "The wind tore shingles off my roof last night.", "loss_details",
-                                   9000, retained=not refuse))
+    await sink.turn(
+        call_id,
+        _turn(
+            ids,
+            4,
+            Speaker.CALLER,
+            "The wind tore shingles off my roof last night.",
+            "loss_details",
+            9000,
+            retained=not refuse,
+        ),
+    )
     await sink.slot(call_id, SlotRecord("loss_type", "wind", "Wind", 0.95, "heard", ids[3], (4, 8)))
-    await sink.slot(call_id, SlotRecord("loss_date", clock.today().isoformat(), "last night", 0.9, "heard", ids[3], (34, 44)))
+    await sink.slot(
+        call_id, SlotRecord("loss_date", clock.today().isoformat(), "last night", 0.9, "heard", ids[3], (34, 44))
+    )
     await sink.slot(call_id, SlotRecord("injury_reported", False, "No", 0.9, "heard", ids[3], None))
     await sink.slot(call_id, SlotRecord("roof_or_window_damage", True, "Yes", 0.9, "heard", ids[3], (18, 32)))
-    await sink.slot(call_id, SlotRecord("loss_date", clock.today().isoformat(), "this morning", 0.92, "heard", ids[3], (34, 44),
-                                        corrects=True))
+    await sink.slot(
+        call_id,
+        SlotRecord(
+            "loss_date", clock.today().isoformat(), "this morning", 0.92, "heard", ids[3], (34, 44), corrects=True
+        ),
+    )
     return call_id, ids
 
 
@@ -78,25 +113,37 @@ async def test_sink_calls_return_fast_and_keep_order(seeded):
     for seq in range(1, 201):
         tid = new_id()
         started = time.perf_counter()
-        await sink.turn(call_id, TurnRecord(tid, seq, Speaker.CALLER, f"turn {seq}", "en", seq * 10, seq * 10 + 5, "loss_details"))
+        await sink.turn(
+            call_id, TurnRecord(tid, seq, Speaker.CALLER, f"turn {seq}", "en", seq * 10, seq * 10 + 5, "loss_details")
+        )
         await sink.slot(call_id, SlotRecord("extra_notes", f"note {seq}", f"note {seq}", 0.9, "heard", tid, (0, 4)))
         timings.append((time.perf_counter() - started) * 1000)
     await sink.flush(call_id)
     p95 = statistics.quantiles(timings, n=20)[18]
     assert p95 < 20, f"p95 {p95:.2f} ms"
     async with db.sessionmaker()() as s:
-        seqs = (await s.execute(select(CallTurn.seq).where(CallTurn.call_id == call_id).order_by(CallTurn.created_at))).scalars().all()
-        current = (await s.execute(select(CallSlot).where(CallSlot.call_id == call_id, CallSlot.superseded_at.is_(None)))).scalars().all()
+        seqs = (
+            (await s.execute(select(CallTurn.seq).where(CallTurn.call_id == call_id).order_by(CallTurn.created_at)))
+            .scalars()
+            .all()
+        )
+        current = (
+            (await s.execute(select(CallSlot).where(CallSlot.call_id == call_id, CallSlot.superseded_at.is_(None))))
+            .scalars()
+            .all()
+        )
     assert list(seqs) == list(range(1, 201))
     assert [c.value for c in current] == ["note 200"]
-    await sink.call_closed(call_id, CallClosing("caller_hung_up", 3000, "loss_details", None, None, "", None, 200, None))
+    await sink.call_closed(
+        call_id, CallClosing("caller_hung_up", 3000, "loss_details", None, None, "", None, 200, None)
+    )
     await sink.wait_closed(call_id)
 
 
 async def test_full_call_closes_into_a_claim_with_the_reserved_number(seeded):
     org_id, policy = await _org_and_policy()
     sink = sink_for(org_id)
-    call_id, ids = await _drive(sink, org_id, policy)
+    call_id, _ids = await _drive(sink, org_id, policy)
     number = await sink.reserve_claim_number(call_id)
     assert number.startswith("CV-")
     await sink.call_closed(call_id, CallClosing("completed", 60_000, "wrap_up", None, 60.0,
@@ -105,9 +152,15 @@ async def test_full_call_closes_into_a_claim_with_the_reserved_number(seeded):
     async with db.sessionmaker()() as s:
         call = await s.get(Call, call_id)
         claim = (await s.execute(select(Claim).where(Claim.call_id == call_id))).scalar_one()
-        routing = (await s.execute(select(RoutingDecisionRow).where(RoutingDecisionRow.claim_id == claim.id))).scalar_one()
+        routing = (
+            await s.execute(select(RoutingDecisionRow).where(RoutingDecisionRow.claim_id == claim.id))
+        ).scalar_one()
         qa = (await s.execute(select(QaScoreRow).where(QaScoreRow.call_id == call_id))).scalar_one()
-        history = (await s.execute(select(CallSlot).where(CallSlot.call_id == call_id, CallSlot.key == "loss_date"))).scalars().all()
+        history = (
+            (await s.execute(select(CallSlot).where(CallSlot.call_id == call_id, CallSlot.key == "loss_date")))
+            .scalars()
+            .all()
+        )
     assert call.state == "ended" and call.outcome == "claim_created" and call.line_number is None
     assert claim.claim_number == number and claim.loss_type == "wind"
     assert routing.route in ("fast_track", "adjuster", "special_investigation")
@@ -121,7 +174,9 @@ async def test_refused_consent_keeps_notes_but_not_the_transcript(seeded):
     org_id, policy = await _org_and_policy()
     sink = sink_for(org_id)
     call_id, _ = await _drive(sink, org_id, policy, refuse=True)
-    await sink.call_closed(call_id, CallClosing("completed", 30_000, "wrap_up", None, None, "Notes only.", None, 4, None))
+    await sink.call_closed(
+        call_id, CallClosing("completed", 30_000, "wrap_up", None, None, "Notes only.", None, 4, None)
+    )
     await sink.wait_closed(call_id)
     async with db.sessionmaker()() as s:
         kept = (await s.execute(select(CallTurn).where(CallTurn.call_id == call_id))).scalars().all()

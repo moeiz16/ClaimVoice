@@ -21,12 +21,17 @@ FINISHED = {
 
 async def test_line_desk_caption_matches_the_lines_and_tray(sup):
     board = await sup.j("/api/v1/switchboard")
-    assert board["caption"].endswith(f"{len(board['lines'])} on the line, {len(board['handoffTray'])} waiting for a person")
+    assert board["caption"].endswith(
+        f"{len(board['lines'])} on the line, {len(board['handoffTray'])} waiting for a person"
+    )
     assert [x["callerLabel"] for x in board["lines"]] == ["Gord Lindqvist", "Kiara Booker", "Martine Gagnon"]
     tray = board["handoffTray"]
     assert [h["callerLabel"] for h in tray] == ["Hal Petrenko", "Wendy Arsenault"]  # urgent first
     assert tray[0]["priority"] == "urgent" and "gas" in tray[0]["detail"].lower()
-    assert tray[0]["actionsTaken"] == ["Told him to leave the house and call 911", "He is outside and still on the line"]
+    assert tray[0]["actionsTaken"] == [
+        "Told him to leave the house and call 911",
+        "He is outside and still on the line",
+    ]
     assert [p["name"] for p in board["freePeople"]] == ["Jamal Haddad", "Sofía Herrera", "Aurélie Fortin"]
     assert board["lastEventId"] >= 0
 
@@ -85,7 +90,9 @@ async def test_every_span_points_into_its_own_turn():
     async with db.sessionmaker()() as s:
         rows = (
             await s.execute(
-                select(CallSlot, CallTurn).join(CallTurn, CallTurn.id == CallSlot.turn_id).where(CallSlot.span_start.is_not(None))
+                select(CallSlot, CallTurn)
+                .join(CallTurn, CallTurn.id == CallSlot.turn_id)
+                .where(CallSlot.span_start.is_not(None))
             )
         ).all()
     await db.dispose()
@@ -104,7 +111,9 @@ async def test_times_never_run_ahead_of_now():
         latest_claim = (await s.execute(select(func.max(Claim.reported_at)))).scalar_one()
         live = (await s.execute(select(Call).where(Call.state != "ended"))).scalars().all()
         for call in live:
-            last = (await s.execute(select(func.max(CallTurn.end_ms)).where(CallTurn.call_id == call.id))).scalar_one() or 0
+            last = (
+                await s.execute(select(func.max(CallTurn.end_ms)).where(CallTurn.call_id == call.id))
+            ).scalar_one() or 0
             assert call.answered_at.timestamp() + last / 1000 <= now.timestamp() + 1
     await db.dispose()
     assert latest_call <= now and latest_claim <= now

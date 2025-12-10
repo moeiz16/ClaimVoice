@@ -89,8 +89,10 @@ async def test_accept_then_change_a_route(api_factory):
     assert again.status_code == 409 and again.json()["code"] == "already_decided"
     no_reason = await sup.post(f"/api/v1/claims/{target['id']}/routing/override", {"route": "adjuster", "reason": "  "})
     assert no_reason.status_code == 422 and no_reason.json()["errors"][0]["field"] == "reason"
-    changed = await sup.post(f"/api/v1/claims/{target['id']}/routing/override",
-                             {"route": "adjuster", "reason": "Second vehicle mentioned at the end"})
+    changed = await sup.post(
+        f"/api/v1/claims/{target['id']}/routing/override",
+        {"route": "adjuster", "reason": "Second vehicle mentioned at the end"},
+    )
     assert changed.status_code == 200
     assert changed.json()["route"] == "adjuster" and changed.json()["modelRoute"] == "fast_track"
     admin = await api_factory("admin")
@@ -103,13 +105,17 @@ async def test_siu_decision_by_the_investigator(api_factory):
     claim = await _claim(dev, "01856")
     no_note = await dev.post(f"/api/v1/claims/{claim['id']}/siu/decision", {"decision": "investigate", "note": ""})
     assert no_note.status_code == 422
-    res = await dev.post(f"/api/v1/claims/{claim['id']}/siu/decision",
-                         {"decision": "investigate", "note": "Requesting the dash-cam video."})
+    res = await dev.post(
+        f"/api/v1/claims/{claim['id']}/siu/decision",
+        {"decision": "investigate", "note": "Requesting the dash-cam video."},
+    )
     assert res.status_code == 200 and res.json()["status"] == "investigating"
     referrals = await dev.j("/api/v1/siu/referrals")
     assert referrals["items"][0]["status"] in ("open", "investigating")
-    closed = await dev.post(f"/api/v1/claims/{claim['id']}/siu/decision",
-                            {"decision": "close_no_concern", "note": "Video matches the police report."})
+    closed = await dev.post(
+        f"/api/v1/claims/{claim['id']}/siu/decision",
+        {"decision": "close_no_concern", "note": "Video matches the police report."},
+    )
     assert closed.status_code == 200
     late = await dev.post(f"/api/v1/claims/{claim['id']}/siu/decision", {"decision": "investigate", "note": "x"})
     assert late.status_code == 409
@@ -119,17 +125,23 @@ async def test_correcting_the_claim_file_keeps_what_was_heard(api_factory):
     lena = await api_factory("adjuster")
     claim = await _claim(lena, "01853")
     before = await lena.j(f"/api/v1/claims/{claim['id']}")
-    res = await lena.patch(f"/api/v1/claims/{claim['id']}/file",
-                           {"slots": [{"key": "loss_place", "value": "14 Sheep River Dr, Okotoks", "note": "Confirmed by phone"}]})
+    res = await lena.patch(
+        f"/api/v1/claims/{claim['id']}/file",
+        {"slots": [{"key": "loss_place", "value": "14 Sheep River Dr, Okotoks", "note": "Confirmed by phone"}]},
+    )
     assert res.status_code == 200, res.text
     slot = next(s for sec in res.json()["sections"] for s in sec["slots"] if s["key"] == "loss_place")
     assert slot["source"] == "person" and slot["sourceLabel"] == "edited by Lena Ortiz"
     assert slot["display"] == "14 Sheep River Dr, Okotoks"
     had = any(s["key"] == "loss_place" for sec in before["file"]["sections"] for s in sec["slots"])
     assert len(slot["history"]) == (1 if had else 0)
-    bad = await lena.patch(f"/api/v1/claims/{claim['id']}/file", {"slots": [{"key": "nonsense", "value": 1, "note": "x"}]})
+    bad = await lena.patch(
+        f"/api/v1/claims/{claim['id']}/file", {"slots": [{"key": "nonsense", "value": 1, "note": "x"}]}
+    )
     assert bad.status_code == 422
-    no_note = await lena.patch(f"/api/v1/claims/{claim['id']}/file", {"slots": [{"key": "loss_place", "value": "x", "note": ""}]})
+    no_note = await lena.patch(
+        f"/api/v1/claims/{claim['id']}/file", {"slots": [{"key": "loss_place", "value": "x", "note": ""}]}
+    )
     assert no_note.status_code == 422
 
 
@@ -182,10 +194,19 @@ async def photo_token(sup):
     token = "test-photo-token-123456"
     async with db.sessionmaker()() as s:
         call = await s.get(Call, call_id)
-        existing = (await s.execute(select(PhotoLink).where(PhotoLink.token_hash == token_digest(token)))).scalar_one_or_none()
+        existing = (
+            await s.execute(select(PhotoLink).where(PhotoLink.token_hash == token_digest(token)))
+        ).scalar_one_or_none()
         if existing is None:
-            s.add(PhotoLink(org_id=call.org_id, call_id=call_id, token_hash=token_digest(token),
-                            expires_at=clock.real_now() + timedelta(hours=72), max_photos=3))
+            s.add(
+                PhotoLink(
+                    org_id=call.org_id,
+                    call_id=call_id,
+                    token_hash=token_digest(token),
+                    expires_at=clock.real_now() + timedelta(hours=72),
+                    max_photos=3,
+                )
+            )
             await s.commit()
     await db.dispose()
     return token
@@ -194,8 +215,11 @@ async def photo_token(sup):
 async def test_photo_link_upload_strips_location(anon, photo_token):
     info = await anon.j(f"/api/v1/photo-links/{photo_token}")
     assert info["orgName"] == "Larkspur Mutual" and info["language"] == "fr" and info["maxPhotos"] == 3
-    res = await anon.c.post(f"/api/v1/photo-links/{photo_token}/photos",
-                            files={"file": ("sous-sol.jpg", _png_with_gps(), "image/jpeg")}, data={"caption": "Le sous-sol"})
+    res = await anon.c.post(
+        f"/api/v1/photo-links/{photo_token}/photos",
+        files={"file": ("sous-sol.jpg", _png_with_gps(), "image/jpeg")},
+        data={"caption": "Le sous-sol"},
+    )
     assert res.status_code == 201, res.text
     photo = res.json()
     assert photo["caption"] == "Le sous-sol" and photo["width"] == 64 and photo["source"] == "text_link"
@@ -210,14 +234,21 @@ async def test_photo_link_upload_strips_location(anon, photo_token):
 
 
 async def test_photo_link_rejects_other_files_and_expired_links(anon, photo_token):
-    text = await anon.c.post(f"/api/v1/photo-links/{photo_token}/photos", files={"file": ("a.txt", b"hello", "text/plain")})
+    text = await anon.c.post(
+        f"/api/v1/photo-links/{photo_token}/photos", files={"file": ("a.txt", b"hello", "text/plain")}
+    )
     assert text.status_code == 415 and text.json()["code"] == "unsupported_media_type"
-    heic = await anon.c.post(f"/api/v1/photo-links/{photo_token}/photos", files={"file": ("a.heic", b"x", "image/heic")})
+    heic = await anon.c.post(
+        f"/api/v1/photo-links/{photo_token}/photos", files={"file": ("a.heic", b"x", "image/heic")}
+    )
     assert heic.status_code == 415
     assert (await anon.get("/api/v1/photo-links/not-a-real-token")).status_code == 404
     async with db.sessionmaker()() as s:
-        await s.execute(update(PhotoLink).where(PhotoLink.token_hash == token_digest(photo_token))
-                        .values(expires_at=clock.real_now() - timedelta(minutes=1)))
+        await s.execute(
+            update(PhotoLink)
+            .where(PhotoLink.token_hash == token_digest(photo_token))
+            .values(expires_at=clock.real_now() - timedelta(minutes=1))
+        )
         await s.commit()
     await db.dispose()
     gone = await anon.get(f"/api/v1/photo-links/{photo_token}")

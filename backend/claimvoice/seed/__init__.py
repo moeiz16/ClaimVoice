@@ -331,13 +331,41 @@ def _plan_history(book: Any, m: Moments, rng: random.Random) -> list[dict[str, A
     for p in morning:
         p.setdefault("late", False)
         p.setdefault("injury", False)
-    number = 1779
-    for p in plan:
-        if p["variant"] in ("abandoned", "inquiry"):
-            continue
-        number += rng.choice([1, 1, 1, 2])
-        p["number"] = min(number, 1841)
     return plan + morning
+
+
+def _fixture_moment(m: Moments, i: int) -> datetime:
+    return m.at(2 + i * 2, f"{9 + i % 9:02d}:{(i * 13) % 60:02d}")
+
+
+def _number_history(plan: list[dict[str, Any]], book: Any, m: Moments, rng: random.Random) -> dict[int, int]:
+    """Claim numbers in report order for the month before this morning, ending at CV-26-01841 (this morning's
+    numbers are fixed). Returns the numbers for the reviewed calls that open a claim, by their index."""
+    try:
+        from claimvoice.qa.fixtures import reviewed_calls
+
+        fixtures = list(reviewed_calls().values())
+    except ImportError:
+        fixtures = []
+    items: list[tuple[datetime, Any]] = []
+    for p in plan:
+        if "number" not in p and p["variant"] not in ("abandoned", "inquiry"):
+            items.append((m.at(p["days_ago"], p["time"]), p))
+    for i, fx in enumerate(fixtures):
+        number = fx.slots.get("policy_number")
+        if fx.slots.get("loss_type") and number is not None and str(number.value) in book.by_number:
+            items.append((_fixture_moment(m, i), i))
+    items.sort(key=lambda x: x[0])
+    gaps = [rng.choice([1, 1, 1, 2]) for _ in items]
+    n = 1841 - sum(gaps[1:])
+    fixture_numbers: dict[int, int] = {}
+    for (_, item), gap in zip(items, gaps, strict=True):
+        n += gap if item is not items[0][1] else 0
+        if isinstance(item, int):
+            fixture_numbers[item] = n
+        else:
+            item["number"] = n
+    return fixture_numbers
 
 
 INQUIRY = {
@@ -366,6 +394,7 @@ async def _history(org_id: str, surge_id: str, book: Any, m: Moments, rng: rando
     per_day: dict[date, int] = {}
     today = m.today()
     plan = _plan_history(book, m, rng)
+    fixture_numbers = _number_history(plan, book, m, rng)
     async with db.sessionmaker()() as session:
         for item in plan:
             policy = item["policy"]
@@ -450,7 +479,155 @@ async def _history(org_id: str, surge_id: str, book: Any, m: Moments, rng: rando
                         target_label=result.claim_number,
                     )
                 )
+        trail += await _reviewed_calls(session, org_id, book, m, per_day, fixture_numbers)
         await session.commit()
+    return trail
+
+
+async def _reviewed_calls(
+    session: Any, org_id: str, book: Any, m: Moments, per_day: dict[date, int], numbers: dict[int, int]
+) -> list[Any]:
+    """Calls with known quality problems (missed consent, a late hand-off, a card number read aloud, ...), from the
+    quality scorer's reviewed set, so the review queue shows what the scorer really flags."""
+    from claimvoice.calls import closing
+    from claimvoice.calls.models import Call, CallEvent, CallSlot, CallTurn, Handoff
+    from claimvoice.platform.db import new_id
+
+    try:
+        from claimvoice.qa.fixtures import reviewed_calls
+    except ImportError:
+        return []
+    trail: list[Any] = []
+    holders = {x.id: x for x in book.holders}
+    for i, fx in enumerate(reviewed_calls().values()):
+        answered = _fixture_moment(m, i)
+        local_day = answered.astimezone(TZ).date()
+        per_day[local_day] = per_day.get(local_day, 0) + 1
+        number_slot = fx.slots.get("policy_number")
+        policy = book.by_number.get(str(number_slot.value)) if number_slot is not None else None
+        holder = holders.get(policy.holder_id) if policy is not None else None
+        consent = next((e["data"] for e in fx.events if e["kind"] == "consent"), None)
+        flags = [
+            {
+                "kind": e["data"]["kind"],
+                "detail": e["data"].get("detail", ""),
+                "at": (answered + timedelta(milliseconds=e["atMs"])).isoformat(),
+                "turnId": e["data"].get("turnId"),
+            }
+            for e in fx.events
+            if e["kind"] == "flag"
+        ]
+        last_ms = max(t.end_ms for t in fx.turns)
+        loss = fx.slots.get("loss_type")
+        call = Call(
+            id=new_id(),
+            org_id=org_id,
+            reference=f"CALL-{local_day:%y%m%d}-{per_day[local_day]:03d}",
+            mode="voice",
+            channel="phone",
+            language=fx.language,
+            state="ended",
+            stage="ended",
+            answered_at=answered,
+            ended_at=answered + timedelta(milliseconds=last_ms + 1500),
+            end_reason="completed",
+            caller_name=holder.full_name if holder else None,
+            caller_verified=holder is not None,
+            region=fx.region,
+            place=holder.city if holder else None,
+            loss_type=loss.value if loss else None,
+            policy_id=policy.id if policy else None,
+            holder_id=holder.id if holder else None,
+            consent={**consent, "askedAt": answered.isoformat(), "turnId": None} if consent else {},
+            recording_seconds=round((last_ms + 1500) / 1000, 1),
+            outcome="in_progress",
+            is_sample=True,
+            flags=flags,
+            mood={"key": "calm", "detail": None},
+            turn_count=len(fx.turns),
+            resume_stage=fx.turns[-1].stage,
+            summary=fx.title,
+            claim_number=f"CV-{answered.astimezone(TZ).year % 100:02d}-{numbers[i]:05d}" if i in numbers else None,
+        )
+        session.add(call)
+        await session.flush()
+        for t in fx.turns:
+            session.add(
+                CallTurn(
+                    id=new_id(),
+                    org_id=org_id,
+                    call_id=call.id,
+                    seq=t.seq,
+                    speaker=t.speaker.value,
+                    speaker_name=t.speaker_name or (fx.person if t.speaker.value == "person" else None),
+                    text=t.text,
+                    language=t.language,
+                    at_ms=t.at_ms,
+                    end_ms=t.end_ms,
+                    stage=t.stage,
+                    confidence=t.confidence,
+                    interrupted=t.interrupted,
+                    redactions=t.redactions,
+                    retained=t.retained,
+                    flags=["card_number_removed"] if t.redactions else [],
+                )
+            )
+        for key, slot in fx.slots.items():
+            session.add(
+                CallSlot(
+                    org_id=org_id,
+                    call_id=call.id,
+                    key=key,
+                    value=slot.value,
+                    display=slot.display,
+                    confidence=slot.confidence,
+                    source=slot.source,
+                    confirmed=True,
+                    created_at=answered,
+                )
+            )
+        for e in fx.events:
+            at = answered + timedelta(milliseconds=e["atMs"])
+            session.add(
+                CallEvent(
+                    org_id=org_id,
+                    call_id=call.id,
+                    at=at,
+                    at_ms=e["atMs"],
+                    kind=e["kind"],
+                    label=e["kind"].replace("_", " ").capitalize(),
+                    data=dict(e["data"]),
+                )
+            )
+            if e["kind"] == "handoff":
+                reason = e["data"].get("reason", "caller_asked")
+                session.add(
+                    Handoff(
+                        org_id=org_id,
+                        call_id=call.id,
+                        reason=reason,
+                        detail=fx.title,
+                        priority=e["data"].get("priority", "normal"),
+                        state="completed",
+                        requested_at=at,
+                        accepted_at=at + timedelta(seconds=20),
+                        resolved_at=call.ended_at,
+                        summary=fx.title,
+                    )
+                )
+        await session.flush()
+        result = await closing.finalize(session, call)
+        if result.claim_id:
+            trail.append(
+                _entry(
+                    call.ended_at or answered,
+                    "claim.created",
+                    f"ClaimVoice opened claim {result.claim_number} at the end of {call.reference}.",
+                    target_type="claim",
+                    target_id=result.claim_id,
+                    target_label=result.claim_number,
+                )
+            )
     return trail
 
 
