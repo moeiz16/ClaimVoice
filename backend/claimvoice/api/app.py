@@ -77,7 +77,7 @@ def create_app(
         {
             "limiter": RateLimiter()
             if rate_limits
-            else RateLimiter(limits=dict.fromkeys(("auth", "public", "public_call", "api"), (10 ** 9, 60.0))),
+            else RateLimiter(limits=dict.fromkeys(("auth", "public", "public_call", "api"), (10**9, 60.0))),
             "background": background,
             "sse_close_when_idle": sse_close_when_idle,
         }

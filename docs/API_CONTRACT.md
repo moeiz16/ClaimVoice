@@ -85,10 +85,11 @@ Every error is `application/problem+json` (`claimvoice/platform/errors.py`):
 | 404 | `not_found` | unknown id **or another org's id** (never 403 for cross-tenant ids) |
 | 409 | `call_not_live` | supervisor action on a call that has ended |
 | 409 | `already_taken` | hand-off already accepted by someone else; call already taken over |
-| 409 | `already_decided`, `stale_version`, `last_admin`, `gates_failed` | state conflicts (per endpoint) |
+| 409 | `not_taken_over` | `/say` or `/return` by someone who is not the person on the call ("Take over the call first") |
+| 409 | `already_decided`, `already_signed`, `stale_version`, `last_admin`, `gates_failed` | state conflicts (per endpoint) |
 | 410 | `expired` | invitation or photo link past its expiry |
 | 413 | `payload_too_large` | JSON body over 256 KB; photo over 10 MB |
-| 415 | `unsupported_media_type` | photo not JPEG, PNG, HEIC or WebP |
+| 415 | `unsupported_media_type` | photo not JPEG, PNG or WebP. HEIC is refused with a plain message: there is no offline HEIC decoder, so its location data could not be removed (the phone page converts to JPEG first) |
 | 422 | `validation_error`, `weak_password`, `invalid_transition` | field errors |
 | 429 | `rate_limited` | with `Retry-After` seconds |
 | 500 | `internal_error` | logged with the request id |
@@ -109,9 +110,9 @@ failures.
 
 - `cv_session`: opaque random token, httpOnly, `SameSite=Lax`, `Secure` in production; stored server-side as an
   HMAC. **Idle expiry 30 min, absolute 12 h**, on the real wall clock (never the demo clock).
-- `cv_csrf`: readable cookie. Echo it in **`X-CSRF-Token`** on every POST/PUT/PATCH/DELETE (also login and
-  signup). `GET /auth/csrf` sets it. Caller-leg endpoints (§1.6, Part 4) use `Authorization: Bearer <callerToken>`
-  instead and are exempt from CSRF.
+- `cv_csrf`: readable cookie. Echo it in **`X-CSRF-Token`** on every POST/PUT/PATCH/DELETE (also login, signup and
+  `POST /demo/calls`). `GET /auth/csrf` sets it. Caller-leg endpoints (§1.6, Part 4) use `Authorization: Bearer
+  <callerToken>` instead, and the photo-link upload carries its token in the URL; both are exempt from CSRF.
 - Flow: `GET /auth/csrf` → `POST /auth/login` (or `POST /auth/demo`) → use the app. The client calls
   `POST /auth/refresh` at most every 5 minutes while the user is active. On `401 session_expired` the app goes to
   sign-in and returns to the current route afterwards.
@@ -244,8 +245,9 @@ here is what the platform has persisted from `CallSink` (Part 3), so it is consi
 | GET | `/calls/{id}/timeline` | calls:read | – | `CallEvent[]` (time order) |
 | GET | `/calls/{id}/messages` | calls:read | – | `SmsMessage[]` (texts sent during the call; the sample org shows the photo link so the demo can open it) |
 | GET | `/calls/{id}/stream` | calls:read | – | SSE, per-call events (§1.8) |
+| GET | `/calls/{id}/recording` · `/calls/{id}/recording/audio` | recordings:read | – | `Recording` / audio, as for claims (§1.7): calls without a claim still play on the quality review page |
 | POST | `/calls/{id}/handoff` | calls:handoff | `HandoffIn { reason, toUserId?, team? }` | `HandoffInfo`: hand off from the dock: to a person or a team (`intake` default, `adjusters`, `siu`) with a one-line reason; the call moves into the tray with its summary |
-| POST | `/calls/{id}/handoff/accept` | calls:handoff | – | `{ handoff: HandoffInfo, listen: ListenOut }` (`409 already_taken`) |
+| POST | `/calls/{id}/handoff/accept` | calls:handoff | – | `HandoffAcceptOut { handoff: HandoffInfo, listen: ListenOut }` (`409 already_taken`) |
 | POST | `/calls/{id}/listen` | calls:listen | – | `ListenOut` (starts listening; audited) |
 | DELETE | `/calls/{id}/listen` | calls:listen | – | `204` |
 | POST | `/calls/{id}/whisper` | calls:whisper | `WhisperIn { text }` (≤ 280) | `202 WhisperOut { id, at }` — **a typed note that ClaimVoice acts on** at its next turn (e.g. "Ask if the garage skylight is damaged too"); **the caller never hears it**. It appears in the staff transcript as a `whisper` row ("Whisper, ClaimVoice only") |
@@ -295,7 +297,7 @@ HandoffInfo  = { id, callId, reason, reasonLabel ("Urgent safety", "Asked for a 
 CallSummary  = { id, reference, startedAt, endedAt, durationSeconds, state, stateLabel, mode, language, callerLabel,
                  regionLabel, lossTypeLabel, outcome: claim_created|handed_off|abandoned|no_claim|in_progress,
                  outcomeLabel, claimId, claimNumber, flags, qaScore, isSample }
-CallDetail   = CallSummary + { stage: StageInfo, stages: StageInfo[] (the scripted path), consent: Consent,
+CallDetail   = CallSummary + { lineLabel ("Line 1", while live) | null, place | null, stage: StageInfo, stages: StageInfo[] (the scripted path), consent: Consent,
                  policyId, policyNumber, holderId, handoff, listeners, summary, summaryEn, recordingAvailable,
                  surgeId }
 Consent      = { rule: one_party|all_party, ruleLabel ("All-party consent (California)"), region,
@@ -303,7 +305,8 @@ Consent      = { rule: one_party|all_party, ruleLabel ("All-party consent (Calif
 
 Transcript   = { callId, language, retained: boolean, notice: string|null, turns: Turn[] }
 Turn         = { id, seq, speaker: caller|line|person|system|whisper, speakerLabel ("Gord Lindqvist", "ClaimVoice",
-                 "Renée Kowalchuk", "Whisper, ClaimVoice only · Renée"), text, language, atMs, endMs, stage,
+                 "Renée Kowalchuk", "Whisper, ClaimVoice only · Renée"), text, textEn (English line under French
+                 turns, for staff; null on English calls), language, atMs, endMs, stage,
                  confidence, interrupted, redactions, flags: FlagKind[] }
   whisper rows are staff-only: they are never sent on the caller's data channel
 
@@ -316,8 +319,11 @@ Slot         = { key, label, value, display ("Thursday 8 January, about 2:30 a.m
                  3:12" when the caller corrected it), confirmed, required, history: SlotHistory[] }
 SlotHistory  = { value, display, source, changedBy, at, span, note }
 CallEvent    = { id, at, atMs, kind, label ("Policy found in 0.2 s", "Renée Kowalchuk started listening"), actor, data }
-  kind        answered | consent | stage | tool | flag | handoff | listen | whisper | takeover | returned |
-              photo_link | notice | ended
+  kind        answered | consent | identity | stage | tool | flag | handoff | listen | whisper | takeover | returned |
+              photo_link | read_back | notice | ended
+  data        the call-quality scorer reads: answered {region, language}; consent {rule, answer, recording, region};
+              identity {verified}; stage {stage, previous, event}; flag {kind, detail, turnId}; handoff {reason,
+              priority, state: requested|accepted}; read_back {confirmed}; ended {reason}
 ListenOut    = { mode: "audio"|"transcript", connect: ConnectInfo|null }   (the dock's "line you are on" player)
 TakeoverOut  = { call: CallDetail, connect: ConnectInfo|null }
 SmsMessage   = { id, toMasked, body, sentAt, status }
@@ -441,6 +447,10 @@ Surge        = { id, kind: hail|flood|wind|winter_storm|rainfall|wildfire, kindL
 `Envelope = { type, at, orgId, callId|null, data }`. The server sends `event: ping` every 15 s. Reconnect with
 `Last-Event-ID`; events from the last 5 minutes are replayed, older gaps get `event: resync` (reload the snapshot).
 Events respect permissions: `siu_signal` flags and fraud fields are removed for subscribers without `siu:read`.
+The first frame of every stream is `retry: 3000` (always an integer). Payload labels are English; codes are always
+present, so a French page refetches the REST item (or the snapshot) for its labels. Live captions (`turn.partial`)
+carry no `id` and are never replayed. Live-strip waveforms are drawn by the web app from turn timing (the caller's
+browser speaks the line in the default mode, so the server has no level for it).
 
 Org stream (`/switchboard/stream`):
 
@@ -489,14 +499,14 @@ by a random 10 % sample.
 ```text
 Bead         = { key, label, passed: boolean|null, detail ("9/10") }   six per call, in rubric order:
                Consent first · Identity checked · Required details · Kind words · No card numbers · Right hand-off
-QaScore      = { callId, claimNumber, score (0..100), band: good (≥85) | needs_attention (≥70) | failed, bandLabel,
+QaScore      = { callId, claimId | null, claimNumber, score (0..100), band: good (≥85) | needs_attention (≥70) | failed, bandLabel,
                  status: needs_review|reviewed|auto_passed, items: QaItem[], beads: Bead[],
                  focus: { atSeconds, text ("Jumped to 4:10, where the hand-off came 40 seconds late") } | null,
                  scoredAt, scorerVersion, reviewedBy, reviewedAt, reviewNote }
 QaItem       = { key, label, passed: boolean|null (null = not applicable), points, maxPoints, critical,
                  method: rule|language_check, note, evidence: { turnId, quote }[], atSeconds (where the bead pins on
                  the recording), reviewerVerdict, reviewerNote }
-QaQueueItem  = { callId, reference, claimNumber, callerLabel, lineLabel, startedAt, durationSeconds, language,
+QaQueueItem  = { callId, reference, claimId | null, claimNumber, callerLabel, lineLabel, startedAt, durationSeconds, language,
                  lossTypeLabel, score, band, bandLabel, beads: Bead[], failedItems: string[], status,
                  reasonQueued ("Critical item failed: safety asked"), reviewer: { id, name }|null }
 ```
@@ -638,16 +648,16 @@ Migration `0001` (exists) creates the platform tables; `0002` adds the domain ta
 | `policies` | policy_number (unique per org), holder_id, line, product, region, status, effective_from/to, premium, currency, coverage_changed_at | |
 | `coverages` | policy_id, key, included, limit, deductible | |
 | `insured_items` | policy_id, kind, label, details (JSON) | |
-| `calls` | reference, mode, channel, language, state, stage, stage_index, answered_at, ended_at, caller_phone_e164, region, policy_id, holder_id, consent (JSON), recording_path, recording_seconds, summary, summary_en, outcome, surge_id, scenario, is_sample, latency_p95_ms | |
-| `call_turns` | call_id, seq, speaker, speaker_name, text, language, at_ms, end_ms, stage, confidence, interrupted, redactions, retained | id = the voice runtime's `turn_id` |
-| `call_slots` | call_id, key, value (JSON), display, confidence, source, turn_id, span_start, span_end, confirmed, superseded_at, changed_by, note | current value = latest non-superseded row per key |
+| `calls` | reference, line_number, mode, channel, language, state, stage, stage_index, resume_stage, answered_at, ended_at, end_reason, caller_phone_e164, caller_name, caller_verified, region, place, loss_type, policy_id, holder_id, consent (JSON), recording_path, recording_seconds, summary, summary_en, outcome, surge_id, scenario, is_sample, is_public_demo, latency_p95_ms, flags / mood / heard / last_asked / listeners (JSON, the live strip), caller_token_hash, claim_number (reserved), facts (JSON: the engine's call facts for the routing checks) | |
+| `call_turns` | call_id, seq, speaker, speaker_name, text, text_en, language, at_ms, end_ms, stage, confidence, interrupted, redactions, retained, flags | id = the voice runtime's `turn_id` |
+| `call_slots` | call_id, key, value (JSON), display, confidence, source, turn_id, span_start, span_end, at_ms, confirmed, corrects, superseded_at, changed_by, note | current value = latest non-superseded row per key |
 | `call_events` | call_id, at, at_ms, kind, label, actor_user_id, data (JSON) | timeline |
 | `handoffs` | call_id, reason, detail, priority, state, requested_at, accepted_by, accepted_at, resolved_at | |
 | `whispers` | call_id, author_id, text, at, acted_on_turn_id | merged into the staff transcript as `whisper` rows |
 | `sms_messages` | call_id, to_e164, body, status, sent_at, provider_id | photo link token inside `photo_links` |
 | `photo_links` | call_id, claim_id, token_hash, expires_at, max_photos | |
 | `claims` | claim_number, call_id, policy_id, holder_id, line, loss_type, loss_date, loss_place, description, description_en, status, assigned_to, urgent_safety, surge_id, language | |
-| `claim_photos` | claim_id, path, thumbnail_path, caption, width, height, source, received_at | files under `data/uploads/` |
+| `claim_photos` | claim_id (null until the claim exists), call_id, path, thumbnail_path, content_type, caption, width, height, source, received_at | files under `data/uploads/`; photos texted during the call are adopted by the claim at hang-up |
 | `routing_decisions` | claim_id, route, model_route, accepted_by, accepted_at, settle_low, settle_high, severity_probability, severity_band, fraud_score, fraud_band, reasons (JSON), fraud_indicators (JSON), rules_applied (JSON), model_versions (JSON), features (JSON snapshot), override_route, override_reason, override_by, override_at | features snapshot = drift and audit |
 | `siu_referrals` | claim_id, status, score, indicators (JSON), opened_at, decided_by, decided_at, note | |
 | `qa_scores` | call_id, score, band, status, items (JSON), beads (JSON), focus (JSON), scorer_version, scored_at, reviewed_by, reviewed_at, review (JSON), coaching_note | |
@@ -674,6 +684,7 @@ database; the platform never drives the dialogue.**
 |---|---|---|---|
 | `CallSink` | platform (`calls/sink.py`, `SqlCallSink`) | voice runtime | persist turns, slots, stages, flags, tool timings, consent, hand-off requests, close; publish SSE |
 | `LineControl` | voice runtime (`voice/lines.py`, `LineManager`) | platform HTTP handlers | whisper, take over, say as person, hand back, hang up |
+| `LineRuntime` (extends `LineControl`) | voice runtime (`get_line_manager()`) | platform HTTP handlers, API start-up | prepare a line, answer the SDP offer, add ICE, run the WebSocket fallback, adopt the seeded live lines, nudge a scripted line when someone listens |
 | `PolicyDirectory` | platform (`policies/directory.py`) | dialogue tools | find policy, verify identity, coverage summary, prior claims |
 | `OrgPlaybook` | platform (`settings/playbook.py`) | dialogue engine | script per loss type, consent rule per region, hand-off rules, active surge |
 | `TriageScorer` | ML (`ml/scorer.py`) | platform at hang-up | route + reasons + closer-look signs (the two routing checks) |
@@ -690,7 +701,11 @@ database; the platform never drives the dialogue.**
 - Stage changes, flags, tool calls, consent and latency samples: one `CallSink` call each; the platform writes the
   call row and timeline and publishes `line.updated` / per-call events.
 - Ordering: `CallSink` methods are awaited in order on the call's task, so a slot never arrives before its turn.
-  Each must return within **20 ms p95** (the platform buffers writes through a per-call queue if needed).
+  Each must return within **20 ms p95**: `SqlCallSink` only updates memory, publishes the per-call event and queues
+  the write; one writer task per call drains the queue in order and coalesces `line.updated` for the desk.
+- Claim number: `CallSink.reserve_claim_number` returns the number the line reads at wrap-up; the claim created at
+  hang-up uses it. `CallClosing.facts` carries the engine's call facts (third-party pressure, weather match, ...),
+  stored on the call and passed to the routing checks' feature builder.
 - Audio: the voice runtime writes the recording to `RECORDINGS_DIR/{call_id}.ogg` (caller and line mixed; silence
   where the recording was paused) and reports the relative path in `CallClosing`.
 

@@ -70,8 +70,9 @@ is the model's.
 
 All dates are relative to the demo clock. The default demo moment is **Thursday 8 January 2026, 7:42 a.m. Calgary
 time** (`CLAIMVOICE_DEMO_TODAY=2026-01-08`, `CLAIMVOICE_DEMO_TIME=07:42`), the morning after an overnight **Chinook
-windstorm** (gusts over 100 km/h) over Calgary and Airdrie. Every seeded date falls between 1 December 2025 and the
-demo moment. Code: `backend/claimvoice/seed/plan.py`.
+windstorm** (gusts over 100 km/h) over Calgary and Airdrie. Every seeded call and claim falls between 1 December 2025
+and the demo moment (policies, customers and routing-check versions are older). Code: `backend/claimvoice/seed/`
+(`plan.py` for the story, `book.py`, `history.py`). `make seed` replaces the sample organisation in about 3 seconds.
 
 **Organisation.** Larkspur Mutual, a regional mutual insurer: head office in Calgary (Alberta), a US office in Denver
 (Colorado), and a Québec book served in French from Montréal. Languages EN/FR. Time zone America/Edmonton. Privacy
@@ -100,10 +101,16 @@ officer: Priya Sandhu.
 Policy numbers `LM-AB-######`, `LM-CO-######`, `LM-QC-######`. A few policies are lapsed or cancelled so
 verification has realistic failures. Products: Auto Plus, Home Comprehensive, Home Standard, Condo.
 
-**History** (~72 calls, ~60 claims, 1 December 2025 to the demo moment): mostly collisions, water (December cold
-snaps), theft and some wind, with about 55 % fast-track, 38 % adjuster and 7 % closer look; every historical call has a
-quality score, about a dozen are in the review queue (missed consent on one, a late hand-off on one, a card number
-read aloud and removed on one). Five claims are "Finished this morning" tickets:
+**History** (~79 calls, ~63 claims, 1 December 2025 to the demo moment): mostly collisions, water (December cold
+snaps), theft and some wind. Transcripts come from bilingual templates (with character spans for every value heard),
+the five story calls and the live lines from the scripted callers through the real dialogue engine, and ten reviewed
+calls with known quality problems from the quality scorer's labelled set. Every call is closed through the same
+hang-up sequence as a live call, so **every route, sign and quality score comes from the routing checks and the
+quality scorer** (none is written by hand): about half fast-track, half adjuster and a couple of closer looks. About a
+dozen calls are in the review queue (a missed consent, a late hand-off, a card number read aloud, a promised payment,
+a skipped safety question, and random samples); Owen Fairweather has reviewed others. Claim numbers run in report
+order up to CV-26-01841 before this morning. Five claims are "Finished this morning" tickets (eight claims in all this
+morning):
 
 | Claim | Place | Time | Caller | Loss | Route |
 |---|---|---|---|---|---|
@@ -134,8 +141,10 @@ Lines 1–3 are driven by the scripted callers in `eval/callers/` (`calgary-wind
 and the conversation carries on.
 
 **The active surge.** "Chinook windstorm, Calgary": Environment and Climate Change Canada-style wind warning (gusts
-100–120 km/h) from 8 p.m. the evening before; calls 3.4× usual since 6 a.m.; wind surge questions switched on; wait
-for a person about 1 minute; a standby team of 2 available. About a dozen of the morning's calls and claims are wind
+100–120 km/h) from 8 p.m. the evening before; calls 3.4× usual since 6 a.m. (computed live: 9 Alberta calls since 6
+a.m. against a usual 1.55 an hour at that time of day); wind surge questions switched on; wait for a person about 1
+minute; a standby team of 2 (Marcus Leblanc, Hana Okafor) available, who appear as free once a supervisor brings them
+in. About a dozen of the morning's calls and claims are wind
 claims in the surge area.
 
 **Why wind, not hail.** Calgary's hail season is June to August; a hail surge in January would not be credible.
