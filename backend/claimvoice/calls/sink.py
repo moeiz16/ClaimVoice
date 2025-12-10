@@ -468,6 +468,10 @@ class SqlCallSink:
         self._put(call_id, op)
 
     async def tool_called(self, call_id: str, record: ToolCallRecord) -> None:
+        if record.timed_out:
+            from claimvoice.platform.metrics import TOOL_TIMEOUTS
+
+            TOOL_TIMEOUTS.labels(record.tool).inc()
         ok_label, fail_label = TOOL_LABELS.get(record.tool, ("Looked up in {s} s", "A lookup didn't answer in time"))
         label = ok_label.format(s=f"{record.elapsed_ms / 1000:.1f}") if record.ok else fail_label
         self._publish_call(
@@ -490,7 +494,10 @@ class SqlCallSink:
         )
 
     async def latency(self, call_id: str, sample: TurnLatency) -> None:
+        from claimvoice.platform.metrics import TURN_SECONDS
+
         self._live(call_id).latencies.append(sample.total_ms)
+        TURN_SECONDS.observe(sample.total_ms / 1000)
 
     async def caller_identified(self, call_id: str, policy_id: str, holder_id: str, region: str) -> None:
         async def op(session: AsyncSession, call: Call) -> None:

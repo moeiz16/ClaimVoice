@@ -99,4 +99,12 @@ async def test_rate_limit_on_auth_routes(api_factory):
 
 async def test_health_and_metrics(anon):
     assert (await anon.get("/health")).json()["status"] == "ok"
-    assert (await anon.get("/metrics")).status_code == 200
+    body = (await anon.get("/metrics")).text
+    for name in (
+        "claimvoice_http_requests_total",
+        "claimvoice_live_calls",
+        "claimvoice_sse_subscribers",
+        "claimvoice_turn_response_seconds",
+        "claimvoice_tool_timeouts_total",
+    ):
+        assert name in body, name

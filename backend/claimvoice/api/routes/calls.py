@@ -561,6 +561,8 @@ async def whisper(ctx: Ctx, call_id: str, data: w.WhisperIn) -> w.WhisperOut:
             "Validation failed",
             errors=[{"field": "text", "message": "Write a note of up to 280 characters."}],
         )
+    # The note sits after everything said so far (turn timing can run ahead of the wall clock on a scripted line).
+    said = (await ctx.db.execute(select(func.max(CallTurn.end_ms)).where(CallTurn.call_id == call.id))).scalar_one()
     row = Whisper(
         org_id=ctx.org_id,
         call_id=call.id,
@@ -568,7 +570,7 @@ async def whisper(ctx: Ctx, call_id: str, data: w.WhisperIn) -> w.WhisperOut:
         author_name=_who(ctx),
         text=text,
         at=clock.now(),
-        at_ms=runtime.at_ms(call),
+        at_ms=int(said) + 1 if said is not None else runtime.at_ms(call),
     )
     ctx.db.add(row)
     await ctx.db.commit()

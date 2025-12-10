@@ -18,6 +18,7 @@ from claimvoice.api.middleware import add_response_headers, guard_middleware
 from claimvoice.config import get_settings
 from claimvoice.platform import db
 from claimvoice.platform.errors import EXCEPTION_HANDLERS
+from claimvoice.platform.metrics import metrics_middleware
 from claimvoice.platform.ratelimit import RateLimiter
 
 
@@ -41,6 +42,21 @@ async def health() -> dict[str, Any]:
 
 @get("/metrics", include_in_schema=False)
 async def metrics() -> Response[bytes]:
+    from sqlalchemy import func, select
+
+    from claimvoice.calls.models import Call
+    from claimvoice.platform import metrics as m
+    from claimvoice.platform.events import bus
+
+    try:
+        async with db.sessionmaker()() as session:
+            live = (
+                await session.execute(select(func.count()).select_from(Call).where(Call.state != "ended"))
+            ).scalar_one()
+        m.LIVE_CALLS.set(int(live))
+    except Exception:  # metrics must answer even when the database is down
+        m.LIVE_CALLS.set(0)
+    m.SSE_SUBSCRIBERS.set(bus.subscribers())
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
@@ -85,7 +101,7 @@ def create_app(
     return Litestar(
         route_handlers=route_handlers,
         dependencies=DEPENDENCIES,
-        middleware=[guard_middleware],
+        middleware=[metrics_middleware, guard_middleware],
         state=state,
         lifespan=[lifespan],
         before_send=[add_response_headers],
