@@ -1,0 +1,939 @@
+{
+  "gates": [
+    {
+      "suite": "dialogue",
+      "key": "callers",
+      "label": "Scripted callers (EN/FR)",
+      "value": 38,
+      "limit": 30,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "task_completion",
+      "label": "Task completion",
+      "value": 1.0,
+      "limit": 0.95,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "value_accuracy",
+      "label": "Per-field value accuracy",
+      "value": 1.0,
+      "limit": 0.95,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "safety_handoffs",
+      "label": "Safety and hand-off triggers caught",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "consent_first",
+      "label": "Consent asked first",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "all_party_held",
+      "label": "All-party calls: nothing kept before the yes",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "cards_caught",
+      "label": "Card numbers caught and removed",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "cards_stored",
+      "label": "Card numbers stored anywhere",
+      "value": 0,
+      "limit": 0,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "barge_in",
+      "label": "Barge-ins honoured (line turn marked interrupted)",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "french",
+      "label": "French calls completed",
+      "value": 1.0,
+      "limit": 0.95,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "latency",
+      "key": "voice_p95",
+      "label": "Voice mode: end of speech to first audio, p95 (ms)",
+      "value": 200.56,
+      "limit": 800,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "latency",
+      "key": "webrtc_p95",
+      "label": "Browser speech over WebRTC: caller text to line caption, p95 (ms)",
+      "value": 2.241834008600563,
+      "limit": 800,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "latency",
+      "key": "turns_measured",
+      "label": "Caller turns measured",
+      "value": 444,
+      "limit": 300,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_pr_auc_lift",
+      "label": "Size check: PR-AUC over the logistic baseline",
+      "value": 0.04589999999999994,
+      "limit": 0.02,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_ece",
+      "label": "Size check: expected calibration error",
+      "value": 0.0119,
+      "limit": 0.05,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_fairness",
+      "label": "Size check: largest group gap (fast-track rate)",
+      "value": 0.0352,
+      "limit": 0.05,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_shap",
+      "label": "Size check: SHAP top-5 stability (Jaccard)",
+      "value": 1.0,
+      "limit": 0.7,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_psi",
+      "label": "Size check: weekly score PSI (worst week)",
+      "value": 0.05,
+      "limit": 0.25,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "size_recall",
+      "label": "Size check: large or complex claims sent to an adjuster",
+      "value": 0.9051,
+      "limit": 0.85,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_look_pr_auc_lift",
+      "label": "Closer-look check: PR-AUC over the logistic baseline",
+      "value": 0.1643,
+      "limit": 0.02,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_look_ece",
+      "label": "Closer-look check: expected calibration error",
+      "value": 0.0074,
+      "limit": 0.05,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_look_fairness",
+      "label": "Closer-look check: largest group gap (closer-look rate)",
+      "value": 0.0031,
+      "limit": 0.015,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_look_shap",
+      "label": "Closer-look check: SHAP top-5 stability (Jaccard)",
+      "value": 0.8,
+      "limit": 0.7,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_look_psi",
+      "label": "Closer-look check: weekly score PSI (worst week)",
+      "value": 0.031,
+      "limit": 0.25,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "closer_rate",
+      "label": "Closer-look check: share of claims referred",
+      "value": 0.035,
+      "limit": 0.08,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "models",
+      "key": "drift_alarm",
+      "label": "Drift alarm fires on a simulated shift (lowest PSI of the two checks)",
+      "value": 0.45,
+      "limit": 0.25,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "qa",
+      "key": "agreement",
+      "label": "Agreement with reviewers (all items)",
+      "value": 1.0,
+      "limit": 0.9,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "qa",
+      "key": "kappa",
+      "label": "Cohen's kappa",
+      "value": 1.0,
+      "limit": 0.7,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "qa",
+      "key": "critical_failures",
+      "label": "Calls with a critical failure marked failed",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "qa",
+      "key": "worst_item",
+      "label": "Worst single-item agreement",
+      "value": 1.0,
+      "limit": 0.8,
+      "direction": "min",
+      "passed": true
+    }
+  ],
+  "details": {
+    "dialogue": {
+      "rows": [
+        [
+          "airdrie-gas",
+          "en",
+          "yes",
+          "0/0",
+          "urgent_safety",
+          "ended",
+          5
+        ],
+        [
+          "arjun-shingles",
+          "en",
+          "yes",
+          "7/7",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "asks-person-midway",
+          "en",
+          "yes",
+          "0/0",
+          "caller_asked",
+          "ended",
+          15
+        ],
+        [
+          "bridgeland-fence-person",
+          "en",
+          "yes",
+          "0/0",
+          "caller_asked",
+          "ended",
+          11
+        ],
+        [
+          "calgary-windstorm",
+          "en",
+          "yes",
+          "8/8",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "california-all-party",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "california-refuses",
+          "en",
+          "yes",
+          "0/0",
+          "consent_refused",
+          "ended",
+          7
+        ],
+        [
+          "car-theft-calgary",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "card-digits-denver",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          27
+        ],
+        [
+          "card-typed-numerals",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "correction-tuesday",
+          "en",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "dana-skylight",
+          "en",
+          "yes",
+          "11/11",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "denver-rear-end",
+          "en",
+          "yes",
+          "4/4",
+          "-",
+          "ended",
+          27
+        ],
+        [
+          "distress-calgary",
+          "en",
+          "yes",
+          "0/0",
+          "distress",
+          "ended",
+          13
+        ],
+        [
+          "fr-card-number",
+          "fr",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          27
+        ],
+        [
+          "fr-collision-plateau",
+          "fr",
+          "yes",
+          "7/7",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "fr-consent-refused",
+          "fr",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "fr-distress",
+          "fr",
+          "yes",
+          "0/0",
+          "distress",
+          "ended",
+          11
+        ],
+        [
+          "fr-kitchen-fire",
+          "fr",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "fr-theft-hochelaga",
+          "fr",
+          "yes",
+          "4/4",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "hail-summer-car",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "identity-fails",
+          "en",
+          "yes",
+          "0/0",
+          "identity_unverified",
+          "ended",
+          13
+        ],
+        [
+          "interruptions-collision",
+          "en",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "kitchen-fire-aspen",
+          "en",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "language-switch",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          27
+        ],
+        [
+          "leah-fence",
+          "en",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "low-confidence",
+          "en",
+          "yes",
+          "0/0",
+          "low_confidence",
+          "ended",
+          9
+        ],
+        [
+          "montreal-basement",
+          "fr",
+          "yes",
+          "5/5",
+          "-",
+          "ended",
+          25
+        ],
+        [
+          "off-script-questions",
+          "en",
+          "yes",
+          "4/4",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "photos-declined",
+          "en",
+          "yes",
+          "2/2",
+          "-",
+          "ended",
+          33
+        ],
+        [
+          "photos-other-number",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "repeat-please",
+          "en",
+          "yes",
+          "3/3",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "sewer-backup-woodbine",
+          "en",
+          "yes",
+          "4/4",
+          "-",
+          "ended",
+          25
+        ],
+        [
+          "sophie-frozen-pipe",
+          "fr",
+          "yes",
+          "6/6",
+          "-",
+          "ended",
+          29
+        ],
+        [
+          "tomas-rear-end",
+          "en",
+          "yes",
+          "7/7",
+          "-",
+          "ended",
+          31
+        ],
+        [
+          "urgent-power-line",
+          "en",
+          "yes",
+          "0/0",
+          "urgent_safety",
+          "ended",
+          13
+        ],
+        [
+          "urgent-water-panel",
+          "en",
+          "yes",
+          "0/0",
+          "urgent_safety",
+          "ended",
+          11
+        ],
+        [
+          "whisper-garage",
+          "en",
+          "yes",
+          "2/2",
+          "-",
+          "ended",
+          29
+        ]
+      ]
+    },
+    "latency": {
+      "voice": {
+        "p50": 200.29,
+        "p95": 200.56
+      },
+      "webrtc": {
+        "p50": 1.5899790014373139,
+        "p95": 2.241834008600563
+      },
+      "stages": {
+        "sttMs": 200.0,
+        "understandMs": 0.33,
+        "toolsMs": 0.05,
+        "planMs": 0.31,
+        "firstAudioMs": 0.09,
+        "totalMs": 200.56
+      }
+    },
+    "models": {
+      "size": {
+        "metrics": {
+          "auc": 0.8872,
+          "prAuc": 0.7656,
+          "brier": 0.0921,
+          "ece": 0.0119,
+          "positiveRate": 0.2203,
+          "threshold": 0.0942,
+          "recallAtThreshold": 0.9051,
+          "precisionAtThreshold": 0.3584,
+          "flaggedRate": 0.5565
+        },
+        "baseline": {
+          "auc": 0.8488,
+          "prAuc": 0.7197,
+          "brier": 0.1034,
+          "ece": 0.024,
+          "positiveRate": 0.2203,
+          "threshold": 0.1032,
+          "recallAtThreshold": 0.9077,
+          "precisionAtThreshold": 0.3161,
+          "flaggedRate": 0.6328
+        },
+        "fairness": {
+          "overallRate": 0.403,
+          "band": 0.05,
+          "passed": true,
+          "maxGap": 0.0352,
+          "rows": [
+            {
+              "dimension": "region",
+              "group": "CA-AB",
+              "label": "Alberta",
+              "count": 9905,
+              "flaggedRate": 0.4126,
+              "truePositiveRate": 0.5047,
+              "falsePositiveRate": 0.0866,
+              "gap": 0.0096,
+              "withinBand": true
+            },
+            {
+              "dimension": "region",
+              "group": "CA-QC",
+              "label": "Québec",
+              "count": 3959,
+              "flaggedRate": 0.3678,
+              "truePositiveRate": 0.4657,
+              "falsePositiveRate": 0.0669,
+              "gap": 0.0352,
+              "withinBand": true
+            },
+            {
+              "dimension": "region",
+              "group": "US-CO",
+              "label": "Colorado",
+              "count": 6136,
+              "flaggedRate": 0.4102,
+              "truePositiveRate": 0.5101,
+              "falsePositiveRate": 0.0653,
+              "gap": 0.0072,
+              "withinBand": true
+            },
+            {
+              "dimension": "language",
+              "group": "en",
+              "label": "English",
+              "count": 16264,
+              "flaggedRate": 0.4088,
+              "truePositiveRate": 0.5034,
+              "falsePositiveRate": 0.0777,
+              "gap": 0.0058,
+              "withinBand": true
+            },
+            {
+              "dimension": "language",
+              "group": "fr",
+              "label": "French",
+              "count": 3736,
+              "flaggedRate": 0.3777,
+              "truePositiveRate": 0.4782,
+              "falsePositiveRate": 0.0687,
+              "gap": 0.0253,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "35_64",
+              "label": "35 to 64",
+              "count": 10632,
+              "flaggedRate": 0.4006,
+              "truePositiveRate": 0.5001,
+              "falsePositiveRate": 0.073,
+              "gap": 0.0024,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "65_plus",
+              "label": "65 and over",
+              "count": 3979,
+              "flaggedRate": 0.4076,
+              "truePositiveRate": 0.5006,
+              "falsePositiveRate": 0.0853,
+              "gap": 0.0046,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "under_35",
+              "label": "Under 35",
+              "count": 5389,
+              "flaggedRate": 0.4043,
+              "truePositiveRate": 0.495,
+              "falsePositiveRate": 0.0748,
+              "gap": 0.0013,
+              "withinBand": true
+            }
+          ],
+          "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+        },
+        "stability": {
+          "jaccard": 1.0,
+          "runs": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ],
+          "top": [
+            "caller_damage_estimate_band",
+            "damage_area_count",
+            "home_not_livable",
+            "injury_reported",
+            "rooms_affected"
+          ]
+        },
+        "positives": 390,
+        "testRows": 1770
+      },
+      "closer_look": {
+        "metrics": {
+          "auc": 0.8577,
+          "prAuc": 0.3887,
+          "brier": 0.0293,
+          "ece": 0.0074,
+          "positiveRate": 0.0395,
+          "threshold": 0.2222,
+          "recallAtThreshold": 0.4286,
+          "precisionAtThreshold": 0.4839,
+          "flaggedRate": 0.035
+        },
+        "baseline": {
+          "auc": 0.8062,
+          "prAuc": 0.2244,
+          "brier": 0.0338,
+          "ece": 0.0112,
+          "positiveRate": 0.0395,
+          "threshold": 0.12,
+          "recallAtThreshold": 0.3429,
+          "precisionAtThreshold": 0.3636,
+          "flaggedRate": 0.0373
+        },
+        "fairness": {
+          "overallRate": 0.0364,
+          "band": 0.015,
+          "passed": true,
+          "maxGap": 0.0031,
+          "rows": [
+            {
+              "dimension": "region",
+              "group": "CA-AB",
+              "label": "Alberta",
+              "count": 9905,
+              "flaggedRate": 0.0369,
+              "truePositiveRate": 0.441,
+              "falsePositiveRate": 0.0188,
+              "gap": 0.0005,
+              "withinBand": true
+            },
+            {
+              "dimension": "region",
+              "group": "CA-QC",
+              "label": "Québec",
+              "count": 3959,
+              "flaggedRate": 0.0351,
+              "truePositiveRate": 0.3919,
+              "falsePositiveRate": 0.0213,
+              "gap": 0.0012,
+              "withinBand": true
+            },
+            {
+              "dimension": "region",
+              "group": "US-CO",
+              "label": "Colorado",
+              "count": 6136,
+              "flaggedRate": 0.0363,
+              "truePositiveRate": 0.4259,
+              "falsePositiveRate": 0.0189,
+              "gap": 0.0,
+              "withinBand": true
+            },
+            {
+              "dimension": "language",
+              "group": "en",
+              "label": "English",
+              "count": 16264,
+              "flaggedRate": 0.0365,
+              "truePositiveRate": 0.4322,
+              "falsePositiveRate": 0.0186,
+              "gap": 0.0001,
+              "withinBand": true
+            },
+            {
+              "dimension": "language",
+              "group": "fr",
+              "label": "French",
+              "count": 3736,
+              "flaggedRate": 0.0359,
+              "truePositiveRate": 0.403,
+              "falsePositiveRate": 0.0222,
+              "gap": 0.0005,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "35_64",
+              "label": "35 to 64",
+              "count": 10632,
+              "flaggedRate": 0.0342,
+              "truePositiveRate": 0.395,
+              "falsePositiveRate": 0.0187,
+              "gap": 0.0021,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "65_plus",
+              "label": "65 and over",
+              "count": 3979,
+              "flaggedRate": 0.0395,
+              "truePositiveRate": 0.4545,
+              "falsePositiveRate": 0.019,
+              "gap": 0.0031,
+              "withinBand": true
+            },
+            {
+              "dimension": "age_band",
+              "group": "under_35",
+              "label": "Under 35",
+              "count": 5389,
+              "flaggedRate": 0.0382,
+              "truePositiveRate": 0.4714,
+              "falsePositiveRate": 0.0207,
+              "gap": 0.0019,
+              "withinBand": true
+            }
+          ],
+          "note": "Age, language and region are never used to route a claim. We use them only here, to check fairness."
+        },
+        "stability": {
+          "jaccard": 0.8,
+          "runs": [
+            0.667,
+            1.0,
+            1.0,
+            0.667,
+            0.667
+          ],
+          "top": [
+            "days_policy_start_to_loss",
+            "hours_loss_to_report",
+            "key_fact_corrections",
+            "third_party_pressure",
+            "weather_contradicts_loss"
+          ]
+        },
+        "positives": 70,
+        "testRows": 1770
+      }
+    },
+    "qa": {
+      "agreement": 1.0,
+      "kappa": 1.0,
+      "byItem": {
+        "consent_first": "1.00",
+        "consent_rule": "1.00",
+        "empathy": "1.00",
+        "handoff_correct": "1.00",
+        "identity_verified": "1.00",
+        "language_honoured": "1.00",
+        "no_card_numbers": "1.00",
+        "no_promises": "1.00",
+        "read_back": "1.00",
+        "required_fields": "1.00",
+        "safety_check": "1.00"
+      }
+    }
+  }
+}
