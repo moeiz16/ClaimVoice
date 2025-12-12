@@ -41,12 +41,13 @@ class Settings(BaseSettings):
     llm_fake: bool = True
     llm_model: str = "groq/llama-3.1-8b-instant"
     stt_provider: Literal["fake", "groq", "deepgram"] = "fake"
-    tts_provider: Literal["fake", "cartesia"] = "fake"
+    tts_provider: Literal["fake", "cartesia", "elevenlabs"] = "fake"
     sms_provider: Literal["fake", "twilio"] = "fake"
     weather_source: Literal["bundled", "live"] = "bundled"
     groq_api_key: str | None = None
     deepgram_api_key: str | None = None
     cartesia_api_key: str | None = None
+    elevenlabs_api_key: str | None = None
     gemini_api_key: str | None = None
     openrouter_api_key: str | None = None
 
