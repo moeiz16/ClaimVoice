@@ -1,0 +1,73 @@
+# The landing page's recorded call: CV-26-01842, Dana Whitcombe, Calgary, Thursday 8 January 2026 at 2:14 a.m.,
+# during the Chinook windstorm. Voices are synthetic (macOS system voices). Regenerate: scripts/demo_audio/generate.py
+# Turn: who (cv | caller), text, spans [[exact substring, key]], optional hush_from (text before the cut: the rest of
+# the turn is removed, as the line removes card numbers before anything is kept).
+claim_number: CV-26-01842
+route:
+  route: fast_track
+  label: {en: "Fast-track", fr: "Traitement rapide"}
+  # Reasons in the size check's own words (claimvoice.ml.reasons), for the facts this short call shows.
+  reasons:
+    - {en: "Damage limited to one area", fr: "Dommages limités à un seul endroit", key: skylight}
+    - {en: "Nothing is open to the weather", fr: "Rien n'est ouvert aux intempéries", key: covered}
+    - {en: "Nobody hurt", fr: "Personne n'est blessé", key: hurt}
+voices:
+  en: {cv: "Samantha", caller: "Flo (English (US))", rate_cv: 200, rate_caller: 196}
+  fr: {cv: "Amélie", caller: "Flo (French (Canada))", rate_cv: 212, rate_caller: 206}
+moments:
+  - {key: consent, en: "Consent", fr: "Consentement"}
+  - {key: policy, en: "Policy", fr: "Police"}
+  - {key: hurt, en: "Safe", fr: "Sécurité"}
+  - {key: when, en: "When", fr: "Quand"}
+  - {key: card, en: "Card stopped", fr: "Carte refusée"}
+  - {key: photos, en: "Photos", fr: "Photos"}
+  - {key: readback, en: "Read-back", fr: "Relecture"}
+  - {key: claimno, en: "Claim no.", fr: "No de réclamation"}
+slip:
+  - {key: consent, at_span: consent, en: "Recording consent given", fr: "Consentement à l'enregistrement"}
+  - {key: policy, at_span: policy, en: "Policy LM-AB-187342 · Dana Whitcombe", fr: "Police LM-AB-187342 · Dana Whitcombe"}
+  - {key: where, at_span: policy, en: "1418 Elbow Drive SW, from the policy", fr: "1418, promenade Elbow S.-O., selon la police"}
+  - {key: hurt, at_span: hurt, en: "Nobody hurt", fr: "Personne n'est blessé"}
+  - {key: skylight, at_span: skylight, en: "Kitchen skylight smashed", fr: "Puits de lumière de la cuisine fracassé"}
+  - {key: debris, at_span: debris, en: "Debris from the neighbour's deck", fr: "Débris de la terrasse du voisin"}
+  - {key: when, at_span: when, en: "About 2:10 a.m. today", fr: "Vers 2 h 10 aujourd'hui"}
+  - {key: card, at_span: card, en: "Card number not taken", fr: "Numéro de carte non pris", hushed: true}
+  - {key: photos, at_span: photos, en: "Photo link texted", fr: "Lien pour les photos envoyé"}
+  - {key: claimno, at_span: claimno, en: "Claim CV-26-01842", fr: "Réclamation CV-26-01842"}
+turns:
+  en:
+    - {who: cv, text: "Larkspur Mutual claims, this is ClaimVoice, an automated assistant. This call is recorded so we get your claim right. Is that okay?"}
+    - {who: caller, text: "Yes, that's fine.", spans: [["Yes, that's fine.", consent]]}
+    - {who: cv, text: "Thank you. What's your policy number, or the phone number on your policy?"}
+    - {who: caller, text: "It's L-M, A-B, one-eight-seven, three-four-two.", spans: [["L-M, A-B, one-eight-seven, three-four-two", policy]]}
+    - {who: cv, text: "Found it, Dana. Before anything else: is everyone safe right now?"}
+    - {who: caller, text: "Yes, we're fine. The wind just smashed the skylight over the kitchen.", spans: [["we're fine", hurt], ["smashed the skylight over the kitchen", skylight]]}
+    - {who: cv, text: "I'm sorry, that sounds frightening. When did it happen, and do you know what hit it?"}
+    - {who: caller, text: "About ten past two. Something blew off the neighbour's deck and came right through.", spans: [["About ten past two", when], ["blew off the neighbour's deck", debris]]}
+    - {who: cv, text: "Is anything still open to the weather?"}
+    - {who: caller, text: "No, I've taped a garbage bag over it. Do you need my card for the deductible? It's four-five", hush_from: "Do you need my card for the deductible? It's", spans: [["taped a garbage bag over it", covered]]}
+    - {who: cv, text: "Please stop there. I never take card numbers on this line, and that part of the recording is removed.", spans: [["I never take card numbers", card]]}
+    - {who: caller, text: "Oh. Okay, good."}
+    - {who: cv, text: "I'm texting you a link for photos of the skylight. Take them when it's light and safe.", spans: [["texting you a link for photos", photos]]}
+    - {who: caller, text: "Got it."}
+    - {who: cv, text: "Here's what I have: wind damage at 1418 Elbow Drive Southwest around ten past two, the kitchen skylight broken by debris from the neighbour's deck, now covered, and nobody hurt. Is that right?", spans: [["Here's what I have", readback]]}
+    - {who: caller, text: "That's right."}
+    - {who: cv, text: "Your claim number is C-V, two-six, zero-one-eight-four-two. Because of the storm, an adjuster will call you within two business days. Call back any time.", display: "Your claim number is CV-26-01842. Because of the storm, an adjuster will call you within two business days. Call back any time.", spans: [["CV-26-01842", claimno]]}
+  fr:
+    - {who: cv, text: "Sinistres Larkspur Mutual, ici ClaimVoice, un assistant automatisé. Cet appel est enregistré pour que nous traitions bien votre réclamation. Êtes-vous d'accord?"}
+    - {who: caller, text: "Oui, ça me va.", spans: [["Oui, ça me va.", consent]]}
+    - {who: cv, text: "Merci. Quel est votre numéro de police, ou le numéro de téléphone inscrit à votre police?"}
+    - {who: caller, text: "C'est L-M, A-B, un-huit-sept, trois-quatre-deux.", spans: [["L-M, A-B, un-huit-sept, trois-quatre-deux", policy]]}
+    - {who: cv, text: "Je l'ai trouvée, Dana. Avant toute chose : est-ce que tout le monde est en sécurité?"}
+    - {who: caller, text: "Oui, on va bien. Le vent vient de fracasser le puits de lumière de la cuisine.", spans: [["on va bien", hurt], ["fracasser le puits de lumière de la cuisine", skylight]]}
+    - {who: cv, text: "Je suis désolée, ça doit être inquiétant. Quand est-ce arrivé, et savez-vous ce qui l'a frappé?"}
+    - {who: caller, text: "Vers deux heures dix. Quelque chose s'est détaché de la terrasse du voisin et l'a traversé.", spans: [["Vers deux heures dix", when], ["s'est détaché de la terrasse du voisin", debris]]}
+    - {who: cv, text: "Y a-t-il encore une ouverture aux intempéries?"}
+    - {who: caller, text: "Non, j'ai collé un sac de plastique par-dessus. Voulez-vous ma carte pour la franchise? C'est quatre-cinq", hush_from: "Voulez-vous ma carte pour la franchise? C'est", spans: [["collé un sac de plastique par-dessus", covered]]}
+    - {who: cv, text: "Arrêtez-vous là, s'il vous plaît. Je ne prends jamais de numéros de carte sur cette ligne, et cette partie de l'enregistrement est retirée.", spans: [["Je ne prends jamais de numéros de carte", card]]}
+    - {who: caller, text: "Ah. D'accord, tant mieux."}
+    - {who: cv, text: "Je vous texte un lien pour les photos du puits de lumière. Prenez-les quand il fera clair et que ce sera sécuritaire.", spans: [["Je vous texte un lien pour les photos", photos]]}
+    - {who: caller, text: "C'est noté."}
+    - {who: cv, text: "Voici ce que j'ai noté : des dommages causés par le vent au 1418, promenade Elbow Sud-Ouest, vers deux heures dix, le puits de lumière de la cuisine brisé par des débris de la terrasse du voisin, maintenant couvert, et personne de blessé. Est-ce exact?", spans: [["Voici ce que j'ai noté", readback]]}
+    - {who: caller, text: "C'est exact."}
+    - {who: cv, text: "Votre numéro de réclamation est le C-V, deux-six, zéro-un-huit-quatre-deux. En raison de la tempête, un expert en sinistres vous appellera d'ici deux jours ouvrables. Rappelez-nous en tout temps.", display: "Votre numéro de réclamation est le CV-26-01842. En raison de la tempête, un expert en sinistres vous appellera d'ici deux jours ouvrables. Rappelez-nous en tout temps.", spans: [["CV-26-01842", claimno]]}
