@@ -1,1 +1,249 @@
 @import "tailwindcss";
+@import "./tokens.css";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant phone (@media (max-width: 720px));
+
+@theme inline {
+  --color-bg: var(--cv-bg);
+  --color-surface: var(--cv-surface);
+  --color-sunk: var(--cv-sunk);
+  --color-sunk-2: var(--cv-sunk-2);
+  --color-ink: var(--cv-ink);
+  --color-muted: var(--cv-muted);
+  --color-faint: var(--cv-faint);
+  --color-orchid: var(--cv-orchid);
+  --color-orchid-ink: var(--cv-orchid-ink);
+  --color-orchid-wash: var(--cv-orchid-wash);
+  --color-on-orchid: var(--cv-on-orchid);
+  --color-dock: var(--cv-dock);
+  --color-on-dock: var(--cv-on-dock);
+  --color-dock-muted: var(--cv-dock-muted);
+  --color-dock-orchid: var(--cv-dock-orchid);
+  --color-dock-raise: var(--cv-dock-raise);
+  --color-caller: var(--cv-caller);
+  --color-caller-wash: var(--cv-caller-wash);
+  --color-person: var(--cv-person);
+  --color-person-wash: var(--cv-person-wash);
+  --color-fast: var(--cv-fast);
+  --color-fast-wash: var(--cv-fast-wash);
+  --color-adj: var(--cv-adj);
+  --color-adj-wash: var(--cv-adj-wash);
+  --color-siu: var(--cv-siu);
+  --color-siu-wash: var(--cv-siu-wash);
+  --color-urgent: var(--cv-urgent);
+  --color-urgent-wash: var(--cv-urgent-wash);
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --radius-pill: 999px;
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --ease-voice: cubic-bezier(.2, .8, .2, 1);
+  --ease-breath: cubic-bezier(.45, 0, .55, 1);
+  --ease-lift: cubic-bezier(.3, 1.3, .5, 1);
+  --animate-breathe: breathe 3200ms var(--ease-breath) infinite;
+  --shadow-float: var(--cv-shadow-float);
+  --shadow-lift: var(--cv-shadow-lift);
+}
+
+@keyframes breathe { 50% { transform: scale(1.04); } }
+@keyframes livedot {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cv-dock-orchid) 55%, transparent); }
+  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--cv-dock-orchid) 0%, transparent); }
+}
+@keyframes ripple { from { transform: scale(.7); opacity: .55; } to { transform: scale(1.9); opacity: 0; } }
+@keyframes settle { from { opacity: .35; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
+@keyframes span-lit { 0%, 40% { background-color: var(--cv-orchid); color: var(--cv-on-orchid); } }
+@keyframes route-in { from { clip-path: inset(0 100% 0 0 round 999px); } to { clip-path: inset(0 0 0 0 round 999px); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes hand-in { from { transform: translateX(-40px); opacity: 0; } }
+@keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes bar-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+@layer base {
+  html { background: var(--cv-bg); }
+  body {
+    margin: 0;
+    background: var(--cv-bg);
+    color: var(--cv-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, .display {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 96;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  a { color: var(--cv-orchid-ink); text-underline-offset: 3px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .55; }
+  :focus-visible { outline: 3px solid var(--cv-orchid); outline-offset: 3px; border-radius: 12px; }
+  time, .num { font-variant-numeric: tabular-nums; }
+  ::selection { background: var(--cv-orchid-wash); }
+}
+
+@layer components {
+  .sr-only-cv { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 999px;
+    padding: 0 22px; height: 48px; font-weight: 650; font-size: 15px; text-decoration: none; white-space: nowrap;
+    transition: transform 160ms var(--ease-voice), background-color 160ms;
+  }
+  .btn:active:not(:disabled) { transform: scale(.97); }
+  .btn.primary { background: var(--cv-orchid); color: var(--cv-on-orchid); }
+  .btn.soft { background: var(--cv-sunk); color: var(--cv-ink); }
+  .btn.soft:hover { background: var(--cv-sunk-2); }
+  .btn.on-sunk { background: var(--cv-surface); }
+  .btn.quiet { background: transparent; color: var(--cv-orchid-ink); padding: 0 6px; }
+  .btn.ink { background: var(--cv-ink); color: var(--cv-bg); }
+  .btn.danger { background: var(--cv-urgent); color: #fff; }
+  .btn.sm { height: 38px; padding: 0 16px; font-size: 14px; gap: 8px; }
+
+  /* ---------- tags: always icon + word ---------- */
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px 0 9px; border-radius: 999px;
+    font-size: 13px; font-weight: 650; white-space: nowrap;
+  }
+  .tag.fast { background: var(--cv-fast-wash); color: var(--cv-fast); }
+  .tag.adj { background: var(--cv-adj-wash); color: var(--cv-adj); }
+  .tag.siu { background: var(--cv-siu-wash); color: var(--cv-siu); }
+  .tag.urgent { background: var(--cv-urgent-wash); color: var(--cv-urgent); }
+  .tag.orchid { background: var(--cv-orchid-wash); color: var(--cv-orchid-ink); }
+  .tag.person { background: var(--cv-person-wash); color: var(--cv-person); }
+  .tag.plain { background: var(--cv-sunk); color: var(--cv-muted); }
+  .tag.lg { height: 36px; font-size: 15px; padding: 0 16px 0 12px; }
+
+  /* ---------- a value heard on the call: always a pill linked to its words ---------- */
+  .heard {
+    display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 4px 6px 4px 12px;
+    border-radius: 999px; background: var(--cv-surface); font-weight: 600; font-size: 14px; color: var(--cv-ink);
+    box-shadow: inset 0 0 0 1.5px var(--cv-orchid-wash); border: 0; text-align: left;
+    transition: background-color 160ms, color 160ms;
+  }
+  .heard.plain { padding-right: 12px; }
+  .heard .at {
+    display: inline-flex; align-items: center; gap: 3px; height: 24px; padding: 0 8px 0 6px; border-radius: 999px;
+    background: var(--cv-orchid-wash); color: var(--cv-orchid-ink); font-size: 12px; font-weight: 650;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .heard.linked, .heard.lit { background: var(--cv-orchid); color: var(--cv-on-orchid); box-shadow: none; }
+  .heard.linked .at, .heard.lit .at { background: rgba(255, 255, 255, .22); color: inherit; }
+  .heard.settling { box-shadow: inset 0 0 0 1.5px var(--cv-orchid); }
+  .heard.settling .at { background: transparent; }
+  .heard.hushed {
+    box-shadow: none; color: var(--cv-muted);
+    background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px);
+  }
+  .heard.hushed .at { background: var(--cv-surface); color: var(--cv-muted); }
+  .pending {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border-radius: 999px;
+    border: 1.5px dashed var(--cv-faint); color: var(--cv-muted); font-size: 13px; font-weight: 550;
+  }
+
+  /* ---------- spoken words that filled a field ---------- */
+  .span {
+    background: var(--cv-orchid-wash); border-radius: 8px; padding: 0 4px; margin: 0 -2px;
+    box-shadow: inset 0 -2px 0 var(--cv-orchid); color: inherit; cursor: pointer; font: inherit;
+    border: 0; text-align: inherit; display: inline;
+  }
+  .span.linked { background: var(--cv-orchid); color: var(--cv-on-orchid); box-shadow: none; }
+  .span.lit { animation: span-lit 1.6s var(--ease-voice); }
+  .span.sign { background: var(--cv-siu-wash); color: var(--cv-siu); box-shadow: inset 0 -2px 0 var(--cv-siu); font-weight: 650; }
+  .hush {
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; height: 28px; border-radius: 999px;
+    background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px);
+    color: var(--cv-muted); font-size: 13px; font-weight: 650; letter-spacing: .08em; vertical-align: 2px;
+    white-space: nowrap; font-family: var(--font-sans);
+  }
+  .sound { color: var(--cv-muted); font-style: italic; font-size: .92em; }
+  .interim { color: var(--cv-faint); }
+  .interim.settle { animation: settle var(--m-settle) var(--ease-voice) both; }
+
+  /* ---------- segmented control ---------- */
+  .seg { display: inline-flex; background: var(--cv-sunk); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg > button, .seg > a {
+    border: 0; background: transparent; height: 32px; padding: 0 12px; border-radius: 999px; font-weight: 650;
+    font-size: 13px; color: var(--cv-muted); display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; text-decoration: none; white-space: nowrap;
+  }
+  .seg > button[aria-pressed="true"], .seg > button[aria-selected="true"], .seg > a[aria-current="page"] {
+    background: var(--cv-surface); color: var(--cv-ink); box-shadow: var(--cv-shadow-pill);
+  }
+  .iconbtn {
+    width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--cv-sunk); display: grid;
+    place-items: center; color: var(--cv-ink); flex: none;
+  }
+  .iconbtn:hover { background: var(--cv-sunk-2); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; background: var(--cv-person-wash); color: var(--cv-person);
+    display: grid; place-items: center; font-weight: 750; font-size: 13px; border: 0; flex: none;
+  }
+
+  /* ---------- inputs ---------- */
+  .field-input {
+    width: 100%; height: 52px; border-radius: 999px; border: 0; background: var(--cv-surface);
+    box-shadow: inset 0 0 0 1.5px var(--cv-sunk-2); padding: 0 20px; font: inherit; font-size: 16px; color: var(--cv-ink);
+  }
+  .field-input:focus { outline: none; box-shadow: inset 0 0 0 2.5px var(--cv-orchid); }
+  .field-input[aria-invalid="true"] { box-shadow: inset 0 0 0 2.5px var(--cv-urgent); }
+  .field-input.sm { height: 42px; font-size: 14.5px; padding: 0 16px; }
+  textarea.field-input { height: auto; min-height: 88px; border-radius: var(--radius-lg); padding: 14px 18px; resize: vertical; }
+  .inline-blank {
+    display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 999px; border: 0;
+    background: var(--cv-orchid-wash); color: var(--cv-orchid-ink); font: inherit; font-weight: 700;
+  }
+
+  /* ---------- surfaces ---------- */
+  .card { background: var(--cv-surface); border-radius: var(--radius-xl); }
+  .card.tint { background: var(--cv-sunk); }
+  .group-label {
+    font-size: 12.5px; font-weight: 750; color: var(--cv-muted); display: flex; gap: 6px; align-items: center;
+  }
+  .skeleton {
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--cv-sunk) 0%, var(--cv-sunk-2) 50%, var(--cv-sunk) 100%);
+    background-size: 200% 100%; animation: skeleton 1.4s linear infinite;
+  }
+  .breathe { animation: breathe var(--m-breathe) var(--ease-breath) infinite; }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--cv-dock-orchid); flex: none;
+    animation: livedot 1.8s var(--ease-breath) infinite;
+  }
+  .ripple-ring {
+    position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--cv-orchid); opacity: 0;
+    pointer-events: none; animation: ripple var(--m-ripple) var(--ease-voice);
+  }
+  .fade-up { animation: rise-in 360ms var(--ease-voice) both; }
+}
+
+/* Caption size (account menu: S/M/L) scales every transcript and caption surface. */
+:root { --cv-caption-scale: 1; }
+:root[data-captions="s"] { --cv-caption-scale: .9; }
+:root[data-captions="l"] { --cv-caption-scale: 1.18; }
+
+/* Page change: content fades and rises 8 px; the dock never moves. */
+.page-enter-active { transition: opacity 180ms var(--ease-voice), transform 180ms var(--ease-voice); }
+.page-leave-active { transition: opacity 120ms linear; }
+.page-enter-from { opacity: 0; transform: translateY(8px); }
+.page-leave-to { opacity: 0; }
+
+/* Reduced motion: the OS setting and the in-app setting both apply. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}
+:root.reduce-motion *, :root.reduce-motion *::before, :root.reduce-motion *::after {
+  animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important;
+}
+
+@media print {
+  .no-print, nav[aria-label="ClaimVoice"] { display: none !important; }
+  body { background: #fff; }
+}

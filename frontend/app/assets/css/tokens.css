@@ -1,0 +1,91 @@
+/* ClaimVoice tokens: "On the line". Day line (porcelain) is the default; Night line is an aubergine night.
+   Mapped into Tailwind in main.css (@theme inline). Contrast ratios are listed in DESIGN.md §7. */
+
+:root,
+[data-theme="light"] {
+  --cv-bg: #FBF7F9;
+  --cv-surface: #FFFFFF;
+  --cv-sunk: #F3ECF0;
+  --cv-sunk-2: #ECE2E8;
+  --cv-ink: #24131F;
+  --cv-muted: #6B5664;
+  --cv-faint: #8F7C89;
+  --cv-orchid: #C8337A;
+  --cv-orchid-ink: #A3195C;
+  --cv-orchid-wash: #FBE4EF;
+  --cv-on-orchid: #FFFFFF;
+  --cv-dock: #2A1530;
+  --cv-on-dock: #F8EEF4;
+  --cv-dock-muted: #C9B3C3;
+  --cv-dock-orchid: #F07AB0;
+  --cv-dock-raise: #3B2442;
+  --cv-dock-gap: #7A6578;
+  --cv-caller: #5B4A68;
+  --cv-caller-wash: #ECE6F1;
+  --cv-person: #2F5BD3;
+  --cv-person-wash: #E6ECFB;
+  --cv-fast: #1E7350;
+  --cv-fast-wash: #E2F3EA;
+  --cv-adj: #2F5BD3;
+  --cv-adj-wash: #E6ECFB;
+  --cv-siu: #875700;
+  --cv-siu-wash: #FBF0DA;
+  --cv-urgent: #BE2A20;
+  --cv-urgent-wash: #FCE6E3;
+  --cv-on-fast: #FFFFFF;
+  --cv-shadow-float: 0 18px 40px -18px rgba(42, 21, 48, .45), 0 2px 6px rgba(42, 21, 48, .12);
+  --cv-shadow-lift: 0 10px 28px -14px rgba(42, 21, 48, .35);
+  --cv-shadow-pill: 0 1px 3px rgba(42, 21, 48, .12);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --cv-bg: #170E16;
+  --cv-surface: #211520;
+  --cv-sunk: #2B1C29;
+  --cv-sunk-2: #352434;
+  --cv-ink: #F7ECF2;
+  --cv-muted: #C4B0BD;
+  --cv-faint: #8E7A88;
+  --cv-orchid: #F27BB4;
+  --cv-orchid-ink: #F27BB4;
+  --cv-orchid-wash: #3A1B2E;
+  --cv-on-orchid: #170E16;
+  --cv-dock: #34202F;
+  --cv-on-dock: #F8EEF4;
+  --cv-dock-muted: #C4B0BD;
+  --cv-dock-orchid: #F27BB4;
+  --cv-dock-raise: #45293F;
+  --cv-dock-gap: #7A6578;
+  --cv-caller: #B9A6CC;
+  --cv-caller-wash: #2E2236;
+  --cv-person: #8FAEFF;
+  --cv-person-wash: #1F2747;
+  --cv-fast: #6FD1A3;
+  --cv-fast-wash: #15302A;
+  --cv-adj: #8FAEFF;
+  --cv-adj-wash: #1F2747;
+  --cv-siu: #E8B65C;
+  --cv-siu-wash: #33270F;
+  --cv-urgent: #FF8070;
+  --cv-urgent-wash: #3B1A18;
+  --cv-on-fast: #0F241B;
+  --cv-shadow-float: 0 18px 40px -16px rgba(0, 0, 0, .7), 0 2px 6px rgba(0, 0, 0, .4);
+  --cv-shadow-lift: 0 10px 28px -14px rgba(0, 0, 0, .6);
+  --cv-shadow-pill: 0 1px 3px rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
+
+/* Motion tokens: "Voice" (DESIGN.md §9) */
+:root {
+  --m-breathe: 3200ms;
+  --m-settle: 240ms;
+  --m-pluck: 520ms;
+  --m-ripple: 700ms;
+  --m-hush: 400ms;
+  --m-hand: 480ms;
+  --m-route: 600ms;
+  --ease-voice: cubic-bezier(.2, .8, .2, 1);
+  --ease-breath: cubic-bezier(.45, 0, .55, 1);
+  --ease-lift: cubic-bezier(.3, 1.3, .5, 1);
+}
