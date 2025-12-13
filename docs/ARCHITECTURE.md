@@ -88,19 +88,21 @@ flowchart LR
 Measured from the end of the caller's speech to the first audio (or first caption, in `browser_speech` mode) of the
 line's reply.
 
-| Step | Cloud budget (`voice` mode) | Offline fakes (measured by `make eval`) | Notes |
+| Step | Cloud budget (`voice` mode) | Offline fakes, p95 measured by `make eval` | Notes |
 |---|---:|---:|---|
 | End-of-speech detection (Silero VAD, 0.2 s stop) | 200 ms | 200 ms | Pipecat's VAD analyser; 0.1 ms of CPU per 32 ms chunk |
-| Speech-to-text final (streaming) | 150 ms | ~0 ms | Groq Whisper or Deepgram; browser recognition in the offline mode |
-| Language understanding | 180 ms | < 5 ms | 600 ms hard timeout, then the rules path |
-| Tools (most turns need none) | 100 ms | < 5 ms | prefetched; above 300 ms the line says a filler first |
-| Dialogue engine + `CallSink` writes | 20 ms | < 10 ms | sink calls must return within 20 ms p95 |
-| Text-to-speech first audio | 120 ms | < 5 ms | streaming TTS; offline the browser speaks locally |
-| Transport and jitter buffer | 30 ms | < 5 ms | same machine or same region |
-| **Total** | **800 ms** | **< 250 ms** | the eval gate is p95 < 800 ms with fakes and VAD |
+| Speech-to-text final | 150 ms | < 0.1 ms | Groq Whisper or Deepgram (2 s timeout); browser recognition in the offline mode |
+| Language understanding | 180 ms | 0.3 ms | 600 ms hard timeout, then the rules path |
+| Tools (most turns need none) | 100 ms | 0.05 ms | budgets 200 to 600 ms each, with a fallback |
+| Dialogue engine + `CallSink` writes | 20 ms | 0.3 ms | sink calls must return within 20 ms p95 |
+| Text-to-speech first audio | 120 ms | 0.1 ms | streaming TTS (Cartesia or ElevenLabs); offline the browser speaks locally |
+| Transport and jitter buffer | 30 ms | 2 ms | same machine or same region |
+| **Total** | **800 ms** | **201 ms** | the eval gate is p95 < 800 ms with fakes and VAD |
 
-The data-channel round trip measured by `scripts/smoke/voice_smoke.py` on this machine is under 1 ms; a full WebRTC
-connection (offer, answer, ICE, data channel open) takes about 0.1 s on localhost.
+Measured over 444 caller turns from 38 scripted calls in `voice` mode (the 200 ms is the VAD's stop setting, not
+work), and over a real SmallWebRTC data channel in `browser_speech` mode, where the round trip from `caller.text` to
+`line.say` is about 2 ms p95 on this machine. With cloud speech the budget is dominated by speech-to-text and the
+first synthesised audio; the table's cloud column is the allowance per stage, not a measurement.
 
 ## Ownership inside the API process
 

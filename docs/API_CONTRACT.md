@@ -706,8 +706,9 @@ database; the platform never drives the dialogue.**
 - Claim number: `CallSink.reserve_claim_number` returns the number the line reads at wrap-up; the claim created at
   hang-up uses it. `CallClosing.facts` carries the engine's call facts (third-party pressure, weather match, ...),
   stored on the call and passed to the routing checks' feature builder.
-- Audio: the voice runtime writes the recording to `RECORDINGS_DIR/{call_id}.ogg` (caller and line mixed; silence
-  where the recording was paused) and reports the relative path in `CallClosing`.
+- Audio: the voice runtime writes the recording to `RECORDINGS_DIR/{call_id}.wav` (stereo 16 kHz: the caller on the
+  left channel, the line or a person on the right; written only after consent; card-number moments silenced) and
+  reports the relative path and length in `CallClosing`.
 
 **Sequences.**
 
@@ -793,7 +794,7 @@ Server → client:
 | `call.flag` | `flag: Flag` | only `urgent_safety`, `card_number_removed`, `language_switched` are ever sent to the caller |
 | `call.notice` | `kind`, `text` | accessible caption, e.g. `recording_paused` "Recording paused while we skip that number" |
 | `call.handoff` | `handoff: HandoffInfo` | "Connecting you with a person…" with position |
-| `call.ended` | `reason`, `claimNumber?`, `summary?`, `nextSteps[]` | end screen with the claim number |
+| `call.ended` | `reason`, `claimNumber?`, `summary?`, `nextSteps[]`, `route?` `{ route, label, reasons: [{ text, atSeconds }] }` | end screen with the claim number and the route reveal (who looks first; never a decision) |
 | `turn.metrics` | `turnId`, `sttMs`, `understandMs`, `toolsMs`, `planMs`, `firstAudioMs`, `totalMs` | ignore in the UI (eval and latency report only) |
 
 `call.notice.kind`: `recording_on`, `recording_off`, `recording_paused`, `recording_resumed`, `card_number_removed`,
@@ -882,7 +883,8 @@ Prompts, labels, read-back and the summary follow the caller's language; `summar
 ## 5.4 Claim-file fields (slot keys)
 
 Labels are the claim-file labels (EN). The script per loss type (`/settings/scripts`) decides which are asked and
-required; `section` places them in `ClaimFile.sections`.
+required; `section` places them in `ClaimFile.sections`. Code: `backend/claimvoice/dialogue/slots.py` (`SLOT_CATALOG`
+with each key's section, kind and EN/FR label, and `display()` for how a value reads).
 
 | Section | Keys |
 |---|---|
@@ -890,8 +892,9 @@ required; `section` places them in `ClaimFile.sections`.
 | policy | `policy_number`, `identity_check` (passed / failed; never the DOB itself), `insured_item` |
 | loss | `loss_type`, `loss_date`, `loss_time`, `loss_place`, `loss_description`, `caller_damage_estimate_band` |
 | details (auto) | `vehicle_drivable`, `damage_areas`, `other_party_involved`, `other_party_name`, `other_party_insurer`, `other_party_plate`, `police_report_filed`, `police_report_number`, `witnesses`, `airbags_deployed` |
-| details (property) | `water_source`, `water_still_entering`, `rooms_affected`, `mitigation_taken`, `roof_or_window_damage`, `siding_or_fence_damage`, `debris_source`, `home_livable`, `temporary_lodging_needed` |
-| safety | `injury_reported`, `injury_detail`, `danger_now`, `emergency_services_called` |
+| details (property) | `water_source`, `water_still_entering`, `rooms_affected`, `mitigation_taken`, `roof_or_window_damage`, `siding_or_fence_damage`, `open_to_weather`, `debris_source`, `home_livable`, `temporary_lodging_needed`, `fire_out`, `fire_department_attended`, `items_stolen`, `forced_entry` |
+| details (any) | `extra_notes` (answers to a supervisor's whispered question, and off-script questions for the adjuster) |
+| safety | `injury_reported`, `injury_detail`, `danger_now`, `emergency_services_called`, `power_out` (a surge question) |
 | photos | `photos_promised`, `photo_link_sent_to` (masked) |
 | coverage | `coverage_lines_mentioned`, `deductible_mentioned` |
 | next_steps | `next_steps_given`, `adjuster_contact_window` |
@@ -945,8 +948,10 @@ The models produce calibrated probabilities; routing combines them with fixed ru
 | Size probability ≥ adjuster threshold, water still entering, or the building is open to the weather (roof hole, smashed skylight) | `adjuster` |
 | Otherwise | `fast_track` |
 
-Thresholds are set on validation data for fixed targets (severity: recall of large/complex losses ≥ 0.90; fraud:
-referral rate ≤ 8 % at the best achievable precision) and stored with the model version.
+Thresholds are set on validation data for fixed targets (size: the highest threshold that still sends ≥ 90 % of large
+or complex claims to an adjuster; closer look: the best F1 among thresholds that refer ≤ 8 % of claims with at least
+two signs) and stored with the model version (`ml/artifacts/models.json`). The closer-look check reports the signs
+present out of the fourteen it checks (`ml/features.py` `SIGNS`); a referral needs at least two.
 
 ## 6.2 Features
 
@@ -954,6 +959,13 @@ referral rate ≤ 8 % at the best achievable precision) and stored with the mode
 region, language, age band (fairness testing only), postal code, date of birth, names, and any voice-derived signal
 (stress, accent, pitch, speech rate). `TriageInput.fairness_groups` carries region, language and age band for the
 fairness report only.
+
+`build_features(claim_file, policy, call)` builds `TriageInput.features` from the current claim-file values, the
+policy facts (`line`, `region`, `status`, `effective_from`, `effective_to`, `coverage_changed_at`, `deductible`,
+`coverage_limit`, `prior_claims_36m`, `vehicle_age_years`) and the call (`answered_at`, `surge_match`,
+`key_fact_corrections`, `photos_declined`, and `facts` = `CallClosing.facts`). Training uses the same function, so
+there is no training/serving skew. Extra keys the scorer reads but the models never see: `urgent_safety` (a rule) and
+`currency`/`region` (only to label the settlement range).
 
 ## 6.3 Gates (CI, `make eval`)
 

@@ -59,6 +59,8 @@ jobs:
           python -m claimvoice.cli seed
       - name: Voice toolchain smoke (SmallWebRTC loopback, Silero VAD)
         run: python ../scripts/smoke/voice_smoke.py
+      - name: Public data for the routing checks (freMTPL2, checksum-pinned)
+        run: python ../scripts/fetch_data.py
       - name: Evaluation gates
         run: python ../eval/run.py
 

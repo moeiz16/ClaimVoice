@@ -15,7 +15,8 @@ CPU.
 - **Data.** Synthetic intake records shaped like what the line collects, with claim costs drawn from freMTPL2's real
   severity distribution and documented, independently injected fraud patterns (docs/DATA.md). A freMTPL2-only
   large-claim benchmark is reported alongside so the method is shown on public data.
-- **Leakage-safe split** by loss month (train before October 2025, validate October–November, test December).
+- **Leakage-safe split** by loss month (train before July 2025, tune and calibrate on July–September, test on
+  October–December 2025).
 - **Baselines first:** logistic regression (scorecard-style) and a random forest; **XGBoost** challenger tuned with
   Optuna on the validation months; **isotonic calibration**; thresholds chosen for fixed targets (size: recall of
   large/complex claims ≥ 0.90; closer look: referral rate ≤ 8 %).
