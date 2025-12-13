@@ -1,0 +1,27 @@
+key: ho-fr-correction
+title: "Held out (French): correction of the day"
+language: fr
+region: CA-QC
+caller_phone: "+14505550403"
+policy_number: LM-QC-160003
+turns:
+  - text: "Bonjour, quelqu'un a reculé dans ma voiture au centre commercial."
+  - text: "Oui."
+  - text: "LM-QC-160003"
+  - text: "Le quatorze février 1990."
+  - text: "Non, personne n'est blessé."
+  - text: "Lundi vers midi, au stationnement du Carrefour Laval."
+  - text: "Non, attendez, c'était mardi, pas lundi."
+  - text: "Oui, une autre voiture."
+  - text: "Il est assuré chez Belair."
+  - text: "Non."
+  - text: "Le pare-chocs avant."
+  - text: "Oui, elle roule."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_date: "2026-01-06", other_party_involved: true}

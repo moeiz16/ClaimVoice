@@ -1,0 +1,25 @@
+key: ho-dog-repeat
+title: "Held out: noisy line, asks to repeat, answers loosely"
+language: en
+region: CA-AB
+caller_phone: "+14035550202"
+policy_number: LM-AB-250002
+turns:
+  - text: "Hello? Yeah, hi, my kitchen ceiling is leaking water from upstairs."
+  - text: "What? Sorry, can you say that again?"
+  - text: "Oh, yes, that's fine."
+  - text: "It's LM-AB-250002."
+  - text: "August 23rd 1977."
+  - text: "Yeah we're all good, no one's hurt."
+  - text: "About an hour ago."
+  - text: "The upstairs bathroom, the toilet backed up."
+  - text: "Just the kitchen."
+  - text: "No, I turned off the water to the toilet."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "Yep."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, water_still_entering: false, rooms_affected: 1}

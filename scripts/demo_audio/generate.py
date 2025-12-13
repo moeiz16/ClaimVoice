@@ -38,7 +38,7 @@ PEAKS = 400
 
 def say(text: str, voice: str, rate: int, tmp: Path) -> np.ndarray:
     path = tmp / "t.wav"
-    subprocess.run(  # noqa: S603 - fixed binary, our own text
+    subprocess.run(
         [
             "/usr/bin/say",
             "-v",

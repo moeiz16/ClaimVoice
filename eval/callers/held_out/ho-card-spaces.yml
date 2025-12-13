@@ -1,0 +1,26 @@
+key: ho-card-spaces
+title: "Held out: card number read in groups with 'and'"
+language: en
+region: CA-AB
+caller_phone: "+14035550207"
+policy_number: LM-AB-250007
+turns:
+  - text: "Hi, my truck window got smashed and my tools were stolen."
+  - text: "Okay yes."
+  - text: "LM-AB-250007."
+  - text: "June 6, 1995."
+  - text: "Nobody's hurt. Can I just give you my Visa for the deductible? Five five five five, five five five five, five five five five, four four four four."
+  - text: "Okay. Last night, sometime after midnight."
+  - text: "In my driveway."
+  - text: "My tool box and a drill."
+  - text: "Yes, the window was smashed."
+  - text: "No, I haven't called the police yet."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  card_numbers: 1
+  slots: {loss_type: theft, police_report_filed: false}

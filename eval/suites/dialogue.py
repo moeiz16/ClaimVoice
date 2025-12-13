@@ -6,6 +6,7 @@ kept before consent in all-party regions, card numbers caught and none stored, b
 from __future__ import annotations
 
 import asyncio
+from pathlib import Path
 from typing import Any
 
 from common import Gate, Report, table
@@ -19,25 +20,31 @@ SUITE = "dialogue"
 TODAY = "2026-01-08"
 
 
-async def _run_all() -> list[dict[str, Any]]:
+HELD_OUT = Path(__file__).resolve().parents[1] / "callers" / "held_out"
+
+
+async def _run_all(directory: str | None = None) -> list[dict[str, Any]]:
     out = []
-    for key, caller in load_callers().items():
+    for key, caller in load_callers(directory).items():
         sink = MemoryCallSink()
         result = await run_scenario(caller, sink, call_id=f"eval-{key}")
         out.append({"key": key, "caller": caller, "result": result, "sink": sink})
     return out
 
 
-def _stored_blob(sink: MemoryCallSink) -> str:
-    parts: list[str] = []
+def _stored_texts(sink: MemoryCallSink) -> list[str]:
+    """Every piece of caller-derived text the platform would keep (checked one by one, ids excluded)."""
+    out: list[str] = []
     for kind, _, payload in sink.events:
         if kind == "turn":
-            parts.append(payload.text)
+            out.append(payload.text)
         elif kind == "slot":
-            parts.append(f"{payload.value} {payload.display}")
-        elif kind in ("flag", "closed"):
-            parts.append(repr(payload))
-    return "\n".join(parts)
+            out += [str(payload.value), payload.display]
+        elif kind == "flag":
+            out.append(payload.detail)
+        elif kind == "closed":
+            out += [payload.summary, payload.summary_en or ""]
+    return out
 
 
 def run() -> Report:
@@ -86,7 +93,7 @@ def run() -> Report:
             card_calls += 1
             removed = sum(t.redactions for t in sink.of("turn"))
             card_caught += removed >= int(exp["card_numbers"])
-        stored_cards += contains_card_number(_stored_blob(sink))
+        stored_cards += any(contains_card_number(t) for t in _stored_texts(sink))
         if exp.get("barge_ins"):
             barge_expected += int(exp["barge_ins"])
             barge_seen += sum(1 for t in sink.of("turn") if t.speaker is Speaker.LINE and t.interrupted)
@@ -107,6 +114,28 @@ def run() -> Report:
             ]
         )
     n = len(runs)
+    ho_runs = asyncio.run(_run_all(str(HELD_OUT)))
+    ho_rows, ho_done, ho_hits, ho_total = [], 0, 0, 0
+    for r in ho_runs:
+        caller, res, sink = r["caller"], r["result"], r["sink"]
+        exp = caller.expect
+        handoffs = [h[0].value for h in sink.of("handoff")]
+        done = res.stage_at_end_of_script == exp.get("final_stage", "ended") and (
+            (handoffs[0] if handoffs else False) == exp.get("handoff", False)
+        )
+        hits = sum(res.values.get(k) == (TODAY if v == "{today}" else v) for k, v in (exp.get("slots") or {}).items())
+        ho_done += done
+        ho_hits += hits
+        ho_total += len(exp.get("slots") or {})
+        ho_rows.append(
+            [
+                caller.key,
+                caller.language,
+                "yes" if done else "no",
+                f"{hits}/{len(exp.get('slots') or {})}",
+                handoffs[0] if handoffs else "-",
+            ]
+        )
     gates = [
         Gate(SUITE, "callers", "Scripted callers (EN/FR)", n, 30, "min"),
         Gate(SUITE, "task_completion", "Task completion", sum(completion) / n, 0.95, "min"),
@@ -139,6 +168,14 @@ def run() -> Report:
             "min",
         ),
         Gate(SUITE, "french", "French calls completed", french_ok / max(1, french), 0.95, "min"),
+        Gate(
+            SUITE,
+            "held_out_completion",
+            "Held-out callers completed (wording never used to tune; floor)",
+            ho_done / max(1, len(ho_runs)),
+            0.5,
+            "min",
+        ),
     ]
     lines = [
         f"{n} scripted callers ({french} in French), {field_total} expected values, {safety_total} hand-off "
@@ -149,5 +186,16 @@ def run() -> Report:
             rows,
             "---|---|---|---:|---|---|---:",
         ),
+        "",
+        f"Held-out callers (written after the line was finished and never used to tune it): {ho_done} of "
+        f"{len(ho_runs)} completed as expected, {ho_hits} of {ho_total} values right. The misses are wording the "
+        'rules don\'t know yet ("dinged my car", "reculé dans ma voiture"): where a cloud reader or new patterns '
+        "would help. The main set above is a regression suite written alongside the line.",
+        "",
+        *table(["Held-out caller", "Lang", "Completed", "Values", "Hand-off"], ho_rows, "---|---|---|---:|---"),
     ]
-    return Report(gates, lines, {"rows": rows})
+    return Report(
+        gates,
+        lines,
+        {"rows": rows, "heldOut": {"completed": ho_done, "of": len(ho_runs), "values": ho_hits, "valuesOf": ho_total}},
+    )

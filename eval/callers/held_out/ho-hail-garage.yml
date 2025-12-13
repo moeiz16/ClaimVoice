@@ -1,0 +1,26 @@
+key: ho-hail-garage
+title: "Held out: wind took the garage door, chatty caller"
+language: en
+region: CA-AB
+caller_phone: "+14035550203"
+policy_number: LM-AB-250003
+turns:
+  - text: "Good morning. So, uh, the big wind last night pretty much wrecked my garage door."
+  - text: "Sure, that's no problem."
+  - text: "Policy's LM-AB-250003."
+  - text: "Postal code T2W 5K4."
+  - text: "Nobody got hurt, thankfully."
+  - text: "I'd say around eleven last night."
+  - text: "The garage door is bent in and one window in it cracked."
+  - text: "No, the siding's okay."
+  - text: "I really don't know, maybe a garbage bin."
+  - text: "No, it's not open, the door still closes mostly."
+  - text: "Oh yes, we're fine in the house."
+  - text: "Yep, go ahead."
+  - text: "Makes sense."
+  - text: "Yes."
+  - text: "Nope, that's all."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: wind, roof_or_window_damage: true, siding_or_fence_damage: false, home_livable: true}

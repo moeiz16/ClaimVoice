@@ -87,8 +87,9 @@ async def test_card_numbers_are_removed_before_anything_is_stored():
     assert any(isinstance(o, HushOut) for o in result.outs)
     assert any(f.kind.value == "card_number_removed" for f in sink.of("flag"))
     assert any("never take card numbers" in t for t in line_texts(result))
-    blob = repr(sink.events)
-    assert "4111" not in blob and not contains_card_number(blob)
+    texts = [t.text for t in sink.of("turn")] + [f"{x.value} {x.display}" for x in sink.of("slot")]
+    assert "4111" not in repr(sink.events)
+    assert not any(contains_card_number(t) for t in texts)
 
 
 async def test_corrections_keep_history_and_count_as_story_changes():

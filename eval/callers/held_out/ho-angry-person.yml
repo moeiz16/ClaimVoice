@@ -1,0 +1,13 @@
+key: ho-angry-person
+title: "Held out: frustrated caller wants a human in different words"
+language: en
+region: CA-AB
+caller_phone: "+14035550208"
+policy_number: LM-AB-250008
+turns:
+  - text: "Ugh, a machine. My fence is down."
+  - text: "Fine, whatever."
+  - text: "Look, just get me a representative."
+expect:
+  final_stage: handoff
+  handoff: caller_asked

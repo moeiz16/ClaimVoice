@@ -1,0 +1,26 @@
+key: ho-parking-lot
+title: "Held out: someone dinged my car in a parking lot"
+language: en
+region: US-CO
+caller_phone: "+17205550305"
+policy_number: LM-CO-350005
+turns:
+  - text: "Hi there, somebody dinged my car in the Safeway parking lot and drove away."
+  - text: "Yes."
+  - text: "LM-CO-350005"
+  - text: "My zip is 80220."
+  - text: "No injuries, I wasn't in the car."
+  - text: "Yesterday around 3 pm, at the Safeway parking lot on Colorado Boulevard."
+  - text: "Yeah, another car, but they took off."
+  - text: "No, they left before I could get anything."
+  - text: "No, I didn't report it."
+  - text: "The rear door and the bumper on the passenger side."
+  - text: "Yes, it drives fine."
+  - text: "Please."
+  - text: "Okay."
+  - text: "Yes, correct."
+  - text: "No, thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_time: "15:00", other_party_involved: true, police_report_filed: false, vehicle_drivable: true}

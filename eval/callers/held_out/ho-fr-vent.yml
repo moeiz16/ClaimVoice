@@ -1,0 +1,26 @@
+key: ho-fr-vent
+title: "Held out (French): le vent a arraché des bardeaux"
+language: fr
+region: CA-QC
+caller_phone: "+15145550404"
+policy_number: LM-QC-160004
+turns:
+  - text: "Bonjour madame, le vent a arraché des bardeaux sur mon toit hier."
+  - text: "Oui, pas de problème."
+  - text: "C'est la police LM-QC-160004."
+  - text: "Je suis née le trente août 1955."
+  - text: "Non, tout le monde va bien."
+  - text: "Hier après-midi, vers quatre heures."
+  - text: "Oui, il manque des bardeaux sur le toit."
+  - text: "Non, le revêtement est correct."
+  - text: "Je ne sais pas."
+  - text: "Non, rien n'est ouvert."
+  - text: "Oui, on peut rester."
+  - text: "Oui, merci."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, merci beaucoup."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: wind, roof_or_window_damage: true, home_livable: true}

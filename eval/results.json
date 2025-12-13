@@ -91,10 +91,19 @@
       "passed": true
     },
     {
+      "suite": "dialogue",
+      "key": "held_out_completion",
+      "label": "Held-out callers completed (wording never used to tune; floor)",
+      "value": 0.625,
+      "limit": 0.5,
+      "direction": "min",
+      "passed": true
+    },
+    {
       "suite": "latency",
       "key": "voice_p95",
       "label": "Voice mode: end of speech to first audio, p95 (ms)",
-      "value": 200.56,
+      "value": 200.57,
       "limit": 800,
       "direction": "max",
       "passed": true
@@ -103,7 +112,7 @@
       "suite": "latency",
       "key": "webrtc_p95",
       "label": "Browser speech over WebRTC: caller text to line caption, p95 (ms)",
-      "value": 2.241834008600563,
+      "value": 5.895709007745609,
       "limit": 800,
       "direction": "max",
       "passed": true
@@ -616,24 +625,30 @@
           "ended",
           29
         ]
-      ]
+      ],
+      "heldOut": {
+        "completed": 5,
+        "of": 8,
+        "values": 11,
+        "valuesOf": 20
+      }
     },
     "latency": {
       "voice": {
-        "p50": 200.29,
-        "p95": 200.56
+        "p50": 200.3,
+        "p95": 200.57
       },
       "webrtc": {
-        "p50": 1.5899790014373139,
-        "p95": 2.241834008600563
+        "p50": 1.4155829994706437,
+        "p95": 5.895709007745609
       },
       "stages": {
         "sttMs": 200.0,
-        "understandMs": 0.33,
+        "understandMs": 0.34,
         "toolsMs": 0.05,
-        "planMs": 0.31,
+        "planMs": 0.33,
         "firstAudioMs": 0.09,
-        "totalMs": 200.56
+        "totalMs": 200.57
       }
     },
     "models": {
