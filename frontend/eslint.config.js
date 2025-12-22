@@ -18,6 +18,14 @@ export default tseslint.config(
       // Nuxt auto-imports (defineNuxtConfig, useFetch, ref, …) are resolved by the type checker, not ESLint.
       'no-undef': 'off',
       'vue/multi-word-component-names': 'off',
+      // Template layout is a formatting choice, not a correctness rule: keep the dense, readable templates.
+      'vue/max-attributes-per-line': 'off',
+      'vue/singleline-html-element-content-newline': 'off',
+      'vue/multiline-html-element-content-newline': 'off',
+      'vue/html-indent': 'off',
+      'vue/html-closing-bracket-newline': 'off',
+      'vue/first-attribute-linebreak': 'off',
+      'vue/html-self-closing': 'off',
     },
   },
 )
