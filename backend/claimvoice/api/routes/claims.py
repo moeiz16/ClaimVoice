@@ -329,7 +329,7 @@ async def _open_link(db: AsyncSession, token: str) -> PhotoLink:
     link = (await db.execute(select(PhotoLink).where(PhotoLink.token_hash == token_digest(token)))).scalar_one_or_none()
     if link is None:
         raise not_found()
-    if clock.real_now() >= link.expires_at:
+    if clock.now() >= link.expires_at:  # business time (the demo clock), like the claim
         raise ProblemError(410, "expired", "This photo link has expired", "Call us and we'll text a new one.")
     return link
 

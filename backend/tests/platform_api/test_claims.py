@@ -203,7 +203,7 @@ async def photo_token(sup):
                     org_id=call.org_id,
                     call_id=call_id,
                     token_hash=token_digest(token),
-                    expires_at=clock.real_now() + timedelta(hours=72),
+                    expires_at=clock.now() + timedelta(hours=72),
                     max_photos=3,
                 )
             )
@@ -247,7 +247,7 @@ async def test_photo_link_rejects_other_files_and_expired_links(anon, photo_toke
         await s.execute(
             update(PhotoLink)
             .where(PhotoLink.token_hash == token_digest(photo_token))
-            .values(expires_at=clock.real_now() - timedelta(minutes=1))
+            .values(expires_at=clock.now() - timedelta(minutes=1))
         )
         await s.commit()
     await db.dispose()

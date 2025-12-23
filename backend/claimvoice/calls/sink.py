@@ -536,7 +536,7 @@ class SqlCallSink:
                     org_id=self.org_id,
                     call_id=call_id,
                     token_hash=token_digest(link_token),
-                    expires_at=clock.real_now() + timedelta(hours=PHOTO_LINK_HOURS),
+                    expires_at=now + timedelta(hours=PHOTO_LINK_HOURS),  # business time, like the claim it serves
                 )
             )
             body = _sms_body(call_id, link_token)

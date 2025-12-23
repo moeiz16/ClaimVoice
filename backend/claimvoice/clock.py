@@ -13,8 +13,9 @@ other process reads it, so they all agree. An anchor older than 12 hours, or one
 
 Rules:
 * Business code calls `clock.now()` / `clock.today()`, never `datetime.now()` / `date.today()`.
-* Security timers (session idle/absolute expiry, rate limits, photo-link token expiry, cookie max-age) use
-  `clock.real_now()`; they must not move with the demo date.
+* Security timers (session idle/absolute expiry, rate limits, invitation expiry, cookie max-age) use
+  `clock.real_now()`; they must not move with the demo date. Photo links are business data ("for 3 days from the
+  text") and use `clock.now()`.
 * Every API response carries `X-ClaimVoice-Now` (= `now()`), so the web app never trusts the browser clock.
 * Audio and latency timing inside a call uses `time.perf_counter()` (monotonic), never this module.
 """

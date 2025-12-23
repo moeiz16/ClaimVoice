@@ -207,7 +207,7 @@ async def test_flags_handoffs_photo_links_and_events(seeded):
         sms = (await s.execute(select(SmsMessage).where(SmsMessage.call_id == call_id))).scalar_one()
     assert h.priority == "urgent" and h.state == "waiting" and h.summary
     assert call.state == "waiting_for_person" and call.mood["key"] == "upset"
-    assert link.token_hash != "photo-token-abc" and link.expires_at > clock.real_now() + timedelta(hours=71)
+    assert link.token_hash != "photo-token-abc" and link.expires_at > clock.now() + timedelta(hours=71)
     assert "/p/photo-token-abc" in sms.body
     call_types = []
     while not q_call.empty():

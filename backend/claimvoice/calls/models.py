@@ -230,7 +230,7 @@ class PhotoLink(Base):
     call_id: Mapped[str] = mapped_column(ID, ForeignKey("calls.id", ondelete="CASCADE"), index=True)
     claim_id: Mapped[str | None] = mapped_column(ID, ForeignKey("claims.id", ondelete="SET NULL"), default=None)
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    expires_at: Mapped[datetime] = mapped_column()  # real clock
+    expires_at: Mapped[datetime] = mapped_column()  # business time (72 h after the text), like the claim
     max_photos: Mapped[int] = mapped_column(Integer, default=10)
     created_at: Mapped[datetime] = mapped_column(default=clock.now)
 
