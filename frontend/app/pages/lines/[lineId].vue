@@ -97,7 +97,7 @@ function onKey(e: KeyboardEvent) {
 }
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
-const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(t.speakerLabel) : t.speakerLabel)
+const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(/^(caller|appelant)$/i.test(t.speakerLabel) ? (call.value?.callerLabel ?? t.speakerLabel) : t.speakerLabel) : t.speakerLabel)
 </script>
 
 <template>
@@ -151,7 +151,7 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(t.speakerLabel)
       </button>
     </div>
 
-    <main class="split">
+    <main class="split" :class="{ shorter: myTake || status === 'lost' }">
       <section class="convo" aria-label="Conversation">
         <div class="bar">
           <h2>Conversation{{ fr ? ' · heard in French' : '' }}</h2>
@@ -239,6 +239,7 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(t.speakerLabel)
 .onit .btn { margin-left: auto; }
 .mswitch { display: none; }
 .split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; margin: 16px 32px 0; height: calc(100dvh - 72px - 62px - 128px); min-height: 520px; }
+.split.shorter { height: calc(100dvh - 72px - 62px - 128px - 70px); }
 .convo { background: var(--cv-surface); border-radius: 28px; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 .convo .bar { display: flex; align-items: center; gap: 10px; padding: 14px 20px 8px; }
 .convo .bar h2 { font-size: 19px; font-weight: 700; }

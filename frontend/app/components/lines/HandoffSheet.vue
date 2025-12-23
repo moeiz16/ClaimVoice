@@ -46,7 +46,7 @@ async function send() {
         </label>
       </fieldset>
       <label class="lab" for="handoff-reason">Why, in one line</label>
-      <input id="handoff-reason" v-model="reason" class="field-input sm" maxlength="140" :aria-invalid="!!error" placeholder="Caller wants to talk about a rental">
+      <input id="handoff-reason" v-model="reason" autofocus class="field-input sm" maxlength="140" :aria-invalid="!!error" placeholder="Caller wants to talk about a rental">
       <div class="quick">
         <button v-for="q in quick" :key="q" class="tag plain" type="button" @click="reason = q">
           {{ q }}

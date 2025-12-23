@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const seed = computed(() => props.seedKey)
-const { buffer, version, current } = useLiveLevels(canvas, seed, props.source, 160)
+const { buffer, version, current } = useLiveLevels(canvas, seed, props.source, 360)
 const prefs = usePrefs()
 
 function draw() {

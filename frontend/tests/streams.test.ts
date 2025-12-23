@@ -108,6 +108,16 @@ describe('one call\'s stream', () => {
     expect(s.file!.sections[1]!.slots.map(x => x.key)).toEqual(['siding'])
   })
 
+  it('shows a whisper as a staff-only row, once', () => {
+    const call = { startedAt: '2026-01-08T14:40:00Z', stage } as unknown as CallState['call']
+    let s = applyCallEvent({ ...base(), call }, 'whisper.sent', { id: 'w1', text: 'Ask if the garage skylight is damaged too.', by: 'Renée Kowalchuk', at: '2026-01-08T14:42:31Z' })
+    s = applyCallEvent(s, 'whisper.sent', { id: 'w1', text: 'again', by: 'Renée Kowalchuk', at: '2026-01-08T14:42:31Z' })
+    expect(s.turns).toHaveLength(1)
+    expect(s.turns[0]!.speaker).toBe('whisper')
+    expect(s.turns[0]!.speakerLabel).toBe('Whisper, ClaimVoice only · Renée')
+    expect(s.turns[0]!.atMs).toBe(151000)
+  })
+
   it('records the end of the call and keeps the last notices', () => {
     let s = base()
     for (let i = 0; i < 7; i++) s = applyCallEvent(s, 'notice', { kind: 'k', text: String(i) })

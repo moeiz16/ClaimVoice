@@ -49,7 +49,7 @@ async function sign() {
         <CvIcon name="urgent" size="s" />{{ error }}
       </p>
       <div class="acts">
-        <button class="btn primary" type="button" :disabled="busy || !v.gatesPassed || !note.trim()" @click="sign">
+        <button class="btn primary" type="button" autofocus :disabled="busy || !v.gatesPassed || !note.trim()" @click="sign">
           <CvIcon name="check" />Sign off for {{ side.toLowerCase() }}
         </button>
         <button class="btn soft" type="button" @click="emit('close')">

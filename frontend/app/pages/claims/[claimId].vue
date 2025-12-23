@@ -170,9 +170,10 @@ const callerFirst = computed(() => (claim.value ? firstName(claim.value.holderNa
         </h2>
         <p class="short">
           <template v-for="(s, i) in shortSegs" :key="i">
-            <button v-if="s.link" type="button" class="ulink" :disabled="s.at == null" :aria-label="`${s.text}, heard at ${fmtClock(s.at ?? 0)}`" @click="s.at != null && rec?.playClip(s.at)">
-              {{ s.text }}
-            </button><template v-else>
+            <span
+              v-if="s.link" role="button" :tabindex="s.at == null ? -1 : 0" class="ulink" :aria-label="`${s.text}, heard at ${fmtClock(s.at ?? 0)}`"
+              @click="s.at != null && rec?.playClip(s.at)" @keydown.enter.prevent="s.at != null && rec?.playClip(s.at)" @keydown.space.prevent="s.at != null && rec?.playClip(s.at)"
+            >{{ s.text }}</span><template v-else>
               {{ s.text }}
             </template>
           </template>
@@ -277,7 +278,7 @@ const callerFirst = computed(() => (claim.value ? firstName(claim.value.holderNa
 h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 h2 small { margin-left: auto; font-family: var(--font-sans); font-size: 12.5px; color: var(--cv-muted); font-weight: 650; letter-spacing: 0; }
 .short { font-family: var(--font-display); font-size: calc(19px * var(--cv-caption-scale)); font-weight: 500; line-height: 1.38; letter-spacing: -0.01em; margin: 10px 0 14px; }
-.ulink { border: 0; background: none; padding: 0; font: inherit; color: inherit; box-shadow: inset 0 -2px 0 var(--cv-orchid); cursor: pointer; border-radius: 2px; }
+.ulink { text-decoration: underline; text-decoration-color: var(--cv-orchid); text-decoration-thickness: 2px; text-underline-offset: 4px; cursor: pointer; border-radius: 2px; }
 .ulink:hover { background: var(--cv-orchid-wash); }
 .en { display: block; color: var(--cv-muted); font-size: 13.5px; margin-top: 2px; }
 .grp { margin: 14px 0 6px; }

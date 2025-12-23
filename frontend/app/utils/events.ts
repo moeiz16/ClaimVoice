@@ -107,6 +107,19 @@ export function applyCallEvent(s: CallState, type: string, data: unknown): CallS
       }
       return { ...s, file: { ...s.file, sections, progress } }
     }
+    case 'whisper.sent': {
+      // A typed note to ClaimVoice: shown as a staff-only row; the caller never hears it.
+      const w = data as { id: string, text: string, by: string, at: string }
+      if (s.turns.some(t => t.id === w.id)) return s
+      const start = s.call ? Date.parse(s.call.startedAt) : Number.NaN
+      const atMs = Number.isNaN(start) ? (s.turns[s.turns.length - 1]?.endMs ?? 0) : Math.max(0, Date.parse(w.at) - start)
+      const first = (w.by ?? '').split(' ')[0] ?? ''
+      const row: Turn = {
+        id: w.id, seq: (s.turns[s.turns.length - 1]?.seq ?? 0) + 1, speaker: 'whisper', speakerLabel: `Whisper, ClaimVoice only${first ? ` · ${first}` : ''}`,
+        text: w.text, language: 'en', atMs, endMs: atMs, stage: s.call?.stage.key ?? '', confidence: null, interrupted: false, redactions: 0, flags: [],
+      }
+      return { ...s, turns: [...s.turns, row] }
+    }
     case 'stage.changed':
       return s.call ? { ...s, call: { ...s.call, stage: data as StageInfo } } : s
     case 'flag.raised':

@@ -48,7 +48,7 @@ async function save() {
         </label>
       </fieldset>
       <label class="lab" for="route-reason">Reason (required)</label>
-      <textarea id="route-reason" v-model="reason" class="field-input" maxlength="280" :aria-invalid="!!error" placeholder="Police report confirms the SUV." />
+      <textarea id="route-reason" v-model="reason" autofocus class="field-input" maxlength="280" :aria-invalid="!!error" placeholder="Police report confirms the SUV." />
       <div class="quick">
         <button v-for="q in common" :key="q" class="tag plain" type="button" @click="reason = q">
           {{ q }}

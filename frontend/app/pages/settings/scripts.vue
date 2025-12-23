@@ -72,7 +72,7 @@ async function save() {
           <div class="pair">
             <div class="say">
               <span class="who"><i />ClaimVoice · English</span>
-              <textarea v-if="manage" v-model="q.prompt.en" rows="2" :aria-label="`Question ${i + 1} in English`" />
+              <textarea v-if="manage" v-model="q.prompt.en" :rows="Math.max(1, Math.ceil(q.prompt.en.length / 64))" :aria-label="`Question ${i + 1} in English`" />
               <p v-else>
                 {{ q.prompt.en }}
               </p>
@@ -82,7 +82,7 @@ async function save() {
             </div>
             <div class="say" lang="fr">
               <span class="who"><i />ClaimVoice · Français</span>
-              <textarea v-if="manage" v-model="q.prompt.fr" rows="2" :aria-label="`Question ${i + 1} in French`" />
+              <textarea v-if="manage" v-model="q.prompt.fr" :rows="Math.max(1, Math.ceil(q.prompt.fr.length / 64))" :aria-label="`Question ${i + 1} in French`" />
               <p v-else>
                 {{ q.prompt.fr }}
               </p>
