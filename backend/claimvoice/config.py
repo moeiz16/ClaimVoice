@@ -42,14 +42,18 @@ class Settings(BaseSettings):
     llm_model: str = "groq/llama-3.1-8b-instant"
     stt_provider: Literal["fake", "groq", "deepgram"] = "fake"
     tts_provider: Literal["fake", "cartesia", "elevenlabs"] = "fake"
-    sms_provider: Literal["fake", "twilio"] = "fake"
-    weather_source: Literal["bundled", "live"] = "bundled"
+    sms_provider: Literal["fake"] = "fake"  # text messages go to a local outbox; no live sender yet
+    weather_source: Literal["bundled"] = "bundled"  # the bundled alert snapshot
     groq_api_key: str | None = None
     deepgram_api_key: str | None = None
     cartesia_api_key: str | None = None
     elevenlabs_api_key: str | None = None
     gemini_api_key: str | None = None
     openrouter_api_key: str | None = None
+    cartesia_voice_en: str = ""
+    cartesia_voice_fr: str = ""
+    elevenlabs_voice_en: str = ""
+    elevenlabs_voice_fr: str = ""
 
     # Voice runtime
     voice_ice_servers: str = ""  # comma-separated STUN/TURN URLs; empty = host candidates only (local demo)
@@ -60,6 +64,16 @@ class Settings(BaseSettings):
     def demo_today(self) -> str | None:
         value = (self.claimvoice_demo_today or "").strip()
         return None if value.lower() in {"", "off", "none", "real"} else value
+
+    def llm_api_key(self, model: str) -> str | None:
+        """The key for a LiteLLM model name (`groq/...`, `gemini/...`, `openrouter/...`), read from settings so a
+        key kept only in `.env` reaches the provider too."""
+        provider = model.split("/", 1)[0].lower()
+        return {
+            "groq": self.groq_api_key,
+            "gemini": self.gemini_api_key,
+            "openrouter": self.openrouter_api_key,
+        }.get(provider)
 
     @property
     def is_sqlite(self) -> bool:

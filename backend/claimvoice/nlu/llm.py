@@ -57,6 +57,7 @@ class LiteLlmClient:
     """`LlmClient` over LiteLLM's async completion (any free-tier provider LiteLLM supports)."""
 
     model: str
+    api_key: str | None = None
     name: str = "litellm"
 
     async def complete(
@@ -73,6 +74,8 @@ class LiteLlmClient:
         kwargs: dict[str, Any] = {}
         if json_schema is not None:
             kwargs["response_format"] = {"type": "json_object"}
+        if self.api_key:
+            kwargs["api_key"] = self.api_key
         resp = await litellm.acompletion(
             model=self.model,
             messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
@@ -165,7 +168,7 @@ def get_understanding() -> LanguageUnderstanding:
     s = get_settings()
     if s.llm_fake or not any((s.groq_api_key, s.gemini_api_key, s.openrouter_api_key)):
         return FakeUnderstanding()
-    return LlmUnderstanding(LiteLlmClient(s.llm_model))
+    return LlmUnderstanding(LiteLlmClient(s.llm_model, s.llm_api_key(s.llm_model)))
 
 
 def get_llm() -> LlmClient:
@@ -174,4 +177,4 @@ def get_llm() -> LlmClient:
     s = get_settings()
     if s.llm_fake or not any((s.groq_api_key, s.gemini_api_key, s.openrouter_api_key)):
         return FakeLlm()
-    return LiteLlmClient(s.llm_model)
+    return LiteLlmClient(s.llm_model, s.llm_api_key(s.llm_model))

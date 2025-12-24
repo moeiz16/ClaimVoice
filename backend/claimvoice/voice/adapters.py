@@ -111,13 +111,13 @@ def get_speech_adapters() -> tuple[SpeechToText, TextToSpeech]:
 
         tts = CartesiaTTS(
             s.cartesia_api_key,
-            {"en": os.environ.get("CARTESIA_VOICE_EN", ""), "fr": os.environ.get("CARTESIA_VOICE_FR", "")},
+            {"en": s.cartesia_voice_en, "fr": s.cartesia_voice_fr},
         )
-    elif tts_provider == "elevenlabs" and os.environ.get("ELEVENLABS_API_KEY"):
+    elif tts_provider == "elevenlabs" and s.elevenlabs_api_key:
         from claimvoice.voice.cloud import ElevenLabsTTS
 
         tts = ElevenLabsTTS(
-            os.environ["ELEVENLABS_API_KEY"],
-            {"en": os.environ.get("ELEVENLABS_VOICE_EN", ""), "fr": os.environ.get("ELEVENLABS_VOICE_FR", "")},
+            s.elevenlabs_api_key,
+            {"en": s.elevenlabs_voice_en, "fr": s.elevenlabs_voice_fr},
         )
     return stt, tts

@@ -94,3 +94,29 @@ def test_data_channel_messages_round_trip():
     assert isinstance(msg, voice.CallerText) and msg.ended_at_ms == 1200
     out = msgspec.json.encode(voice.LineStop(turn_id="t9", reason="barge_in"))
     assert out == b'{"type":"line.stop","turnId":"t9","reason":"barge_in"}'
+
+
+def test_cloud_keys_kept_in_settings_reach_the_cloud_adapters():
+    """A key kept only in `.env` (read by settings, not exported to the process) must reach the provider."""
+    from claimvoice.config import Settings
+    from claimvoice.nlu.llm import LiteLlmClient
+
+    s = Settings(groq_api_key="gk", gemini_api_key="mk", openrouter_api_key="ok")
+    assert s.llm_api_key("groq/llama-3.1-8b-instant") == "gk"
+    assert s.llm_api_key("gemini/gemini-2.0-flash") == "mk"
+    assert s.llm_api_key("openrouter/meta-llama/llama-3.1-8b-instruct") == "ok"
+    assert s.llm_api_key("unknown/model") is None
+    assert LiteLlmClient("groq/x", s.llm_api_key("groq/x")).api_key == "gk"
+
+
+def test_speech_adapters_read_voices_and_keys_from_settings(monkeypatch):
+    from claimvoice import config
+    from claimvoice.voice import adapters
+
+    monkeypatch.delenv("TTS_PROVIDER", raising=False)
+    monkeypatch.delenv("STT_PROVIDER", raising=False)
+    s = config.Settings(tts_provider="elevenlabs", elevenlabs_api_key="ek", elevenlabs_voice_en="v-en")
+    monkeypatch.setattr(config, "get_settings", lambda: s)
+    _, tts = adapters.get_speech_adapters()
+    assert type(tts).__name__ == "ElevenLabsTTS"
+    assert tts.api_key == "ek" and tts.voices["en"] == "v-en"  # type: ignore[attr-defined]
