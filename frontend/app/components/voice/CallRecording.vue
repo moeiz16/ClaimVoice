@@ -69,10 +69,11 @@ function colors() {
 
 function channelOptions() {
   const c = colors()
-  const faint = `color-mix(in srgb, ${c.faint} 45%, transparent)`
+  // Played portion in full colour, unplayed at 32% of the speaker's colour (DESIGN.md §11).
+  const dim = (col: string) => `color-mix(in srgb, ${col} 32%, transparent)`
   return [
-    { waveColor: faint, progressColor: c.orchid, height: 58, renderFunction: laneRender('up') },
-    { waveColor: faint, progressColor: c.caller, height: 58, renderFunction: laneRender('down') },
+    { waveColor: dim(c.orchid), progressColor: c.orchid, height: 58, renderFunction: laneRender('up') },
+    { waveColor: dim(c.caller), progressColor: c.caller, height: 58, renderFunction: laneRender('down') },
   ]
 }
 

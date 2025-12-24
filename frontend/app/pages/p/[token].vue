@@ -5,7 +5,8 @@ import type { PhotoLinkInfo } from '~/types/api'
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
 import { MAX_BYTES, needsConversion, toJpeg } from '~/utils/photos'
-import { fmtDayLong, fmtTime } from '~/utils/format'
+import { fmtDayLong, fmtTime, ORG_ZONE } from '~/utils/format'
+import { demoNow } from '~/utils/demoClock'
 
 definePageMeta({ layout: 'public' })
 const route = useRoute()
@@ -19,8 +20,8 @@ let seq = 0
 
 const fr = computed(() => info.value?.language === 'fr')
 const T = computed(() => fr.value
-  ? { h: 'Vos photos', sub: 'Pour la réclamation', add: 'Prendre ou choisir des photos', tip: 'Prenez-les quand il fait clair et que c\'est sécuritaire. Un plan large, puis de près.', caption: 'Un mot sur cette photo (facultatif)', send: 'Envoyer', sending: 'Envoi…', sent: 'Envoyée', failed: 'Pas envoyée', done: 'Merci. Votre expert peut les voir maintenant.', left: (n: number) => `Encore ${n} possible${n > 1 ? 's' : ''}`, expires: 'Ce lien expire le', expired: 'Ce lien a expiré.', expiredBody: 'Rappelez-nous et nous vous en enverrons un nouveau.', missing: 'Ce lien ne fonctionne pas.', privacy: 'La position de vos photos est retirée avant qu\'elles nous parviennent.', remove: 'Retirer' }
-  : { h: 'Your photos', sub: 'For claim', add: 'Take or choose photos', tip: 'Take them when it\'s light and safe. One wide shot, then close up.', caption: 'A word about this photo (optional)', send: 'Send', sending: 'Sending…', sent: 'Sent', failed: 'Not sent', done: 'Thank you. Your adjuster can see them now.', left: (n: number) => `${n} more allowed`, expires: 'This link works until', expired: 'This link has expired.', expiredBody: 'Call us back and we\'ll text you a new one.', missing: 'This link doesn\'t work.', privacy: 'Location details are removed from your photos before they reach us.', remove: 'Remove' })
+  ? { h: 'Vos photos', sub: 'Pour la réclamation', add: 'Prendre ou choisir des photos', tip: 'Prenez-les quand il fait clair et que c\'est sécuritaire. Un plan large, puis de près.', caption: 'Un mot sur cette photo (facultatif)', send: 'Envoyer', sending: 'Envoi…', sent: 'Envoyée', failed: 'Pas envoyée', done: 'Merci. Votre expert peut les voir maintenant.', left: (n: number) => `Encore ${n} possible${n > 1 ? 's' : ''}`, expires: 'Ce lien expire le', forDays: 'Ce lien fonctionne 3 jours après le texto', expired: 'Ce lien a expiré.', expiredBody: 'Rappelez-nous et nous vous en enverrons un nouveau.', missing: 'Ce lien ne fonctionne pas.', privacy: 'La position de vos photos est retirée avant qu\'elles nous parviennent.', remove: 'Retirer' }
+  : { h: 'Your photos', sub: 'For claim', add: 'Take or choose photos', tip: 'Take them when it\'s light and safe. One wide shot, then close up.', caption: 'A word about this photo (optional)', send: 'Send', sending: 'Sending…', sent: 'Sent', failed: 'Not sent', done: 'Thank you. Your adjuster can see them now.', left: (n: number) => `${n} more allowed`, expires: 'This link works until', forDays: 'This link works for 3 days from the text', expired: 'This link has expired.', expiredBody: 'Call us back and we\'ll text you a new one.', missing: 'This link doesn\'t work.', privacy: 'Location details are removed from your photos before they reach us.', remove: 'Remove' })
 useHead(() => ({ title: `${T.value.h} · ClaimVoice`, htmlAttrs: { lang: fr.value ? 'fr' : 'en' } }))
 
 onMounted(async () => {
@@ -60,6 +61,12 @@ async function sendAll() {
     }
   }
 }
+// The link lasts 72 hours from the text. Show its end only when it reads sensibly in demo time.
+const expiryShown = computed(() => {
+  if (!info.value) return false
+  const ms = Date.parse(info.value.expiresAt) - demoNow().getTime()
+  return ms > 0 && ms < 7 * 86_400_000
+})
 const allSent = computed(() => items.value.length > 0 && items.value.every(i => i.status === 'sent'))
 const sending = computed(() => items.value.some(i => i.status === 'sending'))
 onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.url)))
@@ -82,7 +89,11 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
           <input type="file" accept="image/*" capture="environment" multiple class="sr-only-cv" :disabled="room === 0" @change="pick">
         </label>
         <p class="left">
-          {{ T.left(room) }} · {{ T.expires }} {{ fmtDayLong(info.expiresAt) }}, {{ fmtTime(info.expiresAt) }}
+          {{ T.left(room) }} · <template v-if="expiryShown">
+            {{ T.expires }} {{ fmtDayLong(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}, {{ fmtTime(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}
+          </template><template v-else>
+            {{ T.forDays }}
+          </template>
         </p>
         <ul class="list">
           <li v-for="it in items" :key="it.id" :class="it.status">
