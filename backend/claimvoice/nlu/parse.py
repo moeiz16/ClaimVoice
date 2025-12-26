@@ -400,6 +400,7 @@ _MORNING = re.compile(
     r"cette nuit|de la nuit|pendant la nuit|a\.?m\.?)\b",
     re.IGNORECASE,
 )
+_NIGHT_BEFORE = re.compile(r"\b(last night|hier soir|la nuit dernière)\b", re.IGNORECASE)
 _EVENING = re.compile(
     r"\b(this afternoon|this evening|tonight|in the afternoon|in the evening|after work|yesterday evening|"
     r"yesterday afternoon|cet après-midi|ce soir|hier soir|hier après-midi|de l'après-midi|du soir|p\.?m\.?)\b",
@@ -443,6 +444,8 @@ def _apply_half(
         return hour, True
     if _EVENING.search(text):
         return (hour % 12) + 12, True
+    if _NIGHT_BEFORE.search(text) and 6 <= hour <= 11:  # "around eleven last night" is 11 p.m.
+        return hour + 12, True
     if _MORNING.search(text):
         return hour % 12, True
     if prior is not None:  # a correction keeps the half of day it corrects

@@ -179,3 +179,35 @@ async def test_cloud_reader_timeout_falls_back_to_the_rules():
     reader = LlmUnderstanding(_ScriptedLlm("{}", delay=1.0), timeout_ms=50)
     r = await reader.understand(NluRequest(stage="safety", utterance="I smell gas", language="en", expecting=()))
     assert r.source == "fake" and r.urgent_safety
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Somebody dinged my car in the parking lot and drove away.",
+        "Another car hit me while I was parked.",
+        "It was a hit and run on 17th Avenue.",
+        "Quelqu'un a reculé dans ma voiture au centre commercial.",
+        "Un autobus a heurté mon auto.",
+    ],
+)
+def test_more_ways_to_describe_a_collision(text):
+    r = understand(text, ["loss_type"], asked="loss_type")
+    assert {v.key: v.value for v in r.slots}.get("loss_type") == "collision"
+
+
+def test_the_home_is_fine_and_a_bare_please_is_a_yes():
+    r = understand("Oh yes, we're fine in the house.", ["home_livable"], asked="home_livable")
+    assert {v.key: v.value for v in r.slots}["home_livable"] is True
+    r = understand("Please.", ["photos_promised"], asked="photos_promised")
+    assert {v.key: v.value for v in r.slots}["photos_promised"] is True
+
+
+def test_a_clear_no_police_corrects_a_hurried_yes():
+    r = understand(
+        "No, I haven't called the police yet.",
+        ["police_report_filed", "police_report_number"],
+        asked="police_report_number",
+        filled={"police_report_filed": True},
+    )
+    assert {v.key: v.value for v in r.slots}["police_report_filed"] is False

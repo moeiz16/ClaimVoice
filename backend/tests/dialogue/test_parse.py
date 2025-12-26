@@ -24,6 +24,8 @@ TODAY = NOW.date()
     ("text", "expected"),
     [
         ("I heard a bang around two in the morning.", time(2, 0)),
+        ("I'd say around eleven last night.", time(23, 0)),
+        ("Hier soir vers neuf heures.", time(21, 0)),
         ("It happened at 5:52 p.m.", time(17, 52)),
         ("About ten past two.", time(2, 10)),
         ("Je l'ai vu ce matin vers six heures.", time(6, 0)),

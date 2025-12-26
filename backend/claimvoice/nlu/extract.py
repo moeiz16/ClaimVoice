@@ -45,6 +45,7 @@ UPDATABLE = frozenset(
         "danger_now",
         "mitigation_taken",
         "damage_areas",
+        "police_report_filed",  # "no, I haven't called the police yet" after a hurried "yes"
     }
 )
 
@@ -74,8 +75,10 @@ def _rx(*alternatives: str) -> re.Pattern[str]:
 YES = _rx(
     r"^\s*(?:yes|yeah|yep|yup|sure|correct|right|that's right|that is right|ok(?:ay)?|of course|absolutely|"
     r"definitely|please do|go ahead|uh[- ]huh|mm[- ]hmm|i do|we do|it is|there is|they did)\b",
+    r"^\s*please\s*[.!]?\s*$",
     r"^\s*(?:oui|ouais|d'accord|bien sûr|exact|exactement|c'est ça|allez-y|vas-y|tout à fait|absolument|"
     r"j'accepte|je veux bien|volontiers)\b",
+    r"^\s*s'il vous plaît\s*[.!]?\s*$",
 )
 NO = _rx(
     r"^\s*(?:no|nope|nah|not really|not at all|i don't|we don't|it isn't|it's not|there isn't|i'd rather not|"
@@ -110,7 +113,9 @@ LOSS_TYPE_PATTERNS: list[tuple[re.Pattern[str], str]] = [
             r"\b(rear[- ]ended|rear end|crash(ed)?|collision|collided|accident|fender[- ]bender|hit me|hit my "
             r"(car|truck|van|vehicle)|backed into|t-boned|sideswiped|ran into|accrochage|embouti|frappé|"
             r"carambolage|accident de voiture|slid into|hit a (pole|deer|tree|curb|post|wall|parked car)|scraped|"
-            r"backed (into|out)|car accident)\b"
+            r"backed (into|out)|car accident|ding(ed)?|dent(ed)?|bumped( into)?|hit[- ]and[- ]run|"
+            r"(someone|somebody|a (car|truck|van|driver)|another (car|truck|driver|vehicle)) (hit|struck|rammed)|"
+            r"recul\w* dans|heurt\w+|percut\w+|emboutie)\b"
         ),
         "collision",
     ),
@@ -652,6 +657,7 @@ def _livable(text: str) -> Hit | None:
     yes = _rx(
         r"\b(we |i )?can (still )?(live|stay) (here|there|in it|home)",
         r"\b(still livable|we're (fine|okay) (staying|here))\b",
+        r"\b(we're|we are|i'm|i am) (fine|okay|ok|good|alright) (in|at) (the|our|my) (house|home|place)\b",
         r"\b(on peut (encore )?(y )?(vivre|rester)|c'est (encore )?habitable)\b",
     )
     m = no.search(text)
@@ -715,7 +721,7 @@ def _place(text: str) -> Hit | None:
         r"\bau coin (?:de la |du |de )?([\w' -]+? et [\w' -]+?)(?=[.,]|$)",
         r"\bsur (?:la rue|le boulevard|l'avenue|la route) ([\w' -]+?)(?=[.,]|$| près)",
         r"\b(à la maison|chez (?:moi|nous))\b",
-        r"\bdans le stationnement (?:du |de la |de )?([\w' -]+?)(?=[.,]|$)",
+        r"\b(?:dans le|au) stationnement (?:du |de la |de l'|de )?([\w' -]+?)(?=[.,]|$)",
     ]
     for p in pats:
         m = re.search(p, text, I if "[A-Z]" not in p else 0)
