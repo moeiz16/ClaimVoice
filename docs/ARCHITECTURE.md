@@ -93,16 +93,17 @@ line's reply.
 | End-of-speech detection (Silero VAD, 0.2 s stop) | 200 ms | 200 ms | Pipecat's VAD analyser; 0.1 ms of CPU per 32 ms chunk |
 | Speech-to-text final | 150 ms | < 0.1 ms | Groq Whisper or Deepgram (2 s timeout); browser recognition in the offline mode |
 | Language understanding | 180 ms | 0.3 ms | 600 ms hard timeout, then the rules path |
-| Tools (most turns need none) | 100 ms | 0.05 ms | budgets 200 to 600 ms each, with a fallback |
+| Tools (most turns need none) | 100 ms | 0.1 ms | budgets 200 to 600 ms each, with a fallback |
 | Dialogue engine + `CallSink` writes | 20 ms | 0.3 ms | sink calls must return within 20 ms p95 |
 | Text-to-speech first audio | 120 ms | 0.1 ms | streaming TTS (Cartesia or ElevenLabs); offline the browser speaks locally |
-| Transport and jitter buffer | 30 ms | 2 ms | same machine or same region |
+| Transport and jitter buffer | 30 ms | not in the total | same machine or same region; 3.9 ms p95 over a real SmallWebRTC data channel |
 | **Total** | **800 ms** | **201 ms** | the eval gate is p95 < 800 ms with fakes and VAD |
 
 Measured over 444 caller turns from 38 scripted calls in `voice` mode (the 200 ms is the VAD's stop setting, not
-work), and over a real SmallWebRTC data channel in `browser_speech` mode, where the round trip from `caller.text` to
-`line.say` is about 2 ms p95 on this machine. With cloud speech the budget is dominated by speech-to-text and the
-first synthesised audio; the table's cloud column is the allowance per stage, not a measurement.
+work), and over a real SmallWebRTC data channel in `browser_speech` mode (14 turns), where the round trip from
+`caller.text` to `line.say` is 1.6 ms p50 and 3.9 ms p95 on one laptop. With cloud speech the budget is dominated by
+speech-to-text and the first synthesised audio; the table's cloud column is the allowance per stage, not a
+measurement.
 
 ## Ownership inside the API process
 
@@ -147,8 +148,8 @@ is never fast-tracked). Details: docs/adr/0004 and docs/API_CONTRACT.md Part 6.
 
 ## Deployment shape
 
-The portfolio build runs locally: `make setup`, then `make api` and `make web`. For production the same API process
-can run behind a TLS proxy with Postgres, a TURN server for callers outside the local network
-(`VOICE_ICE_SERVERS`), and the cloud speech and language adapters switched on by environment variables. Several API
-processes need a shared SSE bus and sticky routing of a call's WebRTC session to the process that holds it; that is
-noted as future work.
+The demo runs locally: `make setup`, then `make dev` (or `make api` and `make web` for the production web build).
+For production the same API process can run behind a TLS proxy with Postgres, a TURN server for callers outside the
+local network (`VOICE_ICE_SERVERS`), and the cloud speech and language adapters switched on by environment
+variables. Several API processes need a shared SSE bus and sticky routing of a call's WebRTC session to the process
+that holds it; that is noted as future work.

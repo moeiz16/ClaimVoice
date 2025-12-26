@@ -313,21 +313,25 @@ Rules: one moving thing per region at a time; live waveforms pause when off-scre
 
 ## 12. How this differs
 
-| | Necessa | Plotline (Field Atlas) | Kinroot | Nightjar SOC | **ClaimVoice** |
-|---|---|---|---|---|---|
-| **Layout** | Sidebar + content cards | Full-bleed map under a masthead, ledger panel, inspector drawer | Infinite graph board + right dossier drawer with folder tabs | Radius-0 tmux tiles with hairline gutters, clock bar, status line | **Rounded cards on porcelain; vertical channel strips; transcript ↔ claim file split; a full-width recording band** |
-| **Navigation** | Left sidebar with org card, grouped nav | Mono caps tabs in a two-tier masthead; phone bottom tabs | 64 px ink-black icon spine | ⌘K command palette only, no menus | **A floating aubergine pill dock at the bottom centre, which also carries the line you're on** |
-| **Landing** | Headline left, product card right, stat strip | Scroll story under a giant serif date | Interactive board: type into the client pin | Time-driven console replay of a night, left log under a rolling clock | **A call you can hear: lyric captions in two alignments over a full-bleed mirrored waveform; values pluck into a slip; the route unfurls. Nothing auto-plays.** |
-| **Home** | Greeting + 4 KPI cards | The atlas | Client constellation | The Watch (river · incident · awaiting you) | **The line desk: strips per live call, hand-off tray, surge ribbon, finished tickets** |
-| **Type** | System sans | Newsreader serif + IBM Plex Mono | Spectral serif + Hanken Grotesk + Red Hat Mono | Geist + Geist Mono (lowercase mono labels) | **Bricolage Grotesque (opsz) + Figtree; no serif, no mono** |
-| **Colour** | Grey + indigo, light | Map-paper cream + slate + orange | Bond-grey dot grid + oxblood | Night `#070B10` + mint teal, dark-first | **Porcelain blush + aubergine ink + orchid magenta; caller plum, person cobalt; light default, aubergine night** |
-| **Shape** | Default radii, borders | Squared, ruled | 2 px paper, notched tabs | 0–4 px, hairlines, no fills | **Pills and 28 px cards, fills not borders, hatching = not kept** |
-| **Motion** | 150 ms fades | Self-drawing outlines, fly-to, ruler scrub | Unfold springs, slack-to-taut string, redaction sweep | Rolling digits, coalesce, baton bead, hold ring, dawn wipe | **Breathe, Settle, Pluck, Ripple, Hush, Hand, Route, Ride (audio-reactive)** |
-| **Density** | Medium, cards | Medium, ledger | Medium, graph + ledger rows | High, 28 px mono rows | **Low: 44–50 px targets, 1.5 line height, a few big things per screen** |
-| **Data idiom** | Lists + KPI cards | Map layers + ledger | Graph + dossier pages | Streams, strips, swimlanes | **Conversation waveform, heard pills with source chips, lyric captions, sentence answers** |
-| **Logo** | — | Pin-in-plot mark + serif | Knotted string + Spectral italic | Bird-eye glyph + Geist Mono lowercase | **Orchid speech tile with bars rising into a tick + Bricolage "ClaimVoice"** |
+What voice-AI and contact-centre products usually do, and what ClaimVoice does instead.
 
-**Side-by-side verdict** (four products in four columns): ClaimVoice is the only light, pink-cast, fully rounded, sans-only design in the set; no screen shares a shell, a landing archetype or a data idiom with a sibling. The closest echoes were checked and resolved: (1) the bottom dock vs Nightjar's bottom status line: ours is a floating pill with navigation and a live player, theirs a full-width 28 px mono strip; (2) "replay a scenario" landings: Nightjar auto-plays a dark, time-driven log; ours waits for a press and is audio with a scrubber; (3) the centred giant-text risk (Plotline's date): our headline is left-aligned with the caller's line right-aligned, and the waveform, not the type, carries the page. The claim file's three-column body is the most conventional screen; its recording band and source chips are what make it ClaimVoice's.
+| | The usual pattern | **ClaimVoice** |
+|---|---|---|
+| **Layout** | Sidebar + dashboard cards | **Rounded cards on porcelain; vertical channel strips; transcript ↔ claim file split; a full-width recording band** |
+| **Navigation** | Left sidebar with grouped menus | **A floating aubergine pill dock at the bottom centre, which also carries the line you're on** |
+| **Landing** | Dark "premium AI" hero, a glowing orb or waveform preview, then a feature grid | **A call you can hear: lyric captions in two alignments over a full-bleed mirrored waveform; values pluck into a slip; the route unfurls. Nothing auto-plays.** |
+| **Home** | Greeting + KPI tiles | **The line desk: strips per live call, hand-off tray, surge ribbon, finished tickets** |
+| **Transcript** | Chat bubbles, or a scrolling live transcript on the supervisor's screen | **A lyric sheet on the landing, time-gutter rows in the app, and no live transcript on the desk** |
+| **Type** | One system sans | **Bricolage Grotesque (opsz) + Figtree; no serif, no mono** |
+| **Colour** | Dark with a neon accent, or grey + blue | **Porcelain blush + aubergine ink + orchid magenta; caller plum, person cobalt; light default, aubergine night** |
+| **Shape** | Default radii, borders | **Pills and 28 px cards, fills not borders, hatching = not kept** |
+| **Motion** | Fades and a pulsing orb | **Breathe, Settle, Pluck, Ripple, Hush, Hand, Route, Ride (audio-reactive)** |
+| **Density** | Medium to high, tables | **Low: 44–50 px targets, 1.5 line height, a few big things per screen** |
+| **Data idiom** | Scores, gauges and sentiment meters | **Conversation waveform, heard pills with source chips, lyric captions, sentence answers, rates as "96 in 100"** |
+| **Logo** | A soundwave or a microphone | **Orchid speech tile with bars rising into a tick + Bricolage "ClaimVoice"** |
+
+The claim file's three-column body is the most conventional screen; its recording band and source chips are what make
+it ClaimVoice's.
 
 ---
 
@@ -382,13 +386,13 @@ Theme: `data-theme` on `<html>`, default `light`, stored per user (`useLocalStor
 
 **Copy rules (rendered text):** plain, warm, second person for callers, short declaratives for staff. Say "what we heard", "why this route", "signs worth a closer look", "routing checks", "fact sheet", "likely size". Never: LLM, model scores, SHAP, slots, prompt, pipeline, latency, fallback, confidence decimals. Express rates as "96 in 100". The forbidden-word scan run with the screenshots must stay clean.
 
-### Changes from the §Calla hypothesis
+### Changes from the first concept
 1. **No chat bubbles.** The transcript is a lyric sheet on the landing (two alignments) and time-gutter rows in the app; bubbles read as every chat widget (Lemonade, Retell).
-2. **One dock, not a top route bar + a bottom call dock.** Navigation and the line you're on share one floating pill; it can't be mistaken for Nightjar's status line.
+2. **One dock, not a top route bar + a bottom call dock.** Navigation and the line you're on share one floating pill, so there is one thing at the bottom of the screen, not two.
 3. **The landing hero is a waveform horizon, not a centred orb.** The play button rides the call; the headline is ClaimVoice's own first line; the route is the last slip pill unfurling (no card flip, no card on the right). The orb moved to the demo-line band.
 4. **Switchboard rows became vertical channel strips** (sound desk) with level meters, "ClaimVoice asked", script progress and pills, and **no live transcript** on the desk (Five9 finding).
-5. **Palette tuned:** blush `#FBF6F3` → porcelain `#FBF7F9` (the beige read close to Plotline's map paper); added aubergine ink and dock; caller plum and person cobalt as voice colours; the "Calla bubble" tokens are gone; an aubergine Night line replaces a generic dark.
+5. **Palette tuned:** blush `#FBF6F3` → porcelain `#FBF7F9` (the beige read as old paper); added aubergine ink and dock; caller plum and person cobalt as voice colours; the chat-bubble tokens are gone; an aubergine Night line replaces a generic dark.
 6. **New motions:** Settle (interim → final), Hush (card numbers), Hand (hand-off), Ride (playhead); Route is an unfurl instead of a flip.
 7. **Whisper redefined** for an AI agent: a typed note ClaimVoice acts on, shown in the transcript.
 8. **Routing checks** written as a regulator's questions with frequencies, not a metrics page.
-9. **Logo:** the calla-lily curl is replaced by a speech tile whose bars rise into a tick.
+9. **Logo:** the first sketch, a flower curl, is replaced by a speech tile whose bars rise into a tick.
