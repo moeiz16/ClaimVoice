@@ -1,0 +1,27 @@
+key: h2-fr-camion
+title: "Held out 2 (French): un camion a accroché la voiture"
+language: fr
+region: CA-QC
+caller_phone: "+15145550401"
+policy_number: LM-QC-160001
+turns:
+  - text: "Bonjour, un camion de livraison a accroché ma voiture dans la rue."
+  - text: "Oui, c'est correct."
+  - text: "LM-QC-160001."
+  - text: "Le cinq mai 1980."
+  - text: "Non, personne n'est blessé."
+  - text: "Hier, sur la rue Saint-Denis."
+  - text: "Vers trois heures de l'après-midi."
+  - text: "Oui, le camion."
+  - text: "Je ne sais pas."
+  - text: "Non, pas de police."
+  - text: "La portière arrière et l'aile."
+  - text: "Oui, elle roule."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui, c'est ça."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_date: "2026-01-07", other_party_involved: true, police_report_filed: false}

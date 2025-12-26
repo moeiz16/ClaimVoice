@@ -1,0 +1,26 @@
+key: h2-deer-ditch
+title: "Held out 2: swerved for a deer and went into the ditch"
+language: en
+region: US-CO
+caller_phone: "+17205550301"
+policy_number: LM-CO-350001
+turns:
+  - text: "I swerved to miss a deer and ended up in the ditch."
+  - text: "Sure."
+  - text: "LM-CO-350001."
+  - text: "July 4th, 1987."
+  - text: "I'm a little shaken but not hurt."
+  - text: "Last night on Highway 285 near Conifer."
+  - text: "Around nine thirty."
+  - text: "No, just me."
+  - text: "No."
+  - text: "Front bumper and the passenger side."
+  - text: "No, it had to be towed."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, other_party_involved: false, vehicle_drivable: false}

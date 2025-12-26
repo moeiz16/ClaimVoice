@@ -21,6 +21,39 @@ TODAY = "2026-01-08"
 
 
 HELD_OUT = Path(__file__).resolve().parents[1] / "callers" / "held_out"
+HELD_OUT_2 = Path(__file__).resolve().parents[1] / "callers" / "held_out_2"
+
+
+def _held_out(directory: Path) -> dict[str, Any]:
+    """Score a held-out set the same way as the main set: the right final stage, the right hand-off, the values."""
+    rows: list[list[Any]] = []
+    completed = hits_all = total_all = 0
+    for r in asyncio.run(_run_all(str(directory))):
+        caller, res, sink = r["caller"], r["result"], r["sink"]
+        exp = caller.expect
+        handoffs = [h[0].value for h in sink.of("handoff")]
+        done = res.stage_at_end_of_script == exp.get("final_stage", "ended") and (
+            (handoffs[0] if handoffs else False) == exp.get("handoff", False)
+        )
+        slots = exp.get("slots") or {}
+        hits = sum(res.values.get(k) == (TODAY if v == "{today}" else v) for k, v in slots.items())
+        completed += done
+        hits_all += hits
+        total_all += len(slots)
+        rows.append(
+            [
+                caller.key,
+                caller.language,
+                "yes" if done else "no",
+                f"{hits}/{len(slots)}",
+                handoffs[0] if handoffs else "-",
+            ]
+        )
+    return {"rows": rows, "completed": completed, "of": len(rows), "values": hits_all, "valuesOf": total_all}
+
+
+def _summary(ho: dict[str, Any]) -> dict[str, int]:
+    return {k: ho[k] for k in ("completed", "of", "values", "valuesOf")}
 
 
 async def _run_all(directory: str | None = None) -> list[dict[str, Any]]:
@@ -114,28 +147,8 @@ def run() -> Report:
             ]
         )
     n = len(runs)
-    ho_runs = asyncio.run(_run_all(str(HELD_OUT)))
-    ho_rows, ho_done, ho_hits, ho_total = [], 0, 0, 0
-    for r in ho_runs:
-        caller, res, sink = r["caller"], r["result"], r["sink"]
-        exp = caller.expect
-        handoffs = [h[0].value for h in sink.of("handoff")]
-        done = res.stage_at_end_of_script == exp.get("final_stage", "ended") and (
-            (handoffs[0] if handoffs else False) == exp.get("handoff", False)
-        )
-        hits = sum(res.values.get(k) == (TODAY if v == "{today}" else v) for k, v in (exp.get("slots") or {}).items())
-        ho_done += done
-        ho_hits += hits
-        ho_total += len(exp.get("slots") or {})
-        ho_rows.append(
-            [
-                caller.key,
-                caller.language,
-                "yes" if done else "no",
-                f"{hits}/{len(exp.get('slots') or {})}",
-                handoffs[0] if handoffs else "-",
-            ]
-        )
+    ho = _held_out(HELD_OUT)
+    ho2 = _held_out(HELD_OUT_2)
     gates = [
         Gate(SUITE, "callers", "Scripted callers (EN/FR)", n, 30, "min"),
         Gate(SUITE, "task_completion", "Task completion", sum(completion) / n, 0.95, "min"),
@@ -171,8 +184,8 @@ def run() -> Report:
         Gate(
             SUITE,
             "held_out_completion",
-            "Held-out callers completed (wording never used to tune; floor)",
-            ho_done / max(1, len(ho_runs)),
+            "Held-out callers, first set, completed (floor)",
+            ho["completed"] / max(1, ho["of"]),
             0.5,
             "min",
         ),
@@ -187,15 +200,27 @@ def run() -> Report:
             "---|---|---|---:|---|---|---:",
         ),
         "",
-        f"Held-out callers (written after the line was finished and never used to tune it): {ho_done} of "
-        f"{len(ho_runs)} completed as expected, {ho_hits} of {ho_total} values right. The misses are wording the "
-        'rules don\'t know yet ("dinged my car", "reculé dans ma voiture"): where a cloud reader or new patterns '
-        "would help. The main set above is a regression suite written alongside the line.",
+        "Held-out callers, first set (written after the line was finished): "
+        f"{ho['completed']} of {ho['of']} completed as expected, {ho['values']} of {ho['valuesOf']} values right. "
+        "This set has since been used once to widen the rules (new ways to describe a collision, night-time hours, "
+        "a caller saying the home is fine), so it now shows those fixes hold rather than how the line copes with "
+        "unseen wording.",
         "",
-        *table(["Held-out caller", "Lang", "Completed", "Values", "Hand-off"], ho_rows, "---|---|---|---:|---"),
+        *table(["Held-out caller", "Lang", "Completed", "Values", "Hand-off"], ho["rows"], "---|---|---|---:|---"),
+        "",
+        "Held-out callers, second set (written before that change and never used to tune anything): "
+        f"{ho2['completed']} of {ho2['of']} completed as expected, {ho2['values']} of {ho2['valuesOf']} values right. "
+        "This is the honest measure of wording the line has not seen, and it is reported here rather than gated. "
+        "Most misses start in the caller's first sentence: the rules don't recognise how they describe the loss "
+        '("water dripping through my ceiling", "the storm ripped shingles off", "a pickup clipped my car"), so the '
+        "line asks again, the scripted answers fall out of step, and after two turns it can't place it hands the "
+        "call to a person rather than keep a wrong value. The cloud reader (LLM_FAKE=false) is the intended answer "
+        "to open wording; the rules are the offline floor.",
+        "",
+        *table(["Held-out caller", "Lang", "Completed", "Values", "Hand-off"], ho2["rows"], "---|---|---|---:|---"),
     ]
     return Report(
         gates,
         lines,
-        {"rows": rows, "heldOut": {"completed": ho_done, "of": len(ho_runs), "values": ho_hits, "valuesOf": ho_total}},
+        {"rows": rows, "heldOut": _summary(ho), "heldOut2": _summary(ho2)},
     )

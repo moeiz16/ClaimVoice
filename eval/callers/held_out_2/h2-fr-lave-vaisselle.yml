@@ -1,0 +1,25 @@
+key: h2-fr-lave-vaisselle
+title: "Held out 2 (French): le lave-vaisselle a débordé"
+language: fr
+region: CA-QC
+caller_phone: "+15145550402"
+policy_number: LM-QC-160002
+turns:
+  - text: "Bonjour, mon lave-vaisselle a débordé, il y a de l'eau sur tout le plancher de la cuisine."
+  - text: "Oui."
+  - text: "LM-QC-160002."
+  - text: "Le vingt et un novembre 1972."
+  - text: "Oui, tout le monde va bien."
+  - text: "Ce matin."
+  - text: "Vers six heures et demie."
+  - text: "Le lave-vaisselle."
+  - text: "La cuisine."
+  - text: "Non, c'est arrêté."
+  - text: "Oui, merci."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, water_still_entering: false}

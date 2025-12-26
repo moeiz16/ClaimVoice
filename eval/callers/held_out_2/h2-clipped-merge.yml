@@ -1,0 +1,27 @@
+key: h2-clipped-merge
+title: "Held out 2: a pickup clipped the car while merging"
+language: en
+region: CA-AB
+caller_phone: "+14035550201"
+policy_number: LM-AB-250001
+turns:
+  - text: "Hey, a pickup clipped the side of my car when I was merging onto Deerfoot."
+  - text: "Yeah that's fine."
+  - text: "It's LM-AB-250001."
+  - text: "February eleventh, 1985."
+  - text: "I'm okay, no one's hurt."
+  - text: "This morning, on Deerfoot Trail near Glenmore."
+  - text: "Maybe twenty to seven."
+  - text: "Yes, the pickup."
+  - text: "He said Intact, I wrote it down."
+  - text: "No, we just swapped info."
+  - text: "The driver side mirror and the rear door."
+  - text: "Yes, I drove it home."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "That's right."
+  - text: "No, that's it."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, other_party_involved: true, police_report_filed: false, vehicle_drivable: true}

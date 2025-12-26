@@ -1,0 +1,24 @@
+key: h2-ceiling-drip
+title: "Held out 2: water coming through the ceiling from upstairs"
+language: en
+region: CA-AB
+caller_phone: "+14035550202"
+policy_number: LM-AB-250002
+turns:
+  - text: "Hi, there's water dripping through my living room ceiling from the upstairs bathroom."
+  - text: "Yes, go ahead."
+  - text: "My policy is LM-AB-250002."
+  - text: "August 23rd, 1977."
+  - text: "We're all fine, nothing dangerous."
+  - text: "About an hour ago."
+  - text: "The toilet upstairs overflowed."
+  - text: "The living room and the upstairs bathroom."
+  - text: "No, it's stopped now, I turned the valve off."
+  - text: "Yes please."
+  - text: "Got it."
+  - text: "Yes."
+  - text: "No thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, water_still_entering: false}

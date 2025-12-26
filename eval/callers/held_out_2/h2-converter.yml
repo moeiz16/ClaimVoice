@@ -1,0 +1,25 @@
+key: h2-converter
+title: "Held out 2: catalytic converter taken overnight"
+language: en
+region: CA-AB
+caller_phone: "+14035550205"
+policy_number: LM-AB-250005
+turns:
+  - text: "Someone sawed the catalytic converter off my SUV overnight."
+  - text: "Yes."
+  - text: "LM-AB-250005."
+  - text: "March 27, 1996."
+  - text: "Nobody is hurt."
+  - text: "Sometime last night, I noticed this morning."
+  - text: "Out front of my house on the street."
+  - text: "The catalytic converter."
+  - text: "No, nothing broken."
+  - text: "Not yet, I'm going to call them after this."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Yes, that's right."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: theft, forced_entry: false, police_report_filed: false}

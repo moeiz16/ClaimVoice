@@ -1,0 +1,13 @@
+key: h2-real-human
+title: "Held out 2: wants a real human being, in their own words"
+language: en
+region: US-CO
+caller_phone: "+17205550303"
+policy_number: LM-CO-350003
+turns:
+  - text: "Hi, someone backed into me at the gas station."
+  - text: "Yes."
+  - text: "Honestly I'd rather talk to a real human being about this."
+expect:
+  final_stage: handoff
+  handoff: caller_asked

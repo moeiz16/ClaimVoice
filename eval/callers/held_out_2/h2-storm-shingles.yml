@@ -1,0 +1,27 @@
+key: h2-storm-shingles
+title: "Held out 2: the storm ripped shingles and a gutter off"
+language: en
+region: CA-AB
+caller_phone: "+14035550204"
+policy_number: LM-AB-250004
+turns:
+  - text: "Morning. That storm overnight ripped a bunch of shingles off and pulled a gutter down."
+  - text: "That's fine."
+  - text: "LM-AB-250004."
+  - text: "June 17, 1949."
+  - text: "I'm fine, no danger."
+  - text: "Around two in the morning, the noise woke me up."
+  - text: "Yes, the roof, a lot of shingles are gone."
+  - text: "Yes, the gutter on the front is hanging off."
+  - text: "No idea."
+  - text: "No, the roof isn't open."
+  - text: "Yes, we can stay."
+  - text: "No, power's fine."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "Correct."
+  - text: "No thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: wind, roof_or_window_damage: true, siding_or_fence_damage: true, home_livable: true}
