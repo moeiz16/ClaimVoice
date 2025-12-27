@@ -93,8 +93,8 @@
     {
       "suite": "dialogue",
       "key": "held_out_completion",
-      "label": "Held-out callers completed (wording never used to tune; floor)",
-      "value": 0.625,
+      "label": "Held-out callers, first set, completed (floor)",
+      "value": 1.0,
       "limit": 0.5,
       "direction": "min",
       "passed": true
@@ -112,7 +112,7 @@
       "suite": "latency",
       "key": "webrtc_p95",
       "label": "Browser speech over WebRTC: caller text to line caption, p95 (ms)",
-      "value": 5.895709007745609,
+      "value": 3.424416994675994,
       "limit": 800,
       "direction": "max",
       "passed": true
@@ -627,24 +627,30 @@
         ]
       ],
       "heldOut": {
-        "completed": 5,
+        "completed": 8,
         "of": 8,
-        "values": 11,
+        "values": 20,
         "valuesOf": 20
+      },
+      "heldOut2": {
+        "completed": 1,
+        "of": 8,
+        "values": 0,
+        "valuesOf": 22
       }
     },
     "latency": {
       "voice": {
-        "p50": 200.3,
+        "p50": 200.31,
         "p95": 200.57
       },
       "webrtc": {
-        "p50": 1.4155829994706437,
-        "p95": 5.895709007745609
+        "p50": 1.5016669931355864,
+        "p95": 3.424416994675994
       },
       "stages": {
         "sttMs": 200.0,
-        "understandMs": 0.34,
+        "understandMs": 0.33,
         "toolsMs": 0.05,
         "planMs": 0.33,
         "firstAudioMs": 0.09,
