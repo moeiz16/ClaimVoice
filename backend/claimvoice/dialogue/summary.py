@@ -5,6 +5,7 @@ on the call and the claim (`summary` in the call's language, `summary_en` for ad
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -113,3 +114,38 @@ def summary(values: Mapping[str, Any], language: str, *, caller: str | None = No
     if values.get("photos_promised"):
         text += " Lien pour les photos envoyé." if language == "fr" else " Photo link sent."
     return text
+
+
+_OPENERS = re.compile(
+    r"^\s*(?:(?:hi|hello|hey|hi there|hello there|good (?:morning|afternoon|evening)|morning|so|um+|uh+|well|yeah|"
+    r"okay|ok|oh|bonjour|bonsoir|allô|allo|oui|euh|alors|ben|bon|madame|monsieur)\b[\s,.!-]*)+",
+    re.IGNORECASE,
+)
+_THIRD_PERSON = (
+    (r"\bI'm\b", "they're"),
+    (r"\bI am\b", "they are"),
+    (r"\bI've\b", "they've"),
+    (r"\bI was\b", "they were"),
+    (r"\bI\b", "they"),
+    (r"\bmy\b", "their"),
+    (r"\bmine\b", "theirs"),
+    (r"\bme\b", "them"),
+    (r"\bmyself\b", "themselves"),
+    (r"\bwe're\b", "they're"),
+    (r"\bwe\b", "they"),
+    (r"\bour\b", "their"),
+    (r"\bus\b", "them"),
+)
+
+
+def in_brief(text: str, language: str) -> str:
+    """The caller's first description as a line for a person picking up the call: greetings and fillers dropped,
+    first person turned into "they" in English (French keeps the caller's words, in quotes)."""
+    body = _OPENERS.sub("", text or "").strip().rstrip(".!? ")
+    if not body:
+        return ""
+    if language == "fr":
+        return f"« {body} »"
+    for pattern, repl in _THIRD_PERSON:
+        body = re.sub(pattern, repl, body, flags=re.IGNORECASE)
+    return body[0].upper() + body[1:]

@@ -70,3 +70,14 @@ def test_seven_display_steps_cover_the_script_in_order():
     assert steps == sorted(steps)
     assert set(steps) == set(range(1, len(DISPLAY_STEPS) + 1)) == set(range(1, 8))
     assert DISPLAY_STEPS[STAGE_STEP[Stage.SAFETY] - 1]["en"] == "Safety"
+
+
+def test_a_first_description_reads_as_a_brief_for_the_person_taking_over():
+    from claimvoice.dialogue.summary import in_brief
+
+    assert in_brief("Hi, my fence blew down onto my neighbour's car.", "en") == (
+        "Their fence blew down onto their neighbour's car"
+    )
+    assert in_brief("Good morning. So, uh, I smell gas and we're outside.", "en") == "They smell gas and they're outside"
+    assert in_brief("Bonjour, mon sous-sol est inondé.", "fr") == "« mon sous-sol est inondé »"
+    assert in_brief("Hi.", "en") == ""

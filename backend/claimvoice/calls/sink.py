@@ -42,6 +42,7 @@ from claimvoice.contracts import (
     TurnLatency,
     TurnRecord,
 )
+from claimvoice.dialogue.summary import facts, in_brief
 from claimvoice.platform import db
 from claimvoice.platform.events import bus, call_key, org_key
 from claimvoice.platform.models import Organization
@@ -728,7 +729,12 @@ async def handoff_summary(session: AsyncSession, call: Call, detail: str) -> str
         first += f", {call.place}"
     loss = labels.loss_type(call.loss_type, "en")
     said = parts.current.get("loss_description")
-    second = f"{loss}: {said.display}" if loss and said else (detail or (loss or "Loss not described yet"))
+    brief = in_brief(said.display, call.language or "en") if said else ""
+    values = {k: row.value for k, row in parts.current.items()}
+    known = facts(values, "en")[1 if values.get("loss_type") else 0 :]  # the loss itself is already named
+    second = f"{loss}. {brief}." if loss and brief else (detail or (loss or "Loss not described yet"))
+    if known:
+        second += " " + known[0][0].upper() + known[0][1:] + "".join(f", {k}" for k in known[1:]) + "."
     return f"{first}.\n{second}"
 
 
