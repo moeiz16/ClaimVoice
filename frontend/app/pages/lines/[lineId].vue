@@ -134,8 +134,11 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(/^(caller|appel
       <span v-else class="skeleton" style="height: 46px; display: block" />
       <StateNote v-if="status === 'lost'" kind="error" title="We lost the connection to this line." body="The call carries on; ClaimVoice keeps taking it. Reconnecting…" retry @retry="reload" />
       <StateNote v-if="error" kind="error" title="We couldn't open this line." :body="error" retry @retry="reload" />
+      <p v-if="!myTake && !ended && listening.onLine.value?.callId === id" class="follow">
+        <CvIcon name="captions" size="s" />You're following this call by live captions. The desk shows the words, not the call's audio.
+      </p>
       <div v-if="myTake" class="onit" role="status">
-        <CvIcon name="phone" />You're on the call with {{ firstName(call?.callerLabel ?? '') }}. ClaimVoice is taking notes.
+        <CvIcon name="phone" />You're on the call with {{ firstName(call?.callerLabel ?? '') }}. Type below and the line says it; ClaimVoice is taking notes.
         <button class="btn sm soft on-sunk" type="button" @click="listening.giveBack(id)">
           <CvIcon name="swap" size="s" />Hand back to ClaimVoice
         </button>
@@ -266,6 +269,7 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(/^(caller|appel
 .turn.now .tr { font-size: 15px; }
 .hearing { font-weight: 650; color: var(--cv-orchid-ink); font-size: 11.5px; margin-left: 4px; }
 .interrupted p::after { content: " …"; color: var(--cv-faint); }
+.follow { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; color: var(--cv-muted); font-size: 13.5px; }
 .whisperbox { display: flex; align-items: center; gap: 10px; margin: 6px 14px 14px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--cv-sunk); color: var(--cv-person); }
 .whisperbox.say { background: var(--cv-person-wash); }
 .whisperbox input { flex: 1; border: 0; background: transparent; font: inherit; color: var(--cv-ink); font-size: 14.5px; min-width: 0; height: 38px; }

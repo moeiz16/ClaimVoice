@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Take over: confirm in a sheet. After: a person's (cobalt) voice joins, ClaimVoice keeps taking notes, and the
-// take-over is written to the activity log.
+// Take over: confirm in a sheet. After: the person types what to say, the line speaks it in its voice, ClaimVoice
+// keeps taking notes, and the take-over is written to the activity log. The desk follows by captions, not audio.
 import { firstName } from '~/utils/format'
 
 const listening = useListening()
@@ -21,9 +21,10 @@ async function confirm() {
   <CvSheet :open="!!target" :title="target ? `Take over ${firstName(target.callerLabel)}'s call?` : ''" @close="target = null">
     <div v-if="target" class="body">
       <p class="lede">
-        You'll be speaking with {{ firstName(target.callerLabel) }}. ClaimVoice will stop talking and keep taking notes. Your microphone will turn on, or you can type what to say.
+        You'll take {{ firstName(target.callerLabel) }}'s call by typing: what you write is spoken to {{ firstName(target.callerLabel) }} in the line's voice. ClaimVoice stops asking questions and keeps taking notes.
       </p>
       <ul>
+        <li><CvIcon name="captions" size="s" />You follow the call by live captions here; the desk doesn't play the call's audio.</li>
         <li><CvIcon name="doc" size="s" />Everything heard so far stays in the claim file.</li>
         <li><CvIcon name="swap" size="s" />You can hand the call back to ClaimVoice at any point.</li>
         <li><CvIcon name="chain" size="s" />The take-over is written to the activity log.</li>
