@@ -18,7 +18,7 @@ const COPY = {
     nav: ['Ring the demo line', 'What your team gets', 'Safeguards'],
     signin: 'Supervisors, sign in',
     eyebrow: 'A claim call to Larkspur Mutual, Calgary · Thursday 8 January, 2:14 a.m., during a Chinook windstorm',
-    sample: 'Sample call, voices are synthetic',
+    sample: 'Sample call, shortened · voices are synthetic',
     h1a: 'Tell me what happened.',
     h1b: 'I\'ll take it from there.',
     teaserWho: 'Dana, policyholder',
@@ -56,7 +56,7 @@ const COPY = {
     nav: ['Appeler la ligne de démo', 'Ce que votre équipe reçoit', 'Garanties'],
     signin: 'Superviseurs, connexion',
     eyebrow: 'Un appel de réclamation à Larkspur Mutual, Calgary · jeudi 8 janvier, 2 h 14, pendant une tempête de vent chinook',
-    sample: 'Appel d\'exemple, voix synthétiques',
+    sample: 'Appel d\'exemple, abrégé · voix synthétiques',
     h1a: 'Dites-moi ce qui s\'est passé.',
     h1b: 'Je m\'occupe du reste.',
     teaserWho: 'Dana, assurée',
@@ -406,7 +406,7 @@ function ring(mode: 'voice' | 'typed' | 'other') {
   .lp-top { padding: 0 16px; height: 64px; }
   .lp-nav, .lp-top .lang { display: none; }
   .eyebrow { padding: 0 16px; font-size: 12.5px; flex-wrap: wrap; }
-  .eyebrow .sample { display: none; }
+  .eyebrow .sample { margin-left: 0; font-size: 12px; }
   .stage { margin: 4px 16px 0; height: 476px; }
   .intro h1 { font-size: 48px; }
   .teaser { margin: 22px 0 0; font-size: 22px; }
