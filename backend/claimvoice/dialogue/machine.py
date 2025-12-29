@@ -26,6 +26,7 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from claimvoice import clock
 from claimvoice.contracts import (
@@ -55,6 +56,7 @@ from claimvoice.dialogue.scripts import condition_holds
 from claimvoice.dialogue.slots import KEY_FACTS, SLOT_CATALOG, display, required_keys
 from claimvoice.dialogue.stages import DISPLAY_STEPS, SCRIPT_ORDER, STAGE_LABELS, STAGE_STEP, Event, Stage, next_stage
 from claimvoice.dialogue.summary import read_back, summary
+from claimvoice.ml.features import REGION_TZ
 from claimvoice.nlu.base import Intent, LanguageUnderstanding, NluRequest, NluResult, SlotSpec, SlotValue
 from claimvoice.nlu.fake import SAFETY_REASONS, FakeUnderstanding, detect_language
 from claimvoice.nlu.parse import find_money
@@ -373,7 +375,12 @@ class CallEngine:
         return self.clock.now_ms()
 
     def business_now(self) -> datetime:
-        return self.answered_at + timedelta(milliseconds=self.now_ms())
+        """Now, in the caller's local time: "ten past two" and "today" are said in the caller's zone, not in UTC."""
+        at = self.answered_at + timedelta(milliseconds=self.now_ms())
+        if at.tzinfo is None:
+            return at
+        region = self.policy.region if self.policy else self.region
+        return at.astimezone(ZoneInfo(REGION_TZ.get(region, "America/Edmonton")))
 
     def values(self) -> dict[str, Any]:
         return {k: s.value for k, s in self.slots.items()}

@@ -261,3 +261,16 @@ async def test_wrap_up_reads_the_reserved_claim_number():
     assert any(number in t for t in line_texts(full))
     ended = [o for o in full.outs if isinstance(o, EndedOut)]
     assert ended and ended[0].claim_number == number
+
+
+async def test_times_are_read_in_the_callers_zone_on_a_live_call():
+    """A live call's clock is UTC; "ten past two" at 7:50 a.m. in Calgary (14:50 UTC) is 2:10 a.m., not p.m."""
+    from datetime import UTC, datetime
+
+    res = await run_scenario("dana-skylight", answered_at=datetime(2026, 1, 8, 14, 50, tzinfo=UTC))
+    assert res.values["loss_time"] == "02:10"
+    assert res.values["loss_date"] == "2026-01-08"
+    late = await run_scenario(
+        "dana-skylight", answered_at=datetime(2026, 1, 9, 5, 30, tzinfo=UTC)
+    )  # 10:30 p.m. on the 8th
+    assert late.values["loss_date"] == "2026-01-08"
