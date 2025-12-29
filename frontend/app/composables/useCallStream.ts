@@ -2,7 +2,7 @@
 import type { CallDetail, LiveLine } from '~/types/api'
 import { api } from '~/utils/api'
 import { applyCallEvent, parseEnvelope, type CallState } from '~/utils/events'
-import { apiStream } from '~/utils/http'
+import { apiStream, getUiLang } from '~/utils/http'
 import type { StreamHandle } from '~/utils/sse'
 
 export function useCallStream(callId: Ref<string>) {
@@ -13,6 +13,23 @@ export function useCallStream(callId: Ref<string>) {
   const retained = ref(true)
   const notice = ref<string | null>(null)
   let stream: StreamHandle | null = null
+  let relabel: ReturnType<typeof setTimeout> | null = null
+
+  // Event payloads carry English labels: a French view refetches the call and its claim file for French ones.
+  const LABELLED = new Set(['slot.updated', 'stage.changed', 'flag.raised', 'handoff.updated', 'call.ended'])
+  function relabelSoon(id: string, event: string) {
+    if (getUiLang() !== 'fr' || !LABELLED.has(event)) return
+    if (relabel) clearTimeout(relabel)
+    relabel = setTimeout(async () => {
+      relabel = null
+      try {
+        const [call, file] = await Promise.all([api.calls.get(id), api.calls.claimFile(id).catch(() => null)])
+        if (callId.value !== id) return
+        state.value = { ...state.value, call: withLineInfo(call, line.value), file: file ?? state.value.file }
+      }
+      catch { /* the English labels from the event stay until the next event */ }
+    }, 350)
+  }
 
   async function load(id: string) {
     status.value = 'loading'
@@ -45,12 +62,16 @@ export function useCallStream(callId: Ref<string>) {
         if (ev.event === 'ping') return
         const env = parseEnvelope(ev.data)
         state.value = applyCallEvent(state.value, ev.event, env?.data ?? {})
+        relabelSoon(id, ev.event)
       },
     })
   }
 
   watch(callId, id => id && load(id), { immediate: true })
-  onBeforeUnmount(() => stream?.close())
+  onBeforeUnmount(() => {
+    if (relabel) clearTimeout(relabel)
+    stream?.close()
+  })
 
   return { state, line, status, error, retained, notice, reload: () => load(callId.value) }
 }

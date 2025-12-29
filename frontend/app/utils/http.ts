@@ -50,6 +50,8 @@ export function setMockMode(on: boolean, backend: MockBackend | null = null): vo
 }
 export function isMockMode(): boolean { return mockOn }
 export function setUiLang(lang: 'en' | 'fr'): void { uiLang = lang }
+/** The language API labels are asked for. Event-stream labels are always English (see API_CONTRACT §SSE). */
+export function getUiLang(): 'en' | 'fr' { return uiLang }
 
 async function mock(): Promise<MockBackend> {
   if (!mockBackend) {

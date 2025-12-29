@@ -3,7 +3,7 @@
 import type { SwitchboardSnapshot } from '~/types/api'
 import { api } from '~/utils/api'
 import { applySwitchboardEvent, parseEnvelope, waitingCount } from '~/utils/events'
-import { apiStream } from '~/utils/http'
+import { apiStream, getUiLang } from '~/utils/http'
 import type { StreamHandle } from '~/utils/sse'
 
 const snapshot = ref<SwitchboardSnapshot | null>(null)
@@ -11,6 +11,16 @@ const status = ref<'idle' | 'loading' | 'open' | 'lost' | 'error'>('idle')
 const error = ref<string | null>(null)
 let stream: StreamHandle | null = null
 let consumers = 0
+let relabel: ReturnType<typeof setTimeout> | null = null
+
+// Event payloads carry English labels; a French desk applies the event at once (codes and counts are right) and
+// then refetches the snapshot for its French labels, at most once per burst of events.
+const LABELLED = new Set(['line.opened', 'line.updated', 'line.closed', 'handoff.requested', 'handoff.updated', 'surge.started', 'surge.updated', 'claim.created', 'claim.routed', 'claim.updated', 'stats.updated'])
+function relabelSoon(event: string) {
+  if (getUiLang() !== 'fr' || !LABELLED.has(event)) return
+  if (relabel) clearTimeout(relabel)
+  relabel = setTimeout(() => { relabel = null; void reload() }, 350)
+}
 
 async function reload() {
   try {
@@ -40,12 +50,17 @@ async function start() {
       if (!snapshot.value) return
       const next = applySwitchboardEvent(snapshot.value, ev.event, env?.data ?? {})
       if (next === 'resync') void reload()
-      else snapshot.value = next
+      else {
+        snapshot.value = next
+        relabelSoon(ev.event)
+      }
     },
   })
 }
 
 function stop() {
+  if (relabel) clearTimeout(relabel)
+  relabel = null
   stream?.close()
   stream = null
   status.value = 'idle'
