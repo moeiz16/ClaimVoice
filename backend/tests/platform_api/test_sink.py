@@ -253,3 +253,29 @@ async def test_a_burst_pipe_finds_the_policy_coverage_that_answers_it(seeded):
     cov = await SqlPolicyDirectory().coverage(org.id, policy.id, "water:burst_pipe", date(2026, 1, 8))
     assert any(c.included for c in cov.lines)
     assert "covers" in cov.plain_words["en"] and "don't see coverage" not in cov.plain_words["en"]
+
+
+async def test_call_numbers_never_repeat_after_a_public_demo_call_is_deleted(seeded):
+    """Public demo calls are deleted after they end; the next call must not reuse a number still in use."""
+    from claimvoice.calls.sink import next_reference
+
+    org_id, _ = await _org_and_policy()
+    async with db.sessionmaker()() as session:
+        first = await next_reference(session, org_id)
+        prefix, n = first.rsplit("-", 1)
+        for i in (0, 2):  # numbers n and n+2 are in use, n+1 was a demo call that has been deleted
+            session.add(
+                Call(
+                    id=new_id(),
+                    org_id=org_id,
+                    reference=f"{prefix}-{int(n) + i:03d}",
+                    mode="typed",
+                    channel="test",
+                    language="en",
+                    state="ended",
+                    stage="ended",
+                    answered_at=clock.now(),
+                )
+            )
+        await session.commit()
+        assert await next_reference(session, org_id) == f"{prefix}-{int(n) + 3:03d}"

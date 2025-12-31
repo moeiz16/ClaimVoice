@@ -753,18 +753,20 @@ def _sms_body(call_id: str, token: str) -> str:
 
 async def next_reference(session: AsyncSession, org_id: str) -> str:
     """CALL-260108-042: the day (org-local) and that day's running number."""
-    from sqlalchemy import func
 
     org = await session.get(Organization, org_id)
     tz = org.timezone if org else "America/Edmonton"
     day = clock.today(tz)
     prefix = f"CALL-{day:%y%m%d}-"
-    count = (
-        await session.execute(
-            select(func.count()).select_from(Call).where(Call.org_id == org_id, Call.reference.like(prefix + "%"))
-        )
-    ).scalar_one()
-    return f"{prefix}{int(count) + 1:03d}"
+    # The highest number used today, not a count: public demo calls are deleted after they end, so a count would
+    # hand out a number that is still taken.
+    used = (
+        (await session.execute(select(Call.reference).where(Call.org_id == org_id, Call.reference.like(prefix + "%"))))
+        .scalars()
+        .all()
+    )
+    n = max((int(r[len(prefix) :]) for r in used if r[len(prefix) :].isdigit()), default=0)
+    return f"{prefix}{n + 1:03d}"
 
 
 async def next_line_number(session: AsyncSession, org_id: str) -> int:
