@@ -21,6 +21,11 @@ _LOSS_COVERAGE: dict[str, tuple[str, ...]] = {
     "hail": ("wind_hail", "dwelling", "comprehensive"),
     "wind": ("wind_hail", "dwelling", "fence", "comprehensive"),
     "water": ("water_escape", "sewer_backup", "overland_water", "dwelling"),
+    # the engine passes where the water came from ("water:burst_pipe"): the coverage that answers that source
+    "water:burst_pipe": ("water_escape", "dwelling"),
+    "water:roof": ("dwelling",),
+    "water:sewer_backup": ("sewer_backup",),
+    "water:overland": ("overland_water",),
     "fire": ("dwelling", "contents", "additional_living_expenses", "comprehensive"),
     "theft": ("comprehensive", "contents"),
 }
@@ -122,7 +127,7 @@ class SqlPolicyDirectory:
         if policy is None or policy.org_id != org_id:
             return contracts.CoverageSummary(policy_id, loss_type, False, [], {"en": "", "fr": ""})
         in_force = policy.status == "active" and policy.effective_from <= loss_date <= policy.effective_to
-        wanted = _LOSS_COVERAGE.get(loss_type, ())
+        wanted = _LOSS_COVERAGE.get(loss_type) or _LOSS_COVERAGE.get(loss_type.split(":")[0], ())
         lines = [
             contracts.CoverageLine(
                 key=c.key,
@@ -151,9 +156,9 @@ class SqlPolicyDirectory:
             ded_en = _money(first.deductible, policy.currency, "en")
             ded_fr = _money(first.deductible, policy.currency, "fr")
             words = {
-                "en": f"Your policy includes {first.label.lower()} coverage with a {ded_en} deductible. "
+                "en": f"Your policy covers {first.label.lower()}, with a {ded_en} deductible. "
                 "An adjuster confirms what's covered; nothing is decided on this call.",
-                "fr": f"Votre police comprend la garantie {label_fr.lower()} avec une franchise de {ded_fr}. "
+                "fr": f"Votre police couvre : {label_fr.lower()}, avec une franchise de {ded_fr}. "
                 "Un expert vérifiera la couverture avec vous; rien n'est décidé pendant cet appel.",
             }
         return contracts.CoverageSummary(policy.id, loss_type, in_force, lines, words)

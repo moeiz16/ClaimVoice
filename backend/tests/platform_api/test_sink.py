@@ -236,3 +236,20 @@ async def test_partial_captions_are_never_stored_or_replayed(seeded):
     async with db.sessionmaker()() as s:
         call = await s.get(Call, call_id)
     assert call.outcome in ("abandoned", "no_claim")
+
+
+async def test_a_burst_pipe_finds_the_policy_coverage_that_answers_it(seeded):
+    """The engine asks with the water's source ("water:burst_pipe"); the policy's water coverage must still answer."""
+    from datetime import date
+
+    from claimvoice.platform.models import Organization
+    from claimvoice.policies.directory import SqlPolicyDirectory
+    from claimvoice.policies.models import Policy
+
+    async with db.sessionmaker()() as session:
+        policy = (await session.execute(select(Policy).where(Policy.policy_number == "LM-QC-125530"))).scalar_one()
+        org = await session.get(Organization, policy.org_id)
+    assert org is not None
+    cov = await SqlPolicyDirectory().coverage(org.id, policy.id, "water:burst_pipe", date(2026, 1, 8))
+    assert any(c.included for c in cov.lines)
+    assert "covers" in cov.plain_words["en"] and "don't see coverage" not in cov.plain_words["en"]
