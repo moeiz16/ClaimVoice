@@ -24,7 +24,7 @@ ready. If you plan to ring the demo line, allow the microphone once beforehand, 
 | 0:30 | Landing | Jump to the end | "Read-back, claim number, and the route: fast-track, with three reasons in plain words. Nothing here denies a claim." |
 | 0:40 | Sign-in `/sign-in` | Use the demo sign-in as **Claims supervisor** (Renée Kowalchuk) | "Six roles. I'm the supervisor running the line desk." |
 | 0:45 | Lines `/lines` | Point at the amber ribbon, then the strips, then the tray | "A Chinook surge: calls are 3.4 times usual since 6 a.m. Three callers are on the line with ClaimVoice, each at a step of the seven-step script. Two are waiting for a person, and the urgent one is first: Hal smells gas in Airdrie. The line already told him to get out and call 911." |
-| 1:05 | Line 1, Gord Lindqvist | Press **Listen**, then **Whisper**: "Ask if the garage skylight is damaged too" | "I can listen in, whisper a note the caller never hears, or take the call. The whisper becomes one question in ClaimVoice's own words. The script, not a language model, decides what happens next." |
+| 1:05 | Line 1, Gord Lindqvist | Press **Listen**, then **Whisper**: "Ask if the garage skylight is damaged too" | "I can follow the call by live captions, whisper a note the caller never hears, or take the call. The whisper becomes one question in ClaimVoice's own words. The script, not a language model, decides what happens next." |
 | 1:30 | Claims `/claims` → **CV-26-01856** (Tomás Reyes, Denver) | Press play on the recording band; click a source chip in **In short** | "The adjuster's view. Every fact links to the moment it was said. Two speaker lanes, and the card-number gap is hatched." |
 | 1:50 | Same claim, **Where it goes** | Point at the route tags, the likely size and the signs | "The routing checks run at hang-up. XGBoost, calibrated, with reasons from SHAP turned into sentences. This one asked for a closer look: 3 of the 14 signs it checks, including a policy that started 19 days before the loss. Lena, the adjuster, moved it to Adjuster with a reason, and the referral stays open for the investigator. Both are in the audit log." |
 | 2:10 | Quality `/quality` | Open a call flagged **Right hand-off** (the labelled set includes a gas call where a person came 40 seconds late) | "Every call is scored against a rubric: consent first, identity, required details, kind words, no card numbers, the right hand-off. Twelve calls are waiting for review. This one opens at the moment that failed." |
@@ -37,7 +37,8 @@ ready. If you plan to ring the demo line, allow the microphone once beforehand, 
   questions. The line asks for recording consent first. Read out a test card number such as 4111 1111 1111 1111
   to see the line stop you. This uses the browser's own speech recognition and voices; nothing is kept after the
   page closes.
-- **Take over** on Line 2 (Kiara Booker): a third voice joins and ClaimVoice keeps taking notes.
+- **Take over** on Line 2 (Kiara Booker): type what to say and the line speaks it in its own voice, while ClaimVoice
+  stops asking questions and keeps taking notes.
 - **French:** open Line 3 (Martine Gagnon, Montréal). The French stays primary, with an English line under each turn
   for staff.
 - **Night line:** the theme toggle in the account menu.
@@ -52,3 +53,7 @@ ready. If you plan to ring the demo line, allow the microphone once beforehand, 
 - **"Are the model numbers real?"** The claim costs come from freMTPL2, real French motor claims. The fraud labels
   are synthetic, with documented injected patterns, so the closer-look numbers describe the method, not the world.
   See [model-cards/](model-cards/) and [eval/RESULTS.md](../eval/RESULTS.md).
+- **"How well does it understand callers it hasn't heard before?"** With the offline rules, not well yet. On eight
+  held-out callers never used for tuning, 1 call completes as expected, and the rest hand off to a person after two
+  turns it can't place, rather than filing a wrong value. Open wording is what the optional cloud reader is for; the
+  rules are the offline floor.

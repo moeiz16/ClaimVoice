@@ -816,13 +816,15 @@ bad token, `4404` unknown or ended call, `4409` another connection already holds
 
 ## 4.5 Supervisor audio legs
 
-`POST /calls/{id}/listen` and `…/handoff/accept` return `ListenOut`. For calls with server audio (`voice` mode, or
-`browser_speech` with the microphone track), `mode: "audio"` and a receive-only `ConnectInfo` (same offer/ICE flow,
-`Authorization: Bearer <listenerToken>`): the listener hears the caller and the line mixed. Without server audio,
-`mode: "transcript"`: the per-call SSE stream is the live view (the dock's mini player then draws its waveform from
-the stream's turn timing). Take over turns the person's microphone on: `TakeoverOut.connect` is a send-receive leg and
-a third (person) voice joins the waveform while ClaimVoice keeps taking notes. Without a microphone, the person types
-(`POST /calls/{id}/say`), spoken in the line's voice as "Renée from Larkspur".
+`POST /calls/{id}/listen` and `…/handoff/accept` return `ListenOut`. In this version every listener gets
+`mode: "transcript"` and `connect: null`: the per-call SSE stream is the live view, with live captions, and the dock's
+mini player draws its waveform from the stream's turn timing. Take over returns `TakeoverOut` with `connect: null`:
+the person types (`POST /calls/{id}/say`) and the line speaks it in its own voice as "Renée from Larkspur", while
+ClaimVoice stops asking questions and keeps taking notes.
+
+The shapes keep room for audio legs, which are future work: `mode: "audio"` with a receive-only `ConnectInfo` (same
+offer/ICE flow, `Authorization: Bearer <listenerToken>`) so the listener hears the caller and the line mixed, and a
+send-receive `TakeoverOut.connect` so the person speaks by microphone.
 
 ---
 

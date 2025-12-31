@@ -24,7 +24,7 @@ flowchart LR
       Lines["LineManager<br/>(LineControl)"]
       Pipe["Pipecat pipeline per call<br/>SmallWebRTC / WebSocket → VAD → STT → dialogue → TTS"]
       Dlg["Dialogue engine<br/>stage machine + scripts"]
-      NLU["Language understanding<br/>(fake | LiteLLM)"]
+      NLU["Language understanding<br/>(rules or LiteLLM)"]
       Tools["Mid-call tools<br/>policy, identity, coverage, SMS, weather"]
     end
     Sink["SqlCallSink<br/>(CallSink)"]
@@ -96,12 +96,12 @@ line's reply.
 | Tools (most turns need none) | 100 ms | 0.1 ms | budgets 200 to 600 ms each, with a fallback |
 | Dialogue engine + `CallSink` writes | 20 ms | 0.3 ms | sink calls must return within 20 ms p95 |
 | Text-to-speech first audio | 120 ms | 0.1 ms | streaming TTS (Cartesia or ElevenLabs); offline the browser speaks locally |
-| Transport and jitter buffer | 30 ms | not in the total | same machine or same region; 3.9 ms p95 over a real SmallWebRTC data channel |
+| Transport and jitter buffer | 30 ms | not in the total | same machine or same region; 3.4 ms p95 over a real SmallWebRTC data channel |
 | **Total** | **800 ms** | **201 ms** | the eval gate is p95 < 800 ms with fakes and VAD |
 
 Measured over 444 caller turns from 38 scripted calls in `voice` mode (the 200 ms is the VAD's stop setting, not
 work), and over a real SmallWebRTC data channel in `browser_speech` mode (14 turns), where the round trip from
-`caller.text` to `line.say` is 1.6 ms p50 and 3.9 ms p95 on one laptop. With cloud speech the budget is dominated by
+`caller.text` to `line.say` is 1.5 ms p50 and 3.4 ms p95 on one laptop. With cloud speech the budget is dominated by
 speech-to-text and the first synthesised audio; the table's cloud column is the allowance per stage, not a
 measurement.
 

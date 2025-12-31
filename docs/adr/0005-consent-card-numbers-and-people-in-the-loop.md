@@ -20,8 +20,9 @@ accountability duties; and an automated line must never trap a caller who needs 
 - **Hand-off rules** are sentences with editable blanks; urgent safety always reaches a person and cannot be turned
   off. If no one accepts within the wait limit, the line offers a call-back and finishes the claim file itself
   (never for urgent safety).
-- **Supervisor powers are audited:** listen, whisper (a typed note the line acts on; the caller never hears it), take
-  over (the person's voice joins; the line keeps taking notes), hand back, hang up.
+- **Supervisor powers are audited:** listen (follow the call by live captions), whisper (a typed note the line acts
+  on; the caller never hears it), take over (the person types and the line speaks it in its own voice; ClaimVoice
+  keeps taking notes), hand back, hang up. Audio for listening and a microphone for taking over are future work.
 - **No automatic claim decisions.** Routing decides who looks first; signs are a request for review; coverage is
   explained, never decided. Every routing view carries that statement.
 - **Retention** per organisation (recordings, transcripts, photos; default 7 years for claims records), a privacy

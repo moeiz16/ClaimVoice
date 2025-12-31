@@ -30,7 +30,7 @@ ClaimVoice is a voice line that answers the first call at any hour, in English o
 3. **Texts a photo link**, explains coverage basics in plain words (never a decision), reads the summary back and
    gives a claim number and next steps.
 4. **Hands off live to a person** whenever the caller asks, safety is at risk, the caller is distressed or the line
-   is not sure what it heard; supervisors can listen in, whisper a note the line acts on, or take the call.
+   is not sure what it heard; supervisors can follow the call live, whisper a note the line acts on, or take the call.
 5. Produces a **structured claim file** where every value links to the words it came from, plus the transcript,
    the recording and a summary.
 6. At hang-up, two **routing checks** send the claim to fast-track or an adjuster and ask special investigations to
