@@ -145,7 +145,9 @@ function seekMoment(dir: 1 | -1) {
 }
 function onKey(e: KeyboardEvent) {
   const el = e.target as HTMLElement | null
-  if (el && (['INPUT', 'TEXTAREA', 'BUTTON', 'A', 'SELECT'].includes(el.tagName) || el.isContentEditable)) return
+  if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)) return
+  // On a button or link, Space and Enter keep their own meaning; the call shortcuts still work after pressing Play.
+  if (el && ['BUTTON', 'A'].includes(el.tagName) && (e.key === ' ' || e.key === 'Enter')) return
   if (e.key === ' ') { e.preventDefault(); player.toggle() }
   else if (e.key === 'ArrowRight') player.seek(t.value + 5)
   else if (e.key === 'ArrowLeft') player.seek(t.value - 5)
@@ -388,6 +390,8 @@ function ring(mode: 'voice' | 'typed' | 'other') {
 .gets { background: var(--cv-surface); border-radius: 20px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
 .gets p { margin: 0 0 4px; width: 100%; font-size: 13px; font-weight: 750; color: var(--cv-muted); }
 .fade-scroll { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+@media (prefers-reduced-motion: reduce) { .fade-scroll { animation: none; } }
+:global(:root.reduce-motion) .fade-scroll { animation: none; }
 
 .guards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 60px 40px; max-width: 1320px; margin: 0 auto; }
 .guard { background: var(--cv-sunk); border-radius: 28px; padding: 28px; }

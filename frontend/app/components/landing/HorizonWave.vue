@@ -105,7 +105,7 @@ const waveLabel = computed(() => `${props.copy.wave} ${props.moments.map(m => `$
 .marks button.passed, .marks button.hushmark { color: var(--cv-muted); }
 .marks button:hover { color: var(--cv-ink); }
 @media (max-width: 720px) {
-  .horizon { --pl: 56px; --pr: 16px; height: 104px; }
+  .horizon { --pl: 56px; --pr: 40px; height: 104px; } /* room for the play button when it rides to the end */
   .playbtn { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
   .playlabel { left: 42px; }
   .marks { display: none; }
