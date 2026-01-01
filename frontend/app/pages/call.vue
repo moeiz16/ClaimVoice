@@ -47,6 +47,11 @@ const levelSource = {
   },
   who: (): Who => (state.value === 'speaking' ? 'cv' : 'gap'),
 }
+// The caller's slip: what was heard, each short answer with its question ("Injury reported No", not a bare "No").
+// The caller's own first sentence and the next steps (shown in full at the end) are left out.
+const SLIP_HIDDEN = new Set(['loss_description', 'next_steps_given', 'adjuster_contact_window', 'identity_check'])
+const shownSlip = computed(() => slip.value.filter(s => !SLIP_HIDDEN.has(s.key)))
+const labelled = (s: { value: unknown, display: string }) => typeof s.value === 'boolean' || typeof s.value === 'number' || /^[\d,.$ ]+$/.test(s.display)
 function sendTyped() { call.sendTyped(typedText.value); typedText.value = '' }
 </script>
 
@@ -136,7 +141,7 @@ function sendTyped() { call.sendTyped(typedText.value); typedText.value = '' }
 
         <div v-if="slip.length || ended" class="slip">
           <span class="label"><CvIcon name="doc" size="s" />{{ T.slip }}</span>
-          <span v-for="s in slip" :key="s.key" class="heard plain in"><span class="ic"><CvIcon :name="slipIcon(s.key)" size="s" /></span>{{ s.display }}</span>
+          <span v-for="s in shownSlip" :key="s.key" class="heard plain in"><span class="ic"><CvIcon :name="slipIcon(s.key)" size="s" /></span><span v-if="labelled(s)" class="k">{{ s.label }}</span>{{ s.display }}</span>
         </div>
 
         <section v-if="ended" class="end">
@@ -227,6 +232,7 @@ h1 { font-size: 54px; font-weight: 750; letter-spacing: -0.04em; }
 .slip .label { font-size: 13px; font-weight: 750; color: var(--cv-muted); display: inline-flex; gap: 6px; align-items: center; margin-right: 4px; }
 .slip .heard { animation: rise-in 260ms var(--ease-lift) both; }
 .slip .ic { color: var(--cv-orchid-ink); display: inline-flex; }
+.slip .k { color: var(--cv-muted); font-weight: 550; margin-right: 6px; }
 .end { background: var(--cv-surface); border-radius: 28px; padding: 20px 22px; display: grid; gap: 12px; }
 .end h2 { font-size: 30px; font-weight: 750; letter-spacing: -0.03em; }
 .end h2 span { color: var(--cv-orchid-ink); }
