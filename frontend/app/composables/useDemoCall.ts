@@ -120,9 +120,15 @@ export function useDemoCall() {
     u.lang = voiceLang
     const v = speechSynthesis.getVoices().find(x => x.lang.replace('_', '-').toLowerCase() === voiceLang.toLowerCase())
     if (v) u.voice = v
-    u.onstart = () => send({ type: 'line.spoken', turnId, event: 'start', atMs: ms() })
-    u.onend = () => done('end')
-    u.onerror = () => done('cancelled')
+    // Watchdog: some browsers never start a voice (none installed) or drop the end event on long sentences; the
+    // caller's turn must still come, so the line counts as spoken after a generous reading time.
+    let started = false
+    const words = text.split(/\s+/).length
+    const noStart = setTimeout(() => { if (!started && speakingTurn === turnId) { speechSynthesis.cancel(); send({ type: 'line.spoken', turnId, event: 'start', atMs: ms() }); setTimeout(() => done('end'), Math.min(6000, 600 + words * 220)) } }, 3000)
+    const tooLong = setTimeout(() => done('end'), 4000 + words * 600)
+    u.onstart = () => { started = true; clearTimeout(noStart); send({ type: 'line.spoken', turnId, event: 'start', atMs: ms() }) }
+    u.onend = () => { clearTimeout(noStart); clearTimeout(tooLong); done('end') }
+    u.onerror = () => { clearTimeout(noStart); clearTimeout(tooLong); done('cancelled') }
     speechSynthesis.cancel()
     speechSynthesis.speak(u)
   }
