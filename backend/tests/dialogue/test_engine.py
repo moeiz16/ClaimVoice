@@ -274,3 +274,16 @@ async def test_times_are_read_in_the_callers_zone_on_a_live_call():
         "dana-skylight", answered_at=datetime(2026, 1, 9, 5, 30, tzinfo=UTC)
     )  # 10:30 p.m. on the 8th
     assert late.values["loss_date"] == "2026-01-08"
+
+
+async def test_an_announcement_that_already_asks_is_not_followed_by_a_second_question():
+    from claimvoice.contracts import ConsentRule
+
+    class AskingPlaybook(YamlPlaybook):
+        async def consent_rule(self, org_id: str, region: str) -> ConsentRule:
+            asks = {"en": "This call is recorded to help with your claim. Is that okay with you?", "fr": "D'accord?"}
+            return ConsentRule(region, "all_party", asks)
+
+    res = await run_scenario("dana-skylight", playbook=AskingPlaybook(), upto_caller_turn=0)
+    first = next(o.text for o in res.outs if isinstance(o, Say))
+    assert "Is that okay with you?" in first and "Is that okay with you? Is that okay?" not in first

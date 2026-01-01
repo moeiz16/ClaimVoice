@@ -8,6 +8,10 @@ LINES: dict[str, dict[str, str]] = {
         "en": "{org} claims, this is ClaimVoice, an automated assistant. {announcement} Is that okay?",
         "fr": "Sinistres {org}, ici ClaimVoice, un assistant automatisé. {announcement} Êtes-vous d'accord?",
     },
+    "greeting_asked": {
+        "en": "{org} claims, this is ClaimVoice, an automated assistant. {announcement}",
+        "fr": "Sinistres {org}, ici ClaimVoice, un assistant automatisé. {announcement}",
+    },
     "bilingual_hint": {
         "en": "Pour le français, répondez simplement en français.",
         "fr": "For English, just answer in English.",

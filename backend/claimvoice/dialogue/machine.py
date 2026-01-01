@@ -654,8 +654,15 @@ class CallEngine:
         )
         self._event("answered", {"region": self.region, "language": self.language, "rule": self.consent_rule})
         announcement = rule.announcement.get(self.language, rule.announcement.get("en", ""))
-        greet = line("greeting", self.language, org=self.cfg.org_name, announcement=announcement)
-        greet_en = line("greeting", "en", org=self.cfg.org_name, announcement=rule.announcement.get("en", ""))
+        announcement_en = rule.announcement.get("en", "")
+
+        def greeting(lang: str, said: str) -> str:
+            # An announcement that already asks ("... Is that okay with you?") isn't followed by a second question.
+            key = "greeting_asked" if said.rstrip().endswith("?") else "greeting"
+            return line(key, lang, org=self.cfg.org_name, announcement=said)
+
+        greet = greeting(self.language, announcement)
+        greet_en = greeting("en", announcement_en)
         if not self.language_decided:
             greet += " " + line("bilingual_hint", self.language)
         self._outs.append(StageOut(self.stage.value, self.stage_info()))
