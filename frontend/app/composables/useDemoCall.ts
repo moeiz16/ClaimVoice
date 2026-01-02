@@ -161,7 +161,8 @@ export function useDemoCall() {
 
   const events: TransportEvents = {
     onMessage,
-    onOpen: () => {
+    onOpen: (t) => {
+      transport = t // so the hello below reaches the line (the connect call hasn't returned yet)
       t0 = performance.now()
       send({ type: 'client.hello', mode: mode.value, language: lang.value, recognition: recognitionCtor() ? 'cloud' : 'none', voices: voices() })
     },

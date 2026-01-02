@@ -74,11 +74,11 @@ export function connectLocal(language: Lang, ev: TransportEvents): CallTransport
     }
   }
   setTimeout(() => {
-    ev.onOpen()
+    ev.onOpen(local)
     emit({ type: 'call.ready', callId: 'local', mode: 'browser_speech', language: lang, stage: stage(1, 'greeting') }, 100)
     say(LINES[lang][0]!, 700)
   }, 300)
-  return {
+  const local: CallTransport = {
     kind: 'local',
     send(msg: ClientMessage) {
       if (msg.type === 'caller.text' && msg.final && msg.text.trim()) {
@@ -89,4 +89,5 @@ export function connectLocal(language: Lang, ev: TransportEvents): CallTransport
     },
     close() { closed = true; ev.onClose('hangup') },
   }
+  return local
 }

@@ -12,7 +12,8 @@ export interface CallTransport {
 
 export interface TransportEvents {
   onMessage: (msg: ServerMessage) => void
-  onOpen: () => void
+  /** The leg is open; `t` can send already (the caller's hello goes first, before the connect call returns). */
+  onOpen: (t: CallTransport) => void
   onClose: (reason: string) => void
   onRemoteAudio?: (stream: MediaStream) => void
 }
@@ -101,12 +102,13 @@ export async function connectWebRtc(info: ConnectInfo, mic: MediaStream | null, 
   if (pending.length) { const p = pending.splice(0); batcher.add(p[0]!); p.slice(1).forEach(c => batcher.add(c)) }
   try { await opened }
   catch (e) { close('timeout'); throw e }
-  ev.onOpen()
-  return {
+  const transport: CallTransport = {
     kind: 'webrtc',
     send: (msg) => { if (dc.readyState === 'open') dc.send(JSON.stringify(msg)) },
     close: () => close('hangup'),
   }
+  ev.onOpen(transport)
+  return transport
 }
 
 export function connectWebSocket(info: ConnectInfo, ev: TransportEvents): Promise<CallTransport> {
@@ -118,8 +120,9 @@ export function connectWebSocket(info: ConnectInfo, ev: TransportEvents): Promis
     let open = false
     ws.onopen = () => {
       open = true
-      ev.onOpen()
-      resolve({ kind: 'websocket', send: m => ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify(m)), close: () => ws.close(1000) })
+      const transport: CallTransport = { kind: 'websocket', send: m => ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify(m)), close: () => ws.close(1000) }
+      ev.onOpen(transport)
+      resolve(transport)
     }
     ws.onmessage = (e) => { const m = parseServerMessage(e.data); if (m) ev.onMessage(m) }
     ws.onerror = () => { if (!open) reject(new Error('websocket')) }
