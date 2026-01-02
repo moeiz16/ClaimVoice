@@ -133,8 +133,8 @@ async def review(ctx: Ctx, call_id: str, data: w.ReviewIn) -> w.QaScore:
     disagreed = sum(1 for it in data.items if it.verdict == "disagree")
     await ctx.audit(
         "qa.review",
-        f"{ctx.user.full_name} reviewed {call.reference}: agreed with {len(data.items) - disagreed} "
-        f"item(s), disagreed with {disagreed}.",
+        f"{ctx.user.full_name} reviewed {call.reference}: agreed on {_items(len(data.items) - disagreed)}, "
+        f"disagreed on {_items(disagreed)}.",
         target_type="call",
         target_id=call.id,
         target_label=call.reference,
@@ -193,3 +193,7 @@ async def agreement(ctx: Ctx) -> w.Agreement:
 
 
 ROUTER = Router(path="/api/v1", route_handlers=[rubric, queue, call_score, review, agreement])
+
+
+def _items(n: int) -> str:
+    return "1 item" if n == 1 else f"{n} items"
