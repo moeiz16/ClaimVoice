@@ -235,9 +235,16 @@ async def questions(db: AsyncSession, org_id: str) -> list[w.Question]:
             w.Question(
                 key="right",
                 question="How often is it right?",
+                # The headline states the same measure as the bars under it: with the training run's bars, how
+                # many of the claims it fast-tracked turned out small; otherwise how many large claims it caught.
                 answer=given.get("answer")
-                or f"Of the claims that turned out large or complex, the size check sent **{in_100(recall)}** to an "
-                "adjuster first.",
+                or (
+                    f"Of the claims the size check sent to fast-track, **{in_100(float(bars[0]['value']))}** turned "
+                    "out small and simple."
+                    if given.get("bars")
+                    else f"Of the claims that turned out large or complex, the size check sent **{in_100(recall)}** "
+                    "to an adjuster first."
+                ),
                 foot=given.get("foot") or "Tested on December 2025 claims it had never seen.",
                 bars=[w.Bar(label=b["label"], value=float(b["value"]), ours=bool(b.get("ours"))) for b in bars],
             )
