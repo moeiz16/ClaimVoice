@@ -8,6 +8,23 @@ export function needsConversion(file: Pick<File, 'type' | 'name' | 'size'>): boo
   return heic || !ACCEPTED.includes(file.type) || file.size > 4 * 1024 * 1024
 }
 
+/** What the first bytes of a file say it is: a photo format the line takes, or not a photo at all. */
+export function sniffImage(head: Uint8Array): 'jpeg' | 'png' | 'webp' | 'heic' | null {
+  const at = (i: number, ...b: number[]) => b.every((x, k) => head[i + k] === x)
+  const ascii = (i: number, s: string) => [...s].every((c, k) => head[i + k] === c.charCodeAt(0))
+  if (at(0, 0xFF, 0xD8, 0xFF)) return 'jpeg'
+  if (at(0, 0x89, 0x50, 0x4E, 0x47)) return 'png'
+  if (ascii(0, 'RIFF') && ascii(8, 'WEBP')) return 'webp'
+  if (ascii(4, 'ftyp')) return 'heic'
+  return null
+}
+
+/** True when the file starts like a photo (checked on the phone, before anything is sent). */
+export async function looksLikePhoto(file: Blob): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer())
+  return sniffImage(head) !== null
+}
+
 /** Fit (w, h) inside a max edge, keeping the aspect ratio. */
 export function fitWithin(w: number, h: number, max = 2400): { w: number, h: number } {
   const s = Math.min(1, max / Math.max(w, h))

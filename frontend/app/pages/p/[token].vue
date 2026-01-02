@@ -4,7 +4,7 @@
 import type { PhotoLinkInfo } from '~/types/api'
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
-import { MAX_BYTES, needsConversion, toJpeg } from '~/utils/photos'
+import { MAX_BYTES, looksLikePhoto, needsConversion, toJpeg } from '~/utils/photos'
 import { fmtDayLong, fmtTime, ORG_ZONE } from '~/utils/format'
 import { demoNow } from '~/utils/demoClock'
 
@@ -40,14 +40,24 @@ async function pick(e: Event) {
   const files = [...((e.target as HTMLInputElement).files ?? [])].slice(0, room.value)
   for (const f of files) {
     let file = f
-    try { if (needsConversion(f)) file = await toJpeg(f) }
+    try {
+      if (!(await looksLikePhoto(f))) throw new Error('not a photo')
+      if (needsConversion(f)) file = await toJpeg(f)
+    }
     catch { items.value.push({ id: ++seq, file: f, url: '', caption: '', status: 'failed', note: fr.value ? 'Format non pris en charge. Reprenez-la en JPEG.' : 'This photo\'s format isn\'t supported. Try taking it again.' }); continue }
     if (file.size > MAX_BYTES) { items.value.push({ id: ++seq, file, url: '', caption: '', status: 'failed', note: fr.value ? 'Photo trop grande.' : 'This photo is too large.' }); continue }
     items.value.push({ id: ++seq, file, url: URL.createObjectURL(file), caption: '', status: 'ready', note: '' })
   }
   ;(e.target as HTMLInputElement).value = ''
 }
+let sendingNow = false
 async function sendAll() {
+  if (sendingNow) return // a double tap sends each photo once
+  sendingNow = true
+  try { await sendEach() }
+  finally { sendingNow = false }
+}
+async function sendEach() {
   for (const it of items.value.filter(i => i.status === 'ready' || (i.status === 'failed' && i.url))) {
     it.status = 'sending'
     try {

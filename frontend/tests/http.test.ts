@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError, apiFetch, buildQuery, readCookie, setMockMode } from '../app/utils/http'
 import { demoNow, resetDemoClock } from '../app/utils/demoClock'
 import { IceBatcher, parseServerMessage, pingFrame } from '../app/utils/voiceTransport'
-import { fitWithin, needsConversion } from '../app/utils/photos'
+import { fitWithin, needsConversion, sniffImage } from '../app/utils/photos'
 import { landingFor, navFor } from '../app/composables/useSession'
 import { routeStyle, statusStyle } from '../app/utils/labels'
 
@@ -110,6 +110,15 @@ describe('photos from the caller\'s phone', () => {
     expect(needsConversion({ type: '', name: 'IMG_2.heif', size: 1000 })).toBe(true)
     expect(needsConversion({ type: 'image/jpeg', name: 'a.jpg', size: 6_000_000 })).toBe(true)
     expect(needsConversion({ type: 'image/jpeg', name: 'a.jpg', size: 900_000 })).toBe(false)
+  })
+
+  it('knows a photo from its first bytes, and a renamed text file is not one', () => {
+    const bytes = (...b: (number | string)[]) => new Uint8Array(b.flatMap(x => (typeof x === 'string' ? [...x].map(c => c.charCodeAt(0)) : [x])))
+    expect(sniffImage(bytes(0xFF, 0xD8, 0xFF, 0xE0))).toBe('jpeg')
+    expect(sniffImage(bytes(0x89, 'PNG'))).toBe('png')
+    expect(sniffImage(bytes('RIFF', 0, 0, 0, 0, 'WEBP'))).toBe('webp')
+    expect(sniffImage(bytes(0, 0, 0, 24, 'ftypheic'))).toBe('heic')
+    expect(sniffImage(bytes('not an image'))).toBeNull()
   })
 
   it('fits photos inside 2400 px without stretching', () => {
