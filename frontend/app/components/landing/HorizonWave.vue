@@ -97,7 +97,7 @@ const waveLabel = computed(() => `${props.copy.wave} ${props.moments.map(m => `$
 .playlabel { position: absolute; top: 50%; left: 56px; transform: translateY(-50%); white-space: nowrap; background: var(--cv-bg); padding: 6px 12px 6px 6px; border-radius: 12px; }
 .playlabel b { display: block; font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
 .playlabel span { color: var(--cv-muted); font-size: 13.5px; font-weight: 550; }
-.hushnote { position: absolute; top: -40px; transform: translateX(-50%); animation: hush-drop 400ms var(--ease-voice) both; }
+.hushnote { position: absolute; top: 4px; transform: translateX(-50%); z-index: 3; animation: hush-drop 400ms var(--ease-voice) both; } /* inside the wave, clear of the captions above */
 @keyframes hush-drop { from { opacity: 0; transform: translate(-50%, -8px); } }
 .marks { position: relative; height: 26px; margin: 4px 64px 0 96px; }
 .marks button { position: absolute; transform: translateX(-50%); border: 0; background: none; padding: 2px 4px; font-size: 12px; font-weight: 650; color: var(--cv-faint); white-space: nowrap; border-radius: 6px; }
