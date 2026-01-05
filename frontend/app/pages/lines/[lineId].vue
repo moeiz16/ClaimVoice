@@ -46,8 +46,16 @@ const consent = computed(() => {
   if (c.answer === 'given') return { kind: 'fast' as const, text: `Recording consent${when}` }
   if (c.answer === 'not_required') return { kind: 'fast' as const, text: 'Recording announced' }
   if (c.answer === 'refused') return { kind: 'urgent' as const, text: 'Asked not to record' }
+  if (call.value?.handoff && !turns.value.length) return { kind: 'siu' as const, text: 'Not asked about recording' }
   return { kind: 'siu' as const, text: 'Waiting for consent' }
 })
+// A call handed to a person before the caller agreed to recording, where everyone must agree: nothing was kept, so
+// the person picking it up reads the hand-off summary instead of an empty conversation.
+const heldText = computed(() => {
+  const where = /\(([^)]+)\)/.exec(call.value?.consent.ruleLabel ?? '')?.[1]
+  return `${firstName(call.value?.callerLabel ?? 'The caller')} needed help before being asked about recording, and ${where ? `in ${where} ` : ''}everyone must agree first, so nothing from the call is kept. Here is what ClaimVoice handed over.`
+})
+const heldBack = computed(() => !!call.value?.handoff && !turns.value.length && call.value.consent.rule === 'all_party' && call.value.consent.answer !== 'given' && status.value !== 'loading')
 
 // Auto-listen: opening a live line puts it in the dock.
 let autoListened = ''
@@ -163,6 +171,17 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(/^(caller|appel
           </div>
         </div>
         <div ref="turnsEl" class="turns" :class="{ reading }" aria-live="polite" aria-relevant="additions">
+          <div v-if="heldBack && call?.handoff" class="held">
+            <p class="refused">
+              <CvIcon name="shield" size="s" />{{ heldText }}
+            </p>
+            <p class="sumtext">
+              {{ call.handoff.summary }}
+            </p>
+            <p v-if="call.handoff.actionsTaken.length" class="sys">
+              ClaimVoice {{ call.handoff.actionsTaken.map(a => a.charAt(0).toLowerCase() + a.slice(1)).join('; ') }}.
+            </p>
+          </div>
           <p v-if="!retained" class="refused">
             <CvIcon name="shield" size="s" />{{ notice ?? 'Recording stopped at the caller\'s request. Notes only from here.' }}
           </p>
@@ -269,6 +288,8 @@ const whoName = (t: Turn) => (t.speaker === 'caller' ? firstName(/^(caller|appel
 .turn.now .tr { font-size: 15px; }
 .hearing { font-weight: 650; color: var(--cv-orchid-ink); font-size: 11.5px; margin-left: 4px; }
 .interrupted p::after { content: " …"; color: var(--cv-faint); }
+.held { display: grid; gap: 10px; padding: 4px 6px 12px; }
+.sumtext { white-space: pre-line; font-size: 17px; font-weight: 550; line-height: 1.45; margin: 0; }
 .follow { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; color: var(--cv-muted); font-size: 13.5px; }
 .whisperbox { display: flex; align-items: center; gap: 10px; margin: 6px 14px 14px; padding: 6px 6px 6px 16px; border-radius: 999px; background: var(--cv-sunk); color: var(--cv-person); }
 .whisperbox.say { background: var(--cv-person-wash); }
