@@ -261,3 +261,27 @@ def test_wire_schema_decodes_route_on_call_ended():
     }
     out = wire.server_decoder.decode(msgspec.json.encode(msg))
     assert out.route is not None and out.route.reasons[0].at_seconds == 41.0
+
+
+async def test_an_adopted_line_keeps_the_stored_start_so_new_turns_follow_the_old_ones():
+    """New turns on an adopted line are timed from when the stored call began, like its seeded turns and whispers."""
+    from datetime import timedelta
+
+    from claimvoice import clock
+
+    lm, sink = LineManager(), MemoryCallSink()
+    started = clock.now() - timedelta(minutes=5)
+    await lm.adopt_sample_line(
+        "line-2",
+        org_id="org",
+        scenario="calgary-windstorm",
+        resume_after_turn=7,
+        sink=sink,
+        policies=MemoryPolicyDirectory(),
+        playbook=YamlPlaybook(),
+        answered_at=started,
+    )
+    engine = lm.lines["line-2"].engine
+    assert engine.answered_at == started
+    assert 295_000 <= engine.now_ms() <= 305_000
+    await lm.shutdown()

@@ -22,7 +22,7 @@ import time
 import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from functools import cache
 from typing import Any
 
@@ -181,6 +181,7 @@ class LineManager:
         sink: CallSink,
         policies: PolicyDirectory,
         playbook: OrgPlaybook,
+        answered_at: datetime | None = None,
     ) -> None:
         """Rebuild a seeded live line's state by replaying its first caller turns silently, then carry on live."""
         caller = load_callers()[scenario]
@@ -212,7 +213,13 @@ class LineManager:
             await engine.caller_turn(turn.text, confidence=0.95)
             played += 1
         # from here on the line is live: real time, the platform's sink, the same engine state
-        engine.answered_at = clock.now() - timedelta(milliseconds=sim.now_ms())
+        if answered_at is not None:
+            # Keep the stored call's start, so new turns and whispers share one timeline with the seeded turns.
+            answered = answered_at if answered_at.tzinfo else answered_at.replace(tzinfo=UTC)
+            sim.advance(max(0, int((clock.now() - answered).total_seconds() * 1000) - sim.now_ms()))
+            engine.answered_at = answered
+        else:
+            engine.answered_at = clock.now() - timedelta(milliseconds=sim.now_ms())
         sim.go_live()
         engine.sink = sink
         session = CallSession(engine, CallMode.BROWSER_SPEECH)

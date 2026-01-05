@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
 
@@ -272,6 +272,7 @@ class LineRuntime(LineControl, Protocol):
         sink: CallSink,
         policies: PolicyDirectory,
         playbook: OrgPlaybook,
+        answered_at: datetime | None = None,
     ) -> None:
         """Take over a seeded live demo line whose first `resume_after_turn` caller turns are already stored, so the
         scripted caller carries on when someone listens, whispers or takes over."""

@@ -94,6 +94,7 @@ async def adopt_sample_lines() -> int:
                     sink=sink_for(call.org_id),
                     policies=get_directory(),
                     playbook=get_playbook(),
+                    answered_at=call.answered_at,
                 )
                 adopted += 1
             except Exception:
