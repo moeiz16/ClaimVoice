@@ -8,6 +8,8 @@ export function useCallPlayer(duration: Ref<number>, sources: Ref<{ src: string,
   let audio: HTMLAudioElement | null = null
   let raf = 0
   let last = 0
+  let generation = 0
+  let objectUrl: string | null = null
 
   function setupAudio() {
     audio?.pause()
@@ -18,8 +20,28 @@ export function useCallPlayer(duration: Ref<number>, sources: Ref<{ src: string,
     const pick = sources.value.find(s => a.canPlayType(s.type))
     if (!pick) return
     a.preload = 'auto'
-    a.src = pick.src
-    a.addEventListener('loadedmetadata', () => { hasAudio.value = true; audio = a; a.currentTime = t.value })
+    // Loaded whole (about 300 KB) and played from memory: a static host that doesn't answer byte ranges would
+    // otherwise stop the browser from jumping to a moment.
+    const mine = ++generation
+    void fetch(pick.src)
+      .then(r => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
+      .then((blob) => {
+        if (mine !== generation) return
+        if (objectUrl) URL.revokeObjectURL(objectUrl)
+        objectUrl = URL.createObjectURL(blob)
+        a.src = objectUrl
+      })
+      .catch(() => { /* keep the silent clock */ })
+    a.addEventListener('loadedmetadata', () => {
+      hasAudio.value = true
+      audio = a
+      a.currentTime = t.value
+      // Play was pressed before the file was ready: the sound picks up where the silent clock has got to.
+      if (playing.value) {
+        a.muted = muted.value
+        void a.play().catch(() => { if (audio === a) audio = null; hasAudio.value = false })
+      }
+    })
     a.addEventListener('error', () => { if (audio === a) audio = null; hasAudio.value = false })
     a.addEventListener('ended', () => { playing.value = false; t.value = duration.value })
   }
@@ -63,7 +85,12 @@ export function useCallPlayer(duration: Ref<number>, sources: Ref<{ src: string,
   watch(sources, setupAudio)
   watch(muted, (m) => { if (audio) audio.muted = m })
   onMounted(setupAudio)
-  onBeforeUnmount(() => { pause(); audio = null })
+  onBeforeUnmount(() => {
+    pause()
+    audio = null
+    generation++
+    if (objectUrl) URL.revokeObjectURL(objectUrl)
+  })
 
   return { t, playing, hasAudio, muted, play, pause, toggle, seek }
 }
