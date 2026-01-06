@@ -411,6 +411,7 @@ function ring(mode: 'voice' | 'typed' | 'other') {
   .lp-nav, .lp-top .lang { display: none; }
   .eyebrow { padding: 0 16px; font-size: 12.5px; flex-wrap: wrap; }
   .eyebrow .sample { margin-left: 0; font-size: 12px; }
+  .eyebrow > span:nth-child(2) { flex: 1 1 0; min-width: 0; } /* the dot stays beside the line it marks */
   .stage { margin: 4px 16px 0; height: 476px; }
   .intro h1 { font-size: 48px; }
   .teaser { margin: 22px 0 0; font-size: 22px; }
