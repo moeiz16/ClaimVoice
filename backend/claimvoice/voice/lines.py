@@ -335,6 +335,7 @@ class LineManager:
                     and e.stage not in (Stage.HANDOFF, Stage.ENDED)
                     and e.pending_line is None
                     and s.speaking_turn is None
+                    and s.browser_speaking is None  # a long read-back is still being read out to the caller
                 )
                 if waiting and now - s.last_activity > SILENCE_SECONDS:
                     s.last_activity = now

@@ -98,6 +98,7 @@ class CallSession:
     _lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     latencies: list[dict[str, float]] = field(default_factory=list)
     last_activity: float = field(default_factory=time.monotonic)
+    browser_speaking: str | None = None  # line turn the caller's browser is reading aloud (typed and browser speech)
 
     @property
     def call_id(self) -> str:
@@ -406,6 +407,11 @@ class CallSession:
                 await self.emit(await self.engine.barge_in(msg.get("atMs")))
             return
         if kind == "line.spoken":
+            event, turn_id = str(msg.get("event")), str(msg.get("turnId"))
+            if event == "start":
+                self.browser_speaking = turn_id
+            elif self.browser_speaking == turn_id:
+                self.browser_speaking = None
             async with self._lock:
                 await self.emit(
                     await self.engine.line_spoken(str(msg.get("turnId")), str(msg.get("event")), msg.get("atMs"))

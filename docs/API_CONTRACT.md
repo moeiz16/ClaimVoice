@@ -251,8 +251,8 @@ here is what the platform has persisted from `CallSink` (Part 3), so it is consi
 | POST | `/calls/{id}/listen` | calls:listen | – | `ListenOut` (starts listening; audited) |
 | DELETE | `/calls/{id}/listen` | calls:listen | – | `204` |
 | POST | `/calls/{id}/whisper` | calls:whisper | `WhisperIn { text }` (≤ 280) | `202 WhisperOut { id, at }` — **a typed note that ClaimVoice acts on** at its next turn (e.g. "Ask if the garage skylight is damaged too"); **the caller never hears it**. It appears in the staff transcript as a `whisper` row ("Whisper, ClaimVoice only") |
-| POST | `/calls/{id}/takeover` | calls:takeover | – | `TakeoverOut { call, connect }`: ClaimVoice stops talking and keeps taking notes; `connect` is a send-receive leg so the person's microphone reaches the caller (`409 already_taken`) |
-| POST | `/calls/{id}/say` | calls:takeover | `SayIn { text }` | `202 { turnId }` — typed take-over (no microphone): spoken to the caller in the line's voice as the person |
+| POST | `/calls/{id}/takeover` | calls:takeover | – | `TakeoverOut { call, connect }`: ClaimVoice stops asking questions and keeps taking notes; the person speaks to the caller by typing (`POST /say`) and follows the call by captions. `connect` is always `null` in this version (a microphone leg is future work, §4.5) (`409 already_taken`) |
+| POST | `/calls/{id}/say` | calls:takeover | `SayIn { text }` | `202 { turnId }` — how a person speaks after taking over: the text is spoken to the caller in the line's voice as the person |
 | POST | `/calls/{id}/return` | calls:takeover | – | `CallDetail` — hands the call back to the line, which resumes the interrupted stage |
 | POST | `/calls/{id}/hangup` | calls:hangup **or** caller token | `HangupIn { reason, note? }` | `CallDetail` |
 | POST | `/calls/{id}/webrtc/offer` | caller token | `SdpOffer` | `SdpAnswer` (Part 4) |

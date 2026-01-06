@@ -285,3 +285,16 @@ async def test_an_adopted_line_keeps_the_stored_start_so_new_turns_follow_the_ol
     assert engine.answered_at == started
     assert 295_000 <= engine.now_ms() <= 305_000
     await lm.shutdown()
+
+
+async def test_the_silence_clock_waits_while_the_callers_browser_reads_a_line_aloud():
+    lm, sink = LineManager(), MemoryCallSink()
+    await _prepare(lm, "quiet-1", sink, mode="typed")
+    s = lm.lines["quiet-1"].session
+    await s.on_client_message({**HELLO, "mode": "typed"})
+    turn = next(t for t in s.engine.turns if t.speaker is Speaker.LINE)
+    await s.on_client_message({"type": "line.spoken", "turnId": turn.turn_id, "event": "start", "atMs": 0})
+    assert s.browser_speaking == turn.turn_id
+    await s.on_client_message({"type": "line.spoken", "turnId": turn.turn_id, "event": "end", "atMs": 9000})
+    assert s.browser_speaking is None
+    await lm.shutdown()
