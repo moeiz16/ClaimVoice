@@ -409,9 +409,9 @@ function ring(mode: 'voice' | 'typed' | 'other') {
 @media (max-width: 720px) {
   .lp-top { padding: 0 16px; height: 64px; }
   .lp-nav, .lp-top .lang { display: none; }
-  .eyebrow { padding: 0 16px; font-size: 12.5px; flex-wrap: wrap; }
-  .eyebrow .sample { margin-left: 0; font-size: 12px; }
-  .eyebrow > span:nth-child(2) { flex: 1 1 0; min-width: 0; } /* the dot stays beside the line it marks */
+  .eyebrow { padding: 0 16px; font-size: 12.5px; display: block; line-height: 1.5; }
+  .eyebrow .dot { display: inline-block; margin-right: 8px; vertical-align: 1px; } /* beside the line it marks */
+  .eyebrow .sample { display: table; margin: 6px 0 0; font-size: 12px; }
   .stage { margin: 4px 16px 0; height: 476px; }
   .intro h1 { font-size: 48px; }
   .teaser { margin: 22px 0 0; font-size: 22px; }
