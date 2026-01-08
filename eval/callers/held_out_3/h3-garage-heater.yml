@@ -1,0 +1,24 @@
+key: h3-garage-heater
+title: "Held out 3: a space heater caught rags in the garage, already out"
+language: en
+region: CA-AB
+caller_phone: "+14035550204"
+policy_number: LM-AB-250004
+turns:
+  - text: "Hello, I had a bit of a fire in the garage last night, the space heater caught some rags, it's all out now though."
+  - text: "Yes, that's alright."
+  - text: "LM-AB-250004."
+  - text: "June seventeenth, 1949."
+  - text: "We're both fine, the smoke alarm woke us up."
+  - text: "Last night, around quarter to eleven."
+  - text: "Yes, the fire trucks came out, they were here about an hour."
+  - text: "Just the garage, and the laundry room next to it smells of smoke."
+  - text: "Yes, the house is fine, we're staying."
+  - text: "Yes."
+  - text: "Okay."
+  - text: "That's right."
+  - text: "No, thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: fire, loss_date: "2026-01-07", fire_out: true, fire_department_attended: true, rooms_affected: 2, home_livable: true}

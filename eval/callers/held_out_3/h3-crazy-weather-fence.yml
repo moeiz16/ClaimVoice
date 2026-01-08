@@ -1,0 +1,24 @@
+key: h3-crazy-weather-fence
+title: "Held out 3: the weather knocked the fence down and peeled shingles off"
+language: en
+region: US-CO
+caller_phone: "+17205550302"
+policy_number: LM-CO-350002
+turns:
+  - text: "Hey, so that crazy weather yesterday knocked down about thirty feet of my back fence and peeled a few shingles off the roof."
+  - text: "Yes, that's fine."
+  - text: "LM-CO-350002."
+  - text: "January thirtieth, 1974."
+  - text: "We're all good here."
+  - text: "Yesterday afternoon, around three or so."
+  - text: "Nothing hit it, it was just the wind I think."
+  - text: "No, it's just a few shingles, the roof's not leaking."
+  - text: "Yeah, we're fine in the house."
+  - text: "Sure, send it."
+  - text: "Alright."
+  - text: "That's right."
+  - text: "Nope, thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: wind, loss_date: "2026-01-07", roof_or_window_damage: true, siding_or_fence_damage: true, open_to_weather: false, home_livable: true}

@@ -1,0 +1,25 @@
+key: h3-hail-inspector
+title: "Held out 3: late hail claim after a roof inspection"
+language: en
+region: US-CO
+caller_phone: "+17205550304"
+policy_number: LM-CO-350004
+turns:
+  - text: "Hi, I'm calling about the hail back in the fall. It took me a while, but the roofer says my shingles are shot and the gutters are all dented."
+  - text: "Yeah, okay."
+  - text: "It's LM-CO-350004."
+  - text: "April twelfth, 1968."
+  - text: "Everyone's fine."
+  - text: "It was September the twelfth."
+  - text: "Late afternoon, maybe four thirty."
+  - text: "My truck was in the driveway, the hood's got dents all over it."
+  - text: "No, nothing's leaking yet."
+  - text: "Yes, of course."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yes."
+  - text: "No, that's it."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: hail, loss_date: "2025-09-12", roof_or_window_damage: true, siding_or_fence_damage: true, open_to_weather: false, home_livable: true}

@@ -1,0 +1,25 @@
+key: h3-slid-on-ice
+title: "Held out 3: rear-ended on ice at a red light, stiff neck"
+language: en
+region: CA-AB
+caller_phone: "+14035550207"
+policy_number: LM-AB-250007
+turns:
+  - text: "Yeah hi, some guy slid on the ice and rear-ended me at a red light on 16th Avenue."
+  - text: "Yes, that's fine."
+  - text: "LM-AB-250007."
+  - text: "June 6th, 1995."
+  - text: "I'm okay, just a bit stiff in the neck."
+  - text: "Yesterday around five thirty, on 16th Avenue at Centre Street."
+  - text: "He's with Wawanesa I think."
+  - text: "No, we didn't call the cops."
+  - text: "The rear bumper's caved in and the trunk won't close."
+  - text: "Yeah, it still drives."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yep."
+  - text: "No, that's all."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_date: "2026-01-07", injury_reported: true, other_party_involved: true, police_report_filed: false, vehicle_drivable: true}

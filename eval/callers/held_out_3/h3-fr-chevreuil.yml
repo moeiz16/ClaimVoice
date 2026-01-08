@@ -1,0 +1,26 @@
+key: h3-fr-chevreuil
+title: "Held out 3 (French): un chevreuil sur l'autoroute 15"
+language: fr
+region: CA-QC
+caller_phone: "+15145550401"
+policy_number: LM-QC-160001
+turns:
+  - text: "Bonjour, j'ai frappé un chevreuil sur la 15 en revenant du chalet."
+  - text: "Oui, allez-y."
+  - text: "Mon numéro, c'est LM-QC-160001."
+  - text: "Le 5 mai 1980."
+  - text: "Moi ça va, juste un peu sonné, mais pas blessé."
+  - text: "Hier soir vers neuf heures et quart, sur l'autoroute 15 près de Saint-Jérôme."
+  - text: "Non, juste moi pis le chevreuil."
+  - text: "Oui, un policier de la SQ est passé."
+  - text: "Je l'ai pas sur moi."
+  - text: "Le devant est tout enfoncé, le capot pis le phare du côté passager."
+  - text: "Non, il a fallu le remorquer."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "C'est exact."
+  - text: "Non merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_date: "2026-01-07", other_party_involved: false, police_report_filed: true, vehicle_drivable: false}

@@ -1,0 +1,25 @@
+key: h3-poplar-window
+title: "Held out 3: a branch off the neighbour's poplar came through the front window"
+language: en
+region: CA-AB
+caller_phone: "+14035550208"
+policy_number: LM-AB-250008
+turns:
+  - text: "Good morning, a big branch off my neighbour's poplar came down and went through our front window."
+  - text: "Yes, go ahead."
+  - text: "Policy number LM-AB-250008."
+  - text: "My postal code is T3K 0N8."
+  - text: "We're okay, nobody was near it."
+  - text: "About an hour ago, so around half past six."
+  - text: "No, the siding's fine."
+  - text: "Yes, there's a big hole, it's freezing in the living room."
+  - text: "My husband's putting plywood over it right now."
+  - text: "Yes, we can stay, it's just the one room."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "Yes, that's correct."
+  - text: "No, thank you."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: wind, loss_date: "2026-01-08", roof_or_window_damage: true, siding_or_fence_damage: false, open_to_weather: true, mitigation_taken: true, home_livable: true}

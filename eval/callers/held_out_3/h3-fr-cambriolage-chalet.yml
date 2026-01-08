@@ -1,0 +1,24 @@
+key: h3-fr-cambriolage-chalet
+title: "Held out 3 (French): cambriolage pendant un séjour au chalet"
+language: fr
+region: CA-QC
+caller_phone: "+15145550402"
+policy_number: LM-QC-160002
+turns:
+  - text: "Bonjour, on s'est fait cambrioler pendant qu'on était au chalet, ils ont défoncé la porte d'en arrière."
+  - text: "Oui, c'est correct."
+  - text: "LM-QC-160002."
+  - text: "Le 21 novembre 1972."
+  - text: "Non, personne n'a été blessé."
+  - text: "On est revenus hier après-midi, ça devait être pendant la fin de semaine."
+  - text: "À la maison, à Mercier."
+  - text: "La télé, deux ordinateurs portables pis les bijoux de ma mère."
+  - text: "Oui, la police est venue hier soir, le numéro c'est le 26-118904."
+  - text: "Oui."
+  - text: "D'accord."
+  - text: "Oui, c'est exact."
+  - text: "Non, merci."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: theft, loss_date: "2026-01-07", forced_entry: true, police_report_filed: true}

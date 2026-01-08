@@ -1,0 +1,25 @@
+key: h3-ebike-garage
+title: "Held out 3: e-bike and tools taken from a detached garage, date corrected"
+language: en
+region: CA-AB
+caller_phone: "+14035550203"
+policy_number: LM-AB-250003
+turns:
+  - text: "Hi, um, someone got into our detached garage and took my e-bike and a bunch of tools, the side door lock is busted."
+  - text: "That's fine."
+  - text: "LM-AB-250003."
+  - text: "December first, 1992."
+  - text: "Yes, we're all okay."
+  - text: "I noticed it yesterday morning when I went to grab the car."
+  - text: "Our garage at home, off the back alley in Woodbine."
+  - text: "Sorry, actually it was the day before yesterday, Tuesday morning, not yesterday."
+  - text: "Yeah, I called it in to the non-emergency line."
+  - text: "They gave me a file number, 26-0091532."
+  - text: "Yes please."
+  - text: "Okay."
+  - text: "That's right."
+  - text: "No, that's everything."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: theft, loss_date: "2026-01-06", forced_entry: true, police_report_filed: true}

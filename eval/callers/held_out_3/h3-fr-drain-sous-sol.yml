@@ -1,0 +1,23 @@
+key: h3-fr-drain-sous-sol
+title: "Held out 3 (French): le drain du sous-sol a refoulé après la pluie"
+language: fr
+region: CA-QC
+caller_phone: "+14505550403"
+policy_number: LM-QC-160003
+turns:
+  - text: "Oui bonjour, avec la pluie de cette nuit, le drain du sous-sol a refoulé pis y'a de l'eau brune partout."
+  - text: "Oui, ça me va."
+  - text: "LM-QC-160003."
+  - text: "Mon code postal, c'est H7T 1B3."
+  - text: "Tout le monde va bien, merci."
+  - text: "Je m'en suis rendu compte ce matin en me levant, vers six heures."
+  - text: "Le sous-sol au complet, la salle familiale pis le bureau."
+  - text: "Ça a l'air d'avoir arrêté, mais je suis pas certain."
+  - text: "Oui, envoyez."
+  - text: "D'accord."
+  - text: "Oui."
+  - text: "Non, c'est tout."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, loss_date: "2026-01-08", water_source: sewer_backup, water_still_entering: false}

@@ -1,0 +1,26 @@
+key: h3-grocery-lot
+title: "Held out 3: door bashed in at a grocery store lot, driver gone, premium question"
+language: en
+region: US-CO
+caller_phone: "+17205550305"
+policy_number: LM-CO-350005
+turns:
+  - text: "Morning. I came out to my car at the grocery store and somebody had bashed in the driver's door and just took off."
+  - text: "Yes."
+  - text: "Policy is LM-CO-350005."
+  - text: "December 3rd, 1979."
+  - text: "Nobody got hurt, I wasn't in it."
+  - text: "Last night, around eight, in the King Soopers lot on Colfax."
+  - text: "No, they didn't leave a note or anything."
+  - text: "Before that, is this going to make my premium go up?"
+  - text: "I filed a report online this morning."
+  - text: "Yeah, it's 26-004417."
+  - text: "It drives fine, the door just won't open."
+  - text: "Okay."
+  - text: "Sure."
+  - text: "Yes, correct."
+  - text: "No."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: collision, loss_date: "2026-01-07", other_party_involved: true, police_report_filed: true, vehicle_drivable: true}

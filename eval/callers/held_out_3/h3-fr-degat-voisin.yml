@@ -1,0 +1,24 @@
+key: h3-fr-degat-voisin
+title: "Held out 3 (French): l'eau du voisin d'en haut a traversé le plafond"
+language: fr
+region: CA-QC
+caller_phone: "+15145550404"
+policy_number: LM-QC-160004
+turns:
+  - text: "Bonjour. Mon voisin d'en haut a eu un problème, pis l'eau a traversé mon plafond de salle de bain."
+  - text: "Oui, pas de problème."
+  - text: "C'est le LM-QC-160004."
+  - text: "Le 30 août 1955."
+  - text: "Oui, ça va, personne n'est blessé."
+  - text: "Hier soir, vers onze heures."
+  - text: "C'est son chauffe-eau qui a lâché, en haut."
+  - text: "La salle de bain pis le corridor."
+  - text: "Non, ça a arrêté de couler."
+  - text: "Oui, envoyez-le."
+  - text: "Correct."
+  - text: "Oui, c'est bon."
+  - text: "Non, merci, bonne journée."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, loss_date: "2026-01-07", water_source: appliance, water_still_entering: false}

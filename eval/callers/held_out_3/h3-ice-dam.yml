@@ -1,0 +1,26 @@
+key: h3-ice-dam
+title: "Held out 3: water running down a bedroom wall, an ice dam"
+language: en
+region: CA-AB
+caller_phone: "+14035550206"
+policy_number: LM-AB-250006
+turns:
+  - text: "Hi there, um, there's water running down the inside of the wall in my son's bedroom."
+  - text: "Sure, that's okay."
+  - text: "It's LM-AB-250006."
+  - text: "October ninth, 1981."
+  - text: "Yeah, everybody's fine, nothing dangerous."
+  - text: "Noticed it last night, maybe ten o'clock."
+  - text: "I'm pretty sure it's an ice dam on the roof, there's a big ridge of ice up there."
+  - text: "Just his bedroom, and a bit in the hallway."
+  - text: "It's still dripping a bit, yeah."
+  - text: "There's no pipe to shut off, but I've got buckets and towels down."
+  - text: "Oh yeah, we're fine to stay."
+  - text: "Sure."
+  - text: "Okay."
+  - text: "Yep, that's it."
+  - text: "No, that's all, thanks."
+expect:
+  final_stage: ended
+  handoff: false
+  slots: {loss_type: water, loss_date: "2026-01-07", water_source: roof, water_still_entering: true, home_livable: true}
