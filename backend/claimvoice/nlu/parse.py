@@ -552,6 +552,7 @@ _OVERNIGHT = re.compile(
     re.IGNORECASE,
 )
 _YESTERDAY = re.compile(r"\b(yesterday|hier)\b", re.IGNORECASE)
+_DAY_BEFORE = re.compile(r"\b((?:the )?day before yesterday|avant-hier)\b", re.IGNORECASE)
 _DAYS_AGO = re.compile(
     r"\b(?:(" + _NUM_WORD + r"|a couple of|a few)\s+days?\s+ago|il y a\s+(" + _NUM_WORD + r")\s+jours?)\b",
     re.IGNORECASE,
@@ -661,6 +662,9 @@ def find_date(text: str, *, today: date, loss_time: time | None = None) -> DateH
         qty = (m.group(1) or m.group(2) or "").lower()
         n = {"a couple of": 2, "a few": 3}.get(qty) or word_number(qty) or 1
         return DateHit(today - timedelta(days=n), m.span())
+    m = _DAY_BEFORE.search(text)
+    if m:
+        return DateHit(today - timedelta(days=2), m.span())
     m = _YESTERDAY.search(text)
     if m:
         return DateHit(today - timedelta(days=1), m.span())
