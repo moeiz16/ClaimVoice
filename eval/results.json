@@ -14,7 +14,7 @@
       "key": "task_completion",
       "label": "Task completion",
       "value": 1.0,
-      "limit": 0.95,
+      "limit": 1.0,
       "direction": "min",
       "passed": true
     },
@@ -23,7 +23,7 @@
       "key": "value_accuracy",
       "label": "Per-field value accuracy",
       "value": 1.0,
-      "limit": 0.95,
+      "limit": 1.0,
       "direction": "min",
       "passed": true
     },
@@ -93,17 +93,80 @@
     {
       "suite": "dialogue",
       "key": "held_out_completion",
-      "label": "Held-out callers, first set, completed (floor)",
+      "label": "Held-out callers, first set, completed",
       "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "held_out_2_completion",
+      "label": "Held-out callers, second set (used for development), completed",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "held_out_2_values",
+      "label": "Held-out callers, second set (used for development), values right",
+      "value": 1.0,
+      "limit": 1.0,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "wrong_values",
+      "label": "Wrong values kept, main and development sets (share of expected values)",
+      "value": 0.0,
+      "limit": 0.02,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "held_out_3_completion",
+      "label": "Held-out callers, third set (untouched), completed (floor)",
+      "value": 0.6666666666666666,
       "limit": 0.5,
       "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "held_out_3_wrong_values",
+      "label": "Wrong values kept, third held-out set (share of expected values)",
+      "value": 0.016129032258064516,
+      "limit": 0.05,
+      "direction": "max",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "held_out_3_values",
+      "label": "Held-out callers, third set (untouched), values right (floor)",
+      "value": 0.8064516129032258,
+      "limit": 0.75,
+      "direction": "min",
+      "passed": true
+    },
+    {
+      "suite": "dialogue",
+      "key": "reader_latency",
+      "label": "Offline reader per caller turn, p95 (ms)",
+      "value": 1.015,
+      "limit": 5.0,
+      "direction": "max",
       "passed": true
     },
     {
       "suite": "latency",
       "key": "voice_p95",
       "label": "Voice mode: end of speech to first audio, p95 (ms)",
-      "value": 200.57,
+      "value": 200.85,
       "limit": 800,
       "direction": "max",
       "passed": true
@@ -112,7 +175,7 @@
       "suite": "latency",
       "key": "webrtc_p95",
       "label": "Browser speech over WebRTC: caller text to line caption, p95 (ms)",
-      "value": 3.424416994675994,
+      "value": 2.2295000089798123,
       "limit": 800,
       "direction": "max",
       "passed": true
@@ -121,7 +184,7 @@
       "suite": "latency",
       "key": "turns_measured",
       "label": "Caller turns measured",
-      "value": 444,
+      "value": 443,
       "limit": 300,
       "direction": "min",
       "passed": true
@@ -299,7 +362,7 @@
           "7/7",
           "-",
           "ended",
-          31
+          29
         ],
         [
           "asks-person-midway",
@@ -626,35 +689,119 @@
           29
         ]
       ],
+      "main": {
+        "completed": 38,
+        "of": 38,
+        "values": 126,
+        "wrong": 0,
+        "valuesOf": 126
+      },
       "heldOut": {
         "completed": 8,
         "of": 8,
         "values": 20,
+        "wrong": 0,
         "valuesOf": 20
       },
       "heldOut2": {
-        "completed": 1,
+        "completed": 8,
         "of": 8,
-        "values": 0,
+        "values": 22,
+        "wrong": 0,
         "valuesOf": 22
+      },
+      "heldOut3": {
+        "completed": 8,
+        "of": 12,
+        "values": 50,
+        "wrong": 1,
+        "valuesOf": 62
+      },
+      "before": {
+        "main": {
+          "completed": 38,
+          "of": 38,
+          "values": 126,
+          "wrong": 0,
+          "valuesOf": 126
+        },
+        "held_out": {
+          "completed": 8,
+          "of": 8,
+          "values": 20,
+          "wrong": 0,
+          "valuesOf": 20
+        },
+        "held_out_2": {
+          "completed": 1,
+          "of": 8,
+          "values": 0,
+          "wrong": 0,
+          "valuesOf": 22
+        },
+        "held_out_3": {
+          "completed": 1,
+          "of": 12,
+          "values": 24,
+          "wrong": 2,
+          "valuesOf": 62
+        }
+      },
+      "lexiconsOnly": {
+        "main": {
+          "completed": 38,
+          "of": 38,
+          "values": 126,
+          "wrong": 0,
+          "valuesOf": 126
+        },
+        "held_out": {
+          "completed": 8,
+          "of": 8,
+          "values": 20,
+          "wrong": 0,
+          "valuesOf": 20
+        },
+        "held_out_2": {
+          "completed": 1,
+          "of": 8,
+          "values": 0,
+          "wrong": 0,
+          "valuesOf": 22
+        },
+        "held_out_3": {
+          "completed": 2,
+          "of": 12,
+          "values": 30,
+          "wrong": 1,
+          "valuesOf": 62
+        }
+      },
+      "readerLatencyMs": {
+        "turns": 814,
+        "p50": 0.554,
+        "p95": 1.015,
+        "max": 1.863,
+        "clf_p50": 0.061,
+        "clf_p95": 0.217
       }
     },
     "latency": {
       "voice": {
-        "p50": 200.31,
-        "p95": 200.57
+        "p50": 200.33,
+        "p95": 200.85
       },
       "webrtc": {
-        "p50": 1.5016669931355864,
-        "p95": 3.424416994675994
+        "p50": 1.6055000014603138,
+        "p95": 2.2295000089798123
       },
       "stages": {
         "sttMs": 200.0,
-        "understandMs": 0.33,
+        "understandMs": 0.54,
         "toolsMs": 0.05,
-        "planMs": 0.33,
+        "planMs": 0.54,
         "firstAudioMs": 0.09,
-        "totalMs": 200.57
+        "totalMs": 200.85
       }
     },
     "models": {
