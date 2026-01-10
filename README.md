@@ -147,7 +147,7 @@ flowchart LR
     subgraph Voice["Voice runtime"]
       Pipe["Pipecat pipeline per call<br/>SmallWebRTC / WebSocket → Silero VAD → STT → dialogue → TTS"]
       Dlg["Dialogue state machine<br/>bilingual scripts"]
-      NLU["Language understanding<br/>rules, or LiteLLM checked by them"]
+      NLU["Language understanding<br/>rules + a learned loss-type classifier,<br/>or LiteLLM checked by them"]
       Tools["Mid-call tools with budgets<br/>policy, identity, coverage, SMS, weather"]
     end
     Sink["CallSink<br/>(ordered per-call writer)"]
@@ -196,21 +196,21 @@ speech services. **`typed`** is the accessibility and no-microphone option. Barg
 mode.
 
 The target is **under 800 ms at p95 from the end of the caller's speech to the start of the reply**. The cloud column
-is the allowance per step; the measured column is `make eval` over 444 caller turns in `voice` mode with the offline
+is the allowance per step; the measured column is `make eval` over 443 caller turns in `voice` mode with the offline
 fakes:
 
 | Step | Cloud budget | Measured p95 (fakes) |
 |---|---:|---:|
 | End-of-speech detection (Silero VAD, 0.2 s stop) + speech-to-text | 350 ms | 200.0 ms |
-| Language understanding (600 ms hard timeout, then the rules) | 180 ms | 0.3 ms |
+| Language understanding (offline reader with its classifier; cloud: 600 ms hard timeout, then the offline reader) | 180 ms | 0.5 ms |
 | Mid-call tools (most turns need none; 200 to 600 ms budget each, with a fallback line) | 100 ms | 0.1 ms |
-| Dialogue engine and planning the reply | 20 ms | 0.3 ms |
+| Dialogue engine and planning the reply | 20 ms | 0.5 ms |
 | Text-to-speech first audio (streaming) | 120 ms | 0.1 ms |
 | Transport and jitter buffer | 30 ms | – |
-| **Total** | **800 ms** | **200.6 ms** |
+| **Total** | **800 ms** | **200.8 ms** |
 
 Nearly all of the measured time is the VAD's 200 ms stop setting, which is waiting rather than work. Over a real
-SmallWebRTC data channel in `browser_speech` mode, `caller.text` to `line.say` takes 1.5 ms at p50 and 3.4 ms at p95
+SmallWebRTC data channel in `browser_speech` mode, `caller.text` to `line.say` takes 1.6 ms at p50 and 2.2 ms at p95
 (14 turns). In a real Chrome session the same round trip is about 14 ms at p50; the slowest turn is the wrap-up, where
 the claim is created and both routing checks run (640 to 700 ms, still inside the budget). With cloud speech the
 total is dominated by speech-to-text and the first synthesised audio; those numbers are budgets, not measurements.
@@ -253,10 +253,16 @@ stateDiagram-v2
   events never move the call, and that a hand-back resumes the interrupted stage.
 - **Language understanding works inside a stage.** Given the stage, the values it expects and the utterance (already
   cleared of card numbers), it returns an intent, values with character spans into the transcript, and safety and
-  distress signals. It never returns a next stage. The default reader is rule-based in English and French. The
-  optional cloud reader goes through LiteLLM with a JSON schema and a 600 ms timeout. Its answer is checked before
-  use: values for fields that weren't asked for are dropped, each span must point at the words it quotes, and safety
-  words found by the rules are never overruled.
+  distress signals. It never returns a next stage. The default reader works offline in English and French: rules
+  built on shared word lists (vehicles, damaged parts, rooms, water sources, injuries, insurers, answers that lead
+  with "not yet" or "nothing broken"), and a learned loss-type classifier for the open wording the rules miss in a
+  caller's first sentences ("a pickup clipped my car", "water dripping through my ceiling"). Character and word
+  n-gram TF-IDF with logistic regression, trained on a seeded paraphrase corpus, calibrated, 332 KB, 0.2 ms per turn
+  at p95 ([fact sheet](docs/model-cards/loss-type-reader.md), [corpus](docs/NLU_CORPUS.md)). A confident reading
+  is kept; a less sure one is confirmed ("is this about water damage?") and only a yes keeps it; a no is answered
+  with "which kind of loss was it?", never a hand-off. The optional cloud reader goes through LiteLLM with a JSON
+  schema and a 600 ms timeout. Its answer is checked before use: values for fields that weren't asked for are
+  dropped, each span must point at the words it quotes, and safety words found by the rules are never overruled.
 - **Every spoken line comes from a versioned script or a fixed template**, edited in Settings per loss type
   (collision, hail, wind, water, fire, theft) in both languages. A supervisor's whisper adds one question in the
   line's own words.
@@ -341,42 +347,53 @@ year of real calls.
 
 ## Measured results
 
-### Evaluation gates (`make eval`, offline, 31 of 31 passing)
+### Evaluation gates (`make eval`, offline, 38 of 38 passing)
 
 | Area | Gate | Result |
 |---|---|---|
-| Dialogue | Scripted callers (EN/FR) ≥ 30; task completion ≥ 0.95; per-field value accuracy ≥ 0.95 | 38 callers (9 French); 1.00; 1.00 (126 of 126 values) |
+| Dialogue | Scripted callers (EN/FR) ≥ 30; task completion = 1; per-field value accuracy = 1 | 38 callers (9 French); 1.00; 1.00 (126 of 126 values) |
 | Dialogue | Safety and hand-off triggers caught; consent asked first; nothing kept before the yes in all-party regions | 1.00 (10 scenarios); 1.00; 1.00 (29 calls) |
 | Dialogue | Card numbers caught and removed; card numbers stored anywhere | 1.00 (4 calls); **0** |
 | Dialogue | Barge-ins honoured; French calls completed | 1.00; 1.00 |
-| Dialogue | First held-out set completed (floor ≥ 0.5; kept as a regression check) | 1.00 (8 of 8; 20 of 20 values) |
-| Response time | End of speech to first audio, p95 (≤ 800 ms) | 200.6 ms over 444 turns |
-| Response time | Browser speech over WebRTC, `caller.text` to caption, p95 (≤ 800 ms) | 3.4 ms |
+| Dialogue | First held-out set completed; second held-out set (used for development) completed and values right | 1.00 (8 of 8); 1.00 (8 of 8); 1.00 (22 of 22) |
+| Dialogue | Wrong values kept on the main and development sets (≤ 0.02) | **0** of 168 |
+| Dialogue | Third held-out set (untouched): completed (≥ 0.5), values right (≥ 0.75), wrong values (≤ 0.05) | 0.67 (8 of 12); 0.81 (50 of 62); 0.016 (1) |
+| Dialogue | Offline reader per caller turn, p95 (≤ 5 ms) | 1.0 ms over 814 turns |
+| Response time | End of speech to first audio, p95 (≤ 800 ms) | 200.8 ms over 443 turns |
+| Response time | Browser speech over WebRTC, `caller.text` to caption, p95 (≤ 800 ms) | 2.2 ms |
 | Size check | PR-AUC over the logistic baseline (≥ +0.02); ECE (≤ 0.05); group gap (≤ 0.05); SHAP stability (≥ 0.7); worst weekly PSI (≤ 0.25); large claims to an adjuster (≥ 0.85) | +0.046; 0.012; 0.035; 1.00; 0.050; 0.905 |
 | Closer-look check | PR-AUC over the baseline; ECE; group gap (≤ 0.015); SHAP stability; worst weekly PSI; share referred (≤ 0.08) | +0.164; 0.007; 0.003; 0.80; 0.031; 0.035 |
 | Drift | Alarm fires on a simulated shift (≥ 0.25) | 0.45 |
 | Call quality | Agreement with reviewers (≥ 0.9); Cohen's kappa (≥ 0.7); critical failures marked failed; worst item (≥ 0.8) | 1.00; 1.00; 1.00; 1.00 |
 
 **How to read the dialogue numbers.** The 38 scripted callers are a regression suite written alongside the line, so
-100 % there is the expected bar, not a measure of open conversation. The first held-out set (8 callers) was written
-after the line was finished; its misses were then used once to widen the rules, so it now only shows those fixes
-hold. The **second held-out set** (8 callers, 2 in French) was written before that change and never used to tune
-anything, and it is the honest measure of unseen wording: **1 of 8 calls completes as expected and 0 of 22 values
-are right**. It is reported, not gated. Most misses start in the caller's first sentence ("water dripping through my
-ceiling", "the storm ripped shingles off", "a pickup clipped my car"): the rules don't recognise the loss, the line
-asks again, and after two turns it can't place, it hands the call to a person instead of keeping a wrong value. The
-optional cloud reader is the intended answer to open wording; the offline rules are the floor. Every table:
-[eval/RESULTS.md](eval/RESULTS.md).
+100 % there is the expected bar, not a measure of open conversation. Open wording is measured on held-out callers,
+before (the rules the line shipped with) and now (the offline reader with its word lists and classifier):
+
+| Caller set | Completed | Values right | Wrong values |
+|---|---:|---:|---:|
+| Main, 38 callers (written with the line) | 38 → 38 | 126/126 → 126/126 | 0 → 0 |
+| Held out 1, 8 callers (used once to widen the rules) | 8 → 8 | 20/20 → 20/20 | 0 → 0 |
+| Held out 2, 8 callers (**used for development**) | 1 → 8 | 0/22 → 22/22 | 0 → 0 |
+| Held out 3, 12 callers (**untouched**, committed before the reader changed, scored once) | **1 → 8** | **24/62 → 50/62** | **2 → 1** |
+
+The third set is the honest number: wording the line had never seen, in English and French, with multi-fact
+openings, hedges, regional words, a correction and an off-script question. The second set's misses ("water dripping
+through my ceiling", "the storm ripped shingles off", "a pickup clipped my car") shaped the word lists, so it now only
+shows those fixes hold. The word lists alone, without the classifier, take the third set to 2 of 12 and 30 of 62:
+reading the opening statement is most of the gain. Of the four third-set calls that still miss, two hand off to a
+person after two turns the line couldn't place, and two French calls keep every value but fall out of step with
+their scripted answers. Every table: [eval/RESULTS.md](eval/RESULTS.md).
 
 ### Tests and performance
 
 Measured on one laptop with everything offline and the demo clock set to Thursday 8 January 2026.
 
-- **Tests:** **732 backend tests** with pytest, all passing (platform, API, RBAC, tenant isolation, SSE, the call
+- **Tests:** **760 backend tests** with pytest, all passing (platform, API, RBAC, tenant isolation, SSE, the call
   sink, dialogue, understanding and redaction, the voice runtime over a real SmallWebRTC data channel and the
   WebSocket fallback, routing checks, the quality scorer and the seed story), and **82 web tests** with Vitest across
   8 files (formatting, waveforms, transcripts, streams, the landing call, the API layer, the mock API and key
-  components). Ruff (171 files), mypy (122 files), `nuxt typecheck` and ESLint are clean, and `alembic check` finds
+  components). Ruff (178 files), mypy (127 files), `nuxt typecheck` and ESLint are clean, and `alembic check` finds
   no drift.
 - **Browser journeys on the live stack:** 14 journeys and about 120 checked page states with system Chrome, signed in
   through the UI as all six roles: the landing call in English and French with captions, Read instead, reduced motion
@@ -409,7 +426,7 @@ Measured on one laptop with everything offline and the demo clock set to Thursda
 
 - **Memory:** the API process with the voice runtime, after several WebRTC calls, has a physical footprint of 248 MB
   (peak 342 MB; 70 to 85 MB resident). The web server's footprint is 45 MB (peak 50 MB).
-- **Evaluation and seed:** `make eval` runs all 31 gates in about 20 s. `make reset` (migrate and seed) takes about
+- **Evaluation and seed:** `make eval` runs all 38 gates in about 22 s. `make reset` (migrate and seed) takes about
   4 s and builds 201 policies, 79 calls, 63 claims, 6 routing-check versions and 143 audit entries.
 - **Web build:** a clean production build takes 5 to 6 s; the output is 1.8 MB (436 kB gzipped), client and server
   together.
@@ -442,7 +459,7 @@ endorsed by any regulator and not legal advice.
 | API and platform | Python 3.13, **Litestar** 2, msgspec, **SQLAlchemy 2 + Alembic** (SQLite by default, Postgres-ready), Argon2id, structlog, Prometheus client, Server-Sent Events |
 | Routing checks | **XGBoost** 3, scikit-learn (logistic regression, random forest, isotonic calibration), **Optuna**, **SHAP** (TreeSHAP), **MLflow** (local tracking), PSI drift, freMTPL2 via fastparquet |
 | Web | **Nuxt 3** (Vue 3), TypeScript, Tailwind CSS 4.1, Motion for Vue, VueUse, Web Audio `AnalyserNode` + canvas waveforms, **wavesurfer.js** 7 for recordings |
-| Quality | pytest, Ruff, mypy, ESLint, `nuxt typecheck`, Vitest, an evaluation harness with 31 gates, GitHub Actions CI |
+| Quality | pytest, Ruff, mypy, ESLint, `nuxt typecheck`, Vitest, an evaluation harness with 38 gates, GitHub Actions CI |
 
 Pinned versions and why each was chosen: [ADR 0001](docs/adr/0001-toolchain-and-versions.md).
 
@@ -465,7 +482,7 @@ backend/
     api/ platform/ schemas/       Litestar app and routes, auth, sessions, RBAC, audit chain, SSE, errors, metrics
     voice/                        Pipecat pipelines over SmallWebRTC and WebSocket, line manager, recorder, speech adapters
     dialogue/                     stage machine, call engine, bilingual scripts, slot parsing, simulated callers
-    nlu/                          rule-based understanding, card-number redaction, the optional LiteLLM reader
+    nlu/                          offline reader (rules, word lists, loss-type classifier and its corpus), redaction, LiteLLM
     tools/                        mid-call tools: SMS outbox, weather snapshot, toolbox with budgets
     calls/ claims/ policies/      the call sink, hang-up sequence, line desk, claim files, routing, photos, policies
     ml/                           synthetic data, features, training, calibration, reasons, registry, fact sheets
@@ -490,7 +507,8 @@ docs/            problem statement, architecture, API contract, data, compliance
 | `make test` | Backend tests, then web lint, type check, unit tests and production build (`test-backend`, `test-frontend`) |
 | `make lint` / `make format` / `make typecheck` | Ruff checks / Ruff fixes / mypy and `nuxt typecheck` |
 | `make eval` | Evaluation gates → `eval/RESULTS.md` (dialogue, response time, routing checks, call quality) |
-| `make train` | Train both routing checks on CPU, tracked in `mlruns/` |
+| `make train` | Train both routing checks on CPU, tracked in `mlruns/`, then the loss-type reader |
+| `make train-nlu` | Train only the offline reader's loss-type classifier (seeded, about 5 s, same bytes every run) |
 | `make data` | Download freMTPL2 into `data/fremtpl2/` |
 | `make smoke` | Re-verify the toolchain: Pipecat SmallWebRTC and Silero VAD, and the ML stack on freMTPL2 |
 | `make setup-ai` | Optional: install LiteLLM for the cloud language reader |
@@ -502,10 +520,11 @@ docs/            problem statement, architecture, API contract, data, compliance
 - **The demo line is a browser call.** A phone-number (SIP or carrier) transport is future work.
 - **Offline speech recognition is the browser's.** Its accuracy is not part of the measured results; the dialogue
   evaluation runs on text from scripted callers.
-- **The offline rules reader does not understand open wording.** On held-out callers never used for tuning, 1 of 8
-  calls completes and 0 of 22 values are right; unfamiliar wording falls to a re-ask and then a person, so the line
-  fails safe rather than filing wrong values. The optional cloud reader is meant for this but is not part of the
-  measured results.
+- **The offline reader handles some open wording, not all.** On twelve held-out callers it had never seen, 8
+  complete and 50 of 62 values are right (1 wrong); the rest fall to a re-ask and then a person rather than a guess.
+  The set is small, the same team wrote it and the word lists (it was committed first and scored once), and the
+  classifier learned from generated sentences that are tidier than speech-to-text. The optional cloud reader remains
+  the answer to fully open conversation and is not part of the measured results.
 - **The closer-look check is trained on synthetic labels.** See the honest notes above.
 - **Supervisors follow live calls by captions, not audio.** Listening to a call's audio and speaking by microphone on
   a take-over are future work; today a supervisor types and the line speaks it.

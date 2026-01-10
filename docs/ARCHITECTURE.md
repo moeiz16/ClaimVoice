@@ -24,7 +24,7 @@ flowchart LR
       Lines["LineManager<br/>(LineControl)"]
       Pipe["Pipecat pipeline per call<br/>SmallWebRTC / WebSocket → VAD → STT → dialogue → TTS"]
       Dlg["Dialogue engine<br/>stage machine + scripts"]
-      NLU["Language understanding<br/>(rules or LiteLLM)"]
+      NLU["Language understanding<br/>(rules + loss-type classifier, or LiteLLM)"]
       Tools["Mid-call tools<br/>policy, identity, coverage, SMS, weather"]
     end
     Sink["SqlCallSink<br/>(CallSink)"]
@@ -63,9 +63,10 @@ flowchart LR
    and for barge-in detection by Silero VAD. In `voice` mode the server runs VAD and a cloud speech-to-text service.
    In `typed` mode the caller types.
 4. **Understand, inside a stage.** The dialogue engine redacts card numbers first, then asks the language
-   understanding adapter for an intent, slot values with character spans and safety/distress signals. The fake is
-   rule-based (EN/FR); the cloud adapter calls a small model through LiteLLM with a strict JSON schema and a 600 ms
-   timeout, falling back to the rules on timeout.
+   understanding adapter for an intent, slot values with character spans and safety/distress signals. The offline
+   reader (EN/FR, the default) is rules on shared word lists plus a learned loss-type classifier for open wording
+   (see *Offline language understanding* below); the cloud adapter calls a small model through LiteLLM with a strict
+   JSON schema and a 600 ms timeout, falling back to the offline reader on timeout.
 5. **Decide, with the state machine.** The engine applies the slot values, decides the stage event from the script's
    completion rules and calls `next_stage`. Control flow never comes from a language model. Global events (urgent
    safety, a request for a person, low confidence, distress, a failed lookup) move the call to a person from any
@@ -92,7 +93,7 @@ line's reply.
 |---|---:|---:|---|
 | End-of-speech detection (Silero VAD, 0.2 s stop) | 200 ms | 200 ms | Pipecat's VAD analyser; 0.1 ms of CPU per 32 ms chunk |
 | Speech-to-text final | 150 ms | < 0.1 ms | Groq Whisper or Deepgram (2 s timeout); browser recognition in the offline mode |
-| Language understanding | 180 ms | 0.3 ms | 600 ms hard timeout, then the rules path |
+| Language understanding | 180 ms | 0.5 ms | offline reader incl. the classifier; cloud: 600 ms hard timeout, then the offline reader |
 | Tools (most turns need none) | 100 ms | 0.1 ms | budgets 200 to 600 ms each, with a fallback |
 | Dialogue engine + `CallSink` writes | 20 ms | 0.3 ms | sink calls must return within 20 ms p95 |
 | Text-to-speech first audio | 120 ms | 0.1 ms | streaming TTS (Cartesia or ElevenLabs); offline the browser speaks locally |
@@ -131,6 +132,41 @@ The full interface list and sequences are in docs/API_CONTRACT.md Part 3.
   the voice runtime; every response carries `X-ClaimVoice-Now` for the web app. Security timers use the real clock.
 - **Observability:** structured logs with request and call ids, `/health`, Prometheus `/metrics` (live calls, turn
   response-time histogram, tool timeouts, SSE subscribers).
+
+## Offline language understanding
+
+The offline reader (`nlu/offline.py`) answers every caller turn in about a millisecond, on CPU, with no model
+server:
+
+1. **Rules first** (`nlu/fake.py`, `nlu/extract.py`): intent, urgent-safety words with negation, distress from
+   wording, the caller's language, and the values the stage expects, each with its character span. The value
+   patterns are built from shared English and French word lists (`nlu/lexicon.py`: vehicles and their parts, home
+   parts, rooms, water sources, insurers, injuries) and read a negation before a word as a no ("nothing broken").
+2. **The loss-type classifier** (`nlu/model.py`) reads the turn only while the stage still doesn't know what happened
+   and the rules heard no loss type: character 3–5-grams and word 1–2-grams, TF-IDF, multinomial logistic regression
+   over six loss types and *not a description*, with one fitted softmax temperature. It is trained by
+   `make train-nlu` on a seeded paraphrase corpus and the main scripted callers' turns (docs/NLU_CORPUS.md), never
+   the held-out callers, and ships as a 332 KB gzipped JSON read by plain Python (0.2 ms per turn at p95).
+3. **Confidence decides how much the line trusts it.** At 0.84 or more the loss type is kept, pointing at the word
+   that decided it. From 0.30 to 0.84 it is only a candidate: the engine asks "is this about water damage?" and keeps
+   it on a yes; a no is followed by "which kind of loss was it?" and does not count as a miss. Both thresholds were
+   fitted on out-of-lexicon validation sentences (at most 2 in 100 kept readings wrong). Only two turns in a row that
+   can't be placed, or the existing hand-off rules, bring in a person.
+4. **The opening statement fills several fields.** Once the loss type is known, the engine re-reads the caller's first
+   description for every field of that loss type's script (another party, damaged parts, roof or fence, water source,
+   what was taken, a fire already out), each with its span, and doesn't ask for what was already said. The date, time
+   and rooms are always asked.
+
+Measured by `make eval` (before → now; a wrong value is one kept that the caller didn't say):
+
+| Caller set | Completed | Values right | Wrong values |
+|---|---:|---:|---:|
+| Main, 38 callers | 38 → 38 | 126/126 → 126/126 | 0 → 0 |
+| Held out 1, 8 callers (used once to widen the rules) | 8 → 8 | 20/20 → 20/20 | 0 → 0 |
+| Held out 2, 8 callers (used for development) | 1 → 8 | 0/22 → 22/22 | 0 → 0 |
+| Held out 3, 12 callers (untouched, scored once) | 1 → 8 | 24/62 → 50/62 | 2 → 1 |
+
+Fact sheet: [model-cards/loss-type-reader.md](model-cards/loss-type-reader.md).
 
 ## Routing checks (classical ML)
 
