@@ -8,7 +8,7 @@ LINT    := backend scripts eval
 export MLFLOW_DISABLE_AGENT_HINT := 1
 
 .PHONY: help setup setup-backend setup-ai setup-frontend lock data api web web-dev dev migrate seed reset \
-        test test-backend test-frontend lint format typecheck eval train smoke stop clean
+        test test-backend test-frontend lint format typecheck eval train train-nlu smoke stop clean
 
 help:            ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -83,8 +83,12 @@ typecheck:       ## mypy (backend) + nuxt typecheck (web)
 eval:            ## Evaluation gates -> eval/RESULTS.md (dialogue, latency, models, call quality)
 	cd backend && $(BPY) ../eval/run.py
 
-train:           ## Train the severity and fraud models (CPU; tracked in mlruns/)
+train:           ## Train the routing checks (tracked in mlruns/) and the loss-type reader (CPU, seeded)
 	cd backend && $(BPY) -m claimvoice.ml.train all
+	$(MAKE) train-nlu
+
+train-nlu:       ## Train only the loss-type classifier of the offline reader (seconds; nlu/artifacts/)
+	cd backend && $(BPY) -m claimvoice.nlu.train
 
 smoke:           ## Re-verify the toolchain: Pipecat SmallWebRTC + Silero VAD, and the ML stack on freMTPL2
 	$(PY) scripts/smoke/voice_smoke.py

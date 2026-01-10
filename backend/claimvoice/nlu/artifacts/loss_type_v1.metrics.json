@@ -1,0 +1,49 @@
+{
+  "corpus": {
+    "generated_train": 12540,
+    "generated_validation": 6211,
+    "generated_all": 12540,
+    "scripted_turns": 290,
+    "by_label": {
+      "collision": 1659,
+      "fire": 1652,
+      "hail": 1651,
+      "none": 2902,
+      "theft": 1652,
+      "water": 1656,
+      "wind": 1658
+    },
+    "by_language": {
+      "en": 8576,
+      "fr": 4254
+    }
+  },
+  "settings": {
+    "C": 4.0,
+    "min_df": 2,
+    "max_features": 24000,
+    "seed": 11
+  },
+  "features": 16902,
+  "temperature": 0.75,
+  "thresholds": {
+    "accept": 0.84,
+    "confirm": 0.3
+  },
+  "validation_out_of_lexicon": {
+    "sentences": 6211,
+    "accuracy": 0.848,
+    "macro_f1": 0.857,
+    "by_language": {
+      "en": 0.8455,
+      "fr": 0.8533
+    },
+    "ece_before": 0.0505,
+    "ece_after": 0.0192,
+    "accepted_share_of_descriptions": 0.5749,
+    "wrong_when_accepted": 0.0188,
+    "right_when_confirmed": 0.8042,
+    "none_taken_as_a_loss": 0.0
+  },
+  "artifact_bytes": 339682
+}
