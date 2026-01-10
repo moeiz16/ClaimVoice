@@ -53,12 +53,13 @@ from claimvoice.contracts import (
 )
 from claimvoice.dialogue.lines import EMPATHY_MARKERS, line
 from claimvoice.dialogue.scripts import condition_holds
-from claimvoice.dialogue.slots import KEY_FACTS, SLOT_CATALOG, display, required_keys
+from claimvoice.dialogue.slots import KEY_FACTS, LOSS_WORDS, SLOT_CATALOG, display, required_keys
 from claimvoice.dialogue.stages import DISPLAY_STEPS, SCRIPT_ORDER, STAGE_LABELS, STAGE_STEP, Event, Stage, next_stage
 from claimvoice.dialogue.summary import read_back, summary
 from claimvoice.ml.features import REGION_TZ
 from claimvoice.nlu.base import Intent, LanguageUnderstanding, NluRequest, NluResult, SlotSpec, SlotValue
-from claimvoice.nlu.fake import SAFETY_REASONS, FakeUnderstanding, detect_language
+from claimvoice.nlu.fake import SAFETY_REASONS, detect_language
+from claimvoice.nlu.offline import OfflineUnderstanding
 from claimvoice.nlu.parse import find_money
 from claimvoice.nlu.redaction import redact_card_numbers
 from claimvoice.tools.sms import mask_phone
@@ -310,8 +311,8 @@ class CallEngine:
         self.sink = sink
         self.policies = policies
         self.playbook = playbook
-        self.nlu = nlu or FakeUnderstanding()
-        self._fallback_nlu = FakeUnderstanding()
+        self._fallback_nlu = OfflineUnderstanding()
+        self.nlu = nlu or self._fallback_nlu
         self.tools = toolbox or Toolbox(policies, cfg.org_id, web_origin=cfg.web_origin)
         self.clock = sim_clock or SimClock()
         self.answered_at = answered_at or clock.now()
@@ -364,6 +365,8 @@ class CallEngine:
         self.first_name = ""
         self.said_sorry = False
         self.loss_turn: tuple[str, str] | None = None  # the turn the caller first described the loss in
+        # a loss type the reader wasn't sure enough of to keep: the line asks the caller to confirm it first
+        self.loss_candidate: tuple[SlotValue, str, str] | None = None  # (value, turn id, text)
         # the voice runtime's recorder: (relative path, seconds) once the call ends, or (None, None)
         self.recording_provider: Callable[[], tuple[str | None, float | None]] | None = None
         self._outs: list[Out] = []
@@ -1006,11 +1009,39 @@ class CallEngine:
     async def _note_loss(self, r: NluResult, turn_id: str, text: str) -> None:
         lt = next((v for v in r.slots if v.key == "loss_type"), None)
         if lt is not None and self.loss_type is None:
-            self.loss_turn = (turn_id, text)
-            self.loss_type = str(lt.value)
-            await self.set_slot("loss_type", lt.value, turn_id=turn_id, span=lt.span, confidence=lt.confidence)
-            start, end = 0, len(text)
-            await self.set_slot("loss_description", text.strip(), turn_id=turn_id, span=(start, end), confidence=0.7)
+            await self._keep_loss(lt, turn_id, text)
+            return
+        maybe = next((v for v in r.candidates if v.key == "loss_type"), None)
+        if (
+            maybe is not None
+            and self.loss_type is None
+            and (self.loss_candidate is None or maybe.confidence > self.loss_candidate[0].confidence)
+        ):
+            self.loss_candidate = (maybe, turn_id, text)
+
+    async def _keep_loss(self, lt: SlotValue, turn_id: str, text: str) -> None:
+        self.loss_turn = (turn_id, text)
+        self.loss_type = str(lt.value)
+        self.loss_candidate = None
+        await self.set_slot("loss_type", lt.value, turn_id=turn_id, span=lt.span, confidence=lt.confidence)
+        start, end = 0, len(text)
+        await self.set_slot("loss_description", text.strip(), turn_id=turn_id, span=(start, end), confidence=0.7)
+
+    def _confirm_loss_prompt(self) -> tuple[str, str]:
+        assert self.loss_candidate is not None
+        lt = str(self.loss_candidate[0].value)
+        words = LOSS_WORDS.get(lt, {"en": lt, "fr": lt})
+        return line("ask_loss_confirm", self.language, loss=words["fr" if self.language == "fr" else "en"]), line(
+            "ask_loss_confirm", "en", loss=words["en"]
+        )
+
+    async def _ask_loss(self, parts: list[tuple[str, str]]) -> None:
+        """Ask what happened, or, when the reader has a likely answer it isn't sure of, ask the caller to confirm it."""
+        if self.loss_candidate is not None:
+            self.substate = "confirm_loss"
+            await self._ask(parts, self._confirm_loss_prompt(), asked="loss_type")
+        else:
+            await self._ask(parts, self._l("ask_loss"), asked="loss_type")
 
     # identity ---------------------------------------------------------------
 
@@ -1186,17 +1217,34 @@ class CallEngine:
         if self.loss_type:
             await self._loss_known(turn_id, parts)
         else:
-            await self._ask(parts, self._l("ask_loss"), asked="loss_type")
+            await self._ask_loss(parts)
         return True
 
     # loss type and details ---------------------------------------------------
 
     async def _loss_type(self, r: NluResult, turn_id: str, text: str, pre: list[tuple[str, str]]) -> bool:
-        await self._note_loss(r, turn_id, text)
+        confirming = self.substate == "confirm_loss" and self.loss_candidate is not None
+        if confirming:
+            self.substate = None
+            heard = next((v for v in r.slots if v.key == "loss_type"), None)
+            if heard is None and r.intent is Intent.AFFIRM and self.loss_candidate is not None:
+                value, cand_turn, cand_text = self.loss_candidate
+                await self._keep_loss(replace(value, confidence=max(value.confidence, 0.9)), cand_turn, cand_text)
+            elif heard is None and r.intent is Intent.DENY:
+                self.loss_candidate = None  # a clear no: ask which kind of loss it was (a question, not a miss)
+                await self._ask(pre, self._l("ask_loss_choices"), asked="loss_type")
+                return True
+            else:
+                self.loss_candidate = None
+        if not self.loss_type:
+            await self._note_loss(r, turn_id, text)
         if not self.loss_type:
             topic = self._off_script(r)
             if topic:
                 await self._ask([*pre, topic], self._l("ask_loss"), asked="loss_type")
+                return True
+            if self.loss_candidate is not None and not confirming:
+                await self._ask_loss(pre)  # a likely answer below the bar: confirm it rather than count a miss
                 return True
             self.last_prompt = self._l("ask_loss_choices")  # the re-ask names the kinds of loss
             return False

@@ -65,8 +65,9 @@ class NluResult:
     urgent_safety: bool = False  # injury, fire, gas, someone in danger, water near electrical panel
     safety_reason: str | None = None
     confidence: float = 1.0
-    source: str = "fake"  # "fake" | "llm"
+    source: str = "fake"  # "fake" (rules) | "model" (rules + learned classifier) | "llm"
     topic: str | None = None  # off-script topic ("premium", "covered", "timeline", "robot", ...) for a fixed answer
+    candidates: tuple[SlotValue, ...] = ()  # values heard below the accept threshold: the line confirms before keeping
 
 
 @runtime_checkable

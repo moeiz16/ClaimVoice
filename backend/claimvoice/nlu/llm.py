@@ -17,7 +17,8 @@ from typing import Any
 
 from claimvoice.dialogue.slots import display
 from claimvoice.nlu.base import Intent, LanguageUnderstanding, LlmClient, NluRequest, NluResult, SlotValue
-from claimvoice.nlu.fake import FakeLlm, FakeUnderstanding
+from claimvoice.nlu.fake import FakeLlm
+from claimvoice.nlu.offline import OfflineUnderstanding
 
 SYSTEM = (
     "You read one turn of an insurance claim phone call (English or Canadian French) and return JSON only. "
@@ -92,7 +93,7 @@ class LlmUnderstanding:
 
     client: LlmClient
     timeout_ms: int = 600
-    rules: FakeUnderstanding = field(default_factory=FakeUnderstanding)
+    rules: OfflineUnderstanding = field(default_factory=OfflineUnderstanding)
 
     async def understand(self, request: NluRequest) -> NluResult:
         base = self.rules.understand_sync(request)
@@ -158,16 +159,18 @@ class LlmUnderstanding:
             confidence=max(base.confidence, 0.8),
             source="llm",
             topic=base.topic,
+            candidates=() if "loss_type" in values else base.candidates,
         )
 
 
 def get_understanding() -> LanguageUnderstanding:
-    """The configured reader: the rules (default, offline) or the cloud model checked against them."""
+    """The configured reader: the offline reader (rules and the learned classifier, the default) or the cloud model
+    checked against it."""
     from claimvoice.config import get_settings
 
     s = get_settings()
     if s.llm_fake or not any((s.groq_api_key, s.gemini_api_key, s.openrouter_api_key)):
-        return FakeUnderstanding()
+        return OfflineUnderstanding()
     return LlmUnderstanding(LiteLlmClient(s.llm_model, s.llm_api_key(s.llm_model)))
 
 

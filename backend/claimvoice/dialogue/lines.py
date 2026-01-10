@@ -72,6 +72,10 @@ LINES: dict[str, dict[str, str]] = {
     },
     "glad_safe": {"en": "I'm glad everyone's okay.", "fr": "Je suis contente que tout le monde aille bien."},
     "ask_loss": {"en": "Tell me what happened.", "fr": "Racontez-moi ce qui s'est passé."},
+    "ask_loss_confirm": {
+        "en": "Just so I have it right: is this about {loss}?",
+        "fr": "Pour être certaine de bien comprendre : est-ce que c'est {loss}?",
+    },
     "ask_loss_choices": {
         "en": "I want to get this right. Was it a collision, wind or hail, water, a fire, or a theft?",
         "fr": "Je veux bien comprendre. Est-ce une collision, du vent ou de la grêle, un dégât d'eau, un incendie "
