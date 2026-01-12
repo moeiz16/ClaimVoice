@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Hand off from the dock: choose a person or team and add a one-line reason; the call moves into the tray with
-// its summary.
+// Hand off from the line you're on: choose a team (radio cards) and add a one-line reason; the call joins the board
+// as "waiting for a person" with its summary, so nobody asks the caller twice. A dialog, because it is a decision.
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
 
@@ -10,10 +10,11 @@ const team = ref<'intake' | 'adjusters' | 'siu'>('intake')
 const reason = ref('')
 const error = ref<string | null>(null)
 const busy = ref(false)
+const open = computed({ get: () => !!target.value, set: (v: boolean) => { if (!v) target.value = null } })
 const teams = [
-  { key: 'intake' as const, label: 'Intake team', sub: 'Jamal, Sofía or Aurélie' },
-  { key: 'adjusters' as const, label: 'Adjusters', sub: 'For a claim that needs one now' },
-  { key: 'siu' as const, label: 'Special investigations', sub: 'A closer look, never a denial' },
+  { value: 'intake', label: 'Intake team', description: 'Jamal, Sofía or Aurélie' },
+  { value: 'adjusters', label: 'Adjusters', description: 'For a claim that needs one now' },
+  { value: 'siu', label: 'Special investigations', description: 'A closer look, never a denial' },
 ]
 const quick = ['Caller wants to talk about a rental', 'Needs a person who speaks French', 'Complicated coverage question', 'Caller is upset']
 
@@ -24,7 +25,7 @@ async function send() {
   error.value = null
   try {
     await api.calls.handoff(target.value.callId, { reason: reason.value.trim(), team: team.value })
-    listening.flash(`${target.value.lineLabel} is in the hand-off tray.`)
+    listening.flash(`${target.value.lineLabel} is waiting for a person on the board.`)
     target.value = null
     reason.value = ''
   }
@@ -36,46 +37,29 @@ async function send() {
 </script>
 
 <template>
-  <CvSheet :open="!!target" :title="target ? `Hand off ${target.lineLabel}` : ''" @close="target = null">
-    <form v-if="target" class="body" @submit.prevent="send">
-      <fieldset>
-        <legend>Who should take it</legend>
-        <label v-for="t in teams" :key="t.key" class="opt" :class="{ on: team === t.key }">
-          <input v-model="team" type="radio" name="team" :value="t.key">
-          <b>{{ t.label }}</b><span>{{ t.sub }}</span>
-        </label>
-      </fieldset>
-      <label class="lab" for="handoff-reason">Why, in one line</label>
-      <input id="handoff-reason" v-model="reason" autofocus class="field-input sm" maxlength="140" :aria-invalid="!!error" placeholder="Caller wants to talk about a rental">
-      <div class="quick">
-        <button v-for="q in quick" :key="q" class="tag plain" type="button" @click="reason = q">
-          {{ q }}
-        </button>
-      </div>
-      <p v-if="error" class="err" role="alert">
-        <CvIcon name="urgent" size="s" />{{ error }}
-      </p>
-      <div class="acts">
-        <button class="btn primary" type="submit" :disabled="busy">
-          <CvIcon name="handoff" />Hand off with the summary
-        </button>
-        <button class="btn soft" type="button" @click="target = null">
+  <UModal v-model:open="open" :title="target ? `Hand off ${target.lineLabel}` : 'Hand off'" :description="target ? `${target.callerLabel}${target.place ? ` · ${target.place}` : ''}` : undefined">
+    <template #body>
+      <form v-if="target" id="handoff-form" class="grid gap-4" @submit.prevent="send">
+        <URadioGroup v-model="team" legend="Who should take it" :items="teams" variant="card" color="primary" />
+        <UFormField label="Why, in one line" name="reason" :error="error ?? undefined">
+          <UInput v-model="reason" autofocus maxlength="140" class="w-full" placeholder="Caller wants to talk about a rental" />
+        </UFormField>
+        <div class="flex flex-wrap gap-1.5">
+          <UButton v-for="q in quick" :key="q" size="sm" color="neutral" variant="soft" class="rounded-full" @click="reason = q">
+            {{ q }}
+          </UButton>
+        </div>
+      </form>
+    </template>
+    <template #footer>
+      <div class="flex gap-2 flex-wrap">
+        <UButton type="submit" form="handoff-form" icon="i-lucide-user-round-plus" :loading="busy">
+          Hand off with the summary
+        </UButton>
+        <UButton color="neutral" variant="soft" @click="target = null">
           Not now
-        </button>
+        </UButton>
       </div>
-    </form>
-  </CvSheet>
+    </template>
+  </UModal>
 </template>
-
-<style scoped>
-fieldset { border: 0; padding: 0; margin: 0 0 14px; display: grid; gap: 8px; }
-legend, .lab { font-size: 13px; font-weight: 700; color: var(--cv-muted); margin-bottom: 6px; display: block; }
-.opt { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; padding: 10px 16px; border-radius: 999px; background: var(--cv-sunk); cursor: pointer; }
-.opt.on { background: var(--cv-orchid-wash); box-shadow: inset 0 0 0 2px var(--cv-orchid); }
-.opt input { grid-row: span 2; accent-color: var(--cv-orchid); width: 18px; height: 18px; }
-.opt b { font-size: 15px; } .opt span { color: var(--cv-muted); font-size: 13px; }
-.quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
-.quick .tag { border: 0; padding: 0 12px; }
-.err { display: flex; gap: 6px; align-items: center; color: var(--cv-urgent); font-weight: 600; font-size: 14px; margin: 12px 0 0; }
-.acts { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
-</style>

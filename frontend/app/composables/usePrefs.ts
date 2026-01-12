@@ -28,6 +28,9 @@ export function applyPrefs() {
   watchEffect(() => {
     const el = document.documentElement
     el.dataset.theme = prefs.theme.value
+    // Nuxt UI themes by class; the app's own tokens by data-theme. Both follow the same preference.
+    el.classList.toggle('dark', prefs.theme.value === 'dark')
+    el.classList.toggle('light', prefs.theme.value !== 'dark')
     el.dataset.captions = prefs.captions.value
     el.classList.toggle('reduce-motion', prefs.reduceMotion.value)
     setUiLang(prefs.lang.value)

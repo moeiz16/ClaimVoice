@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Where a claim goes, as a badge with its icon and word: ✓ Fast-track · Adjuster · Closer look.
 import type { Route } from '~/types/api'
 import { routeStyle } from '~/utils/labels'
 

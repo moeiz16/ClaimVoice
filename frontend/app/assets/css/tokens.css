@@ -1,5 +1,5 @@
-/* ClaimVoice tokens: "On the line". Day line (porcelain) is the default; Night line is an aubergine night.
-   Mapped into Tailwind in main.css (@theme inline). Contrast ratios are listed in DESIGN.md §7. */
+/* ClaimVoice tokens. Day line (porcelain) is the default; Night line is an aubergine night. Mapped into Tailwind and
+   Nuxt UI in main.css. Contrast ratios are listed in DESIGN.md §7; --cv-rule is the hairline of notice boxes and rows. */
 
 :root,
 [data-theme="light"] {
@@ -7,6 +7,7 @@
   --cv-surface: #FFFFFF;
   --cv-sunk: #F3ECF0;
   --cv-sunk-2: #ECE2E8;
+  --cv-rule: #E2D4DD;
   --cv-ink: #24131F;
   --cv-muted: #6B5664;
   --cv-faint: #8F7C89;
@@ -44,6 +45,7 @@
   --cv-surface: #211520;
   --cv-sunk: #2B1C29;
   --cv-sunk-2: #352434;
+  --cv-rule: #3E2C3C;
   --cv-ink: #F7ECF2;
   --cv-muted: #C4B0BD;
   --cv-faint: #8E7A88;

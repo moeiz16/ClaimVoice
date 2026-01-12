@@ -24,19 +24,19 @@ const label = computed(() => {
       {{ field.display }}
       <span class="at">
         <template v-if="unsure">not sure yet</template>
-        <template v-else><CvIcon name="play" size="s" class="tri" />{{ chip }}</template>
+        <template v-else><UIcon name="i-lucide-play" class="tri" />{{ chip }}</template>
       </span>
     </button>
     <span v-else-if="field.display" class="src" :lang="lang">{{ field.display }} <small>{{ field.sourceLabel }}</small></span>
     <span v-else class="pending">{{ field.sourceLabel && !field.sourceLabel.startsWith('▸') ? field.sourceLabel : 'Not heard yet' }}</span>
-    <span v-if="field.changedAtSeconds != null" class="tag siu"><CvIcon name="look" size="s" />Changed at {{ fmtClock(field.changedAtSeconds) }}</span>
+    <CvTag v-if="field.changedAtSeconds != null" kind="siu" icon="look">Changed at {{ fmtClock(field.changedAtSeconds) }}</CvTag>
   </span>
 </template>
 
 <style scoped>
 .hv { display: contents; }
 .heard { cursor: pointer; }
-.heard :deep(.tri) { width: 11px; height: 11px; }
-.src { font-size: 13.5px; font-weight: 600; display: inline-flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.heard .tri { width: 10px; height: 10px; }
+.src { font-size: 14.5px; font-weight: 600; display: inline-flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
 .src small { color: var(--cv-muted); font-weight: 550; font-size: 12px; }
 </style>
