@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// Not found and unexpected errors, in the product's own voice: a flat line, plain words, a way back.
+// Not found and unexpected errors, in the product's own voice: the mark, a flat line that breathes, plain words, a
+// way back. Left-aligned like every slate.
 import type { NuxtError } from '#app'
 
 const props = defineProps<{ error: NuxtError }>()
@@ -10,30 +11,42 @@ const back = () => clearError({ redirect: '/' })
 
 <template>
   <div class="err">
-    <header><CvLogo /></header>
+    <header class="top">
+      <CvLogo />
+    </header>
     <main>
+      <div class="slate">
+        <h1>{{ notFound ? 'This line isn\'t connected.' : 'Something went quiet.' }}</h1>
+        <p>{{ notFound ? 'The page you asked for isn\'t here. It may have moved, or the link was mistyped.' : 'We hit a problem showing this page. Calls carry on; ClaimVoice keeps taking them.' }}</p>
+      </div>
       <div class="flat" aria-hidden="true" />
-      <h1>{{ notFound ? 'This line isn\'t connected.' : 'Something went quiet.' }}</h1>
-      <p>{{ notFound ? 'The page you asked for isn\'t here. It may have moved, or the link was mistyped.' : 'We hit a problem showing this page. Calls carry on; ClaimVoice keeps taking them.' }}</p>
       <div class="acts">
-        <button class="btn primary" type="button" @click="back">
+        <UButton trailing-icon="i-lucide-arrow-right" @click="back">
           Back to ClaimVoice
-        </button>
-        <NuxtLink class="btn soft" to="/lines">
+        </UButton>
+        <UButton to="/lines" color="neutral" variant="soft" icon="i-lucide-list-checks">
           Open the lines
-        </NuxtLink>
+        </UButton>
       </div>
     </main>
   </div>
 </template>
 
 <style scoped>
-.err { min-height: 100dvh; display: grid; grid-template-rows: 76px 1fr; }
-header { display: flex; align-items: center; padding: 0 40px; }
-main { display: grid; place-content: center; justify-items: center; text-align: center; gap: 16px; padding: 0 16px 80px; }
-.flat { width: min(560px, 80vw); height: 2px; border-radius: 2px; background: var(--cv-faint); margin-bottom: 24px; animation: breathe var(--m-breathe) var(--ease-breath) infinite; }
-h1 { font-size: 48px; font-weight: 750; letter-spacing: -0.04em; }
-p { color: var(--cv-muted); font-size: 17px; max-width: 520px; margin: 0; }
-.acts { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
-@media (max-width: 720px) { header { padding: 0 16px; } h1 { font-size: 34px; } }
+.err { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; background: var(--cv-bg); }
+.top { display: flex; align-items: center; padding: 14px 32px; border-bottom: 1px solid var(--cv-rule); }
+main { display: grid; align-content: start; }
+.slate { padding: 48px 32px 22px; display: grid; gap: 10px; }
+h1 { font-size: 48px; font-weight: 740; letter-spacing: -0.03em; line-height: 1.05; }
+p { color: var(--cv-muted); font-size: 17px; max-width: 620px; margin: 0; }
+.flat { height: 2px; margin: 18px 32px 30px; border-radius: 2px; background: var(--cv-faint); animation: breathe var(--m-breathe) var(--ease-breath) infinite; }
+.acts { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 32px; }
+@media (prefers-reduced-motion: reduce) { .flat { animation: none; } }
+@media (max-width: 720px) {
+  .top { padding: 12px 16px; }
+  .slate { padding: 32px 16px 18px; }
+  h1 { font-size: 34px; }
+  .flat { margin: 14px 16px 24px; }
+  .acts { padding: 0 16px; }
+}
 </style>

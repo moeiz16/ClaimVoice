@@ -1,7 +1,9 @@
 <script setup lang="ts">
-// A routing check's fact sheet: what it's for and not for, what it looks at (in words), how it was tested, known
-// limits, fairness results and the sign-off history, with the technical measures folded away for the reviewer.
-import type { FactSheet, Fairness } from '~/types/api'
+// A routing check's fact sheet, read as a document: numbered sections ruled full width (what it's for and not for,
+// what it looks at in words, how it was tested, known limits), then the fairness results and the sign-off history,
+// with the technical measures folded away for the reviewer.
+import type { TableColumn, TimelineItem } from '@nuxt/ui'
+import type { FactSheet, Fairness, FairnessRow, MetricSet } from '~/types/api'
 import { api } from '~/utils/api'
 import { fmtDate, fmtDayShort, pct } from '~/utils/format'
 
@@ -24,148 +26,213 @@ async function load() {
 }
 watch(key, load, { immediate: true })
 
+// Which check: tabs that move between the two fact sheets.
+const checks = [{ value: 'size', label: 'Size check' }, { value: 'closer_look', label: 'Closer-look check' }]
+const which = computed({ get: () => key.value, set: (k: string | number) => { if (k !== key.value) void navigateTo(`/routing/${k}`) } })
+
 const main = computed(() => (sheet.value?.sections ?? []).filter(s => s.key !== 'technical'))
 const fold = computed(() => sheet.value?.sections.find(s => s.key === 'technical') ?? null)
 const tech = computed(() => sheet.value?.technical ?? null)
-const metricRows = computed(() => {
+const nFair = computed(() => main.value.length + 1)
+const nVersions = computed(() => main.value.length + (fairness.value ? 2 : 1))
+
+// Fairness results: one row per group, grouped by what was compared.
+const dims = { region: 'Region', language: 'Language of the call', age_band: 'Age of policyholder' } as const
+const dimOrder = ['region', 'language', 'age_band'] as const
+const fairRows = computed(() => dimOrder.flatMap(d => (fairness.value?.rows ?? []).filter(r => r.dimension === d)))
+const firstOfDim = (i: number) => i === 0 || fairRows.value[i - 1]?.dimension !== fairRows.value[i]?.dimension
+const fairCols: TableColumn<FairnessRow>[] = [
+  { id: 'dimension', header: 'Compared by' },
+  { accessorKey: 'label', header: 'Group' },
+  { accessorKey: 'count', header: 'Claims', cell: ({ row }) => row.original.count.toLocaleString('en-CA') },
+  { id: 'rate', header: 'Sent for a closer look', cell: ({ row }) => pct(row.original.flaggedRate) },
+  { id: 'band', header: 'Inside the allowed band?' },
+]
+
+// Sign-off history as a timeline, newest version first.
+const versionItems = computed<TimelineItem[]>(() => (sheet.value?.versions ?? []).map(v => ({
+  value: v.version,
+  title: `Version ${v.version}`,
+  date: v.stage === 'in_use' ? `In use${v.inUseSince ? ` since ${fmtDate(v.inUseSince)}` : ''}` : v.stage === 'candidate' ? 'On trial' : 'Retired',
+  description: v.trainedOn,
+  icon: v.stage === 'in_use' ? 'i-lucide-check' : v.stage === 'candidate' ? 'i-lucide-clock' : 'i-lucide-archive',
+  version: v,
+})))
+
+// For the technical reviewer.
+interface MetricRow { name: string, m: MetricSet }
+const metricRows = computed<MetricRow[]>(() => {
   const t = tech.value
   if (!t) return []
-  const rows: { name: string, m: typeof t.test }[] = [{ name: 'Gradient-boosted trees (in use)', m: t.test }]
+  const rows: MetricRow[] = [{ name: 'Gradient-boosted trees (in use)', m: t.test }]
   if (t.randomForest) rows.push({ name: 'Random forest (challenger)', m: t.randomForest })
   rows.push({ name: 'Logistic baseline', m: t.baseline })
   return rows
 })
-const dims = { region: 'Region', language: 'Language of the call', age_band: 'Age of policyholder' } as const
 const two = (n: number) => n.toFixed(2)
+const metricCols: TableColumn<MetricRow>[] = [
+  { accessorKey: 'name', header: 'Measured on the test period' },
+  { id: 'auc', header: 'Area under ROC', cell: ({ row }) => two(row.original.m.auc) },
+  { id: 'prAuc', header: 'Area under precision–recall', cell: ({ row }) => two(row.original.m.prAuc) },
+  { id: 'brier', header: 'Brier', cell: ({ row }) => two(row.original.m.brier) },
+  { id: 'ece', header: 'Calibration error', cell: ({ row }) => two(row.original.m.ece) },
+]
+interface CalRow { predicted: number, observed: number, count: number }
+const calCols: TableColumn<CalRow>[] = [
+  { id: 'predicted', header: 'Predicted', cell: ({ row }) => pct(row.original.predicted, 0) },
+  { id: 'observed', header: 'What happened', cell: ({ row }) => pct(row.original.observed, 0) },
+  { accessorKey: 'count', header: 'Claims' },
+]
+const techItems = [{ label: 'For the technical reviewer', icon: 'i-lucide-sliders-horizontal', slot: 'tech' as const }]
 </script>
 
 <template>
   <div>
-    <PageHeader :title="sheet?.name ?? 'Fact sheet'" :caption="sheet ? `Fact sheet · version ${sheet.version}` : ''" :back="{ to: '/routing', label: 'Routing checks' }">
-      <div class="seg hide-phone" role="group" aria-label="Which check">
-        <NuxtLink to="/routing/size" :aria-current="key === 'size' ? 'page' : undefined">Size check</NuxtLink>
-        <NuxtLink to="/routing/closer_look" :aria-current="key === 'closer_look' ? 'page' : undefined">Closer-look check</NuxtLink>
-      </div>
-    </PageHeader>
-    <StateNote v-if="error" kind="error" title="We couldn't load this fact sheet." :body="error" retry class="wrap" @retry="load" />
-    <main v-if="sheet" class="sheet wrap">
-      <article class="card body">
-        <section v-for="s in main" :key="s.key" class="sec">
-          <h2>{{ s.title }}</h2>
+    <Slate :title="sheet?.name ?? 'Fact sheet'" :caption="sheet ? `Fact sheet · version ${sheet.version}` : ''" :back="{ to: '/routing', label: 'Routing checks' }">
+      <UTabs v-model="which" :items="checks" :content="false" variant="pill" size="sm" color="neutral" class="hide-phone" aria-label="Which check" />
+    </Slate>
+
+    <StateNote v-if="error" kind="error" class="m-4 sm:mx-8" title="We couldn't load this fact sheet." :body="error" retry @retry="load" />
+
+    <article v-if="sheet" class="doc">
+      <section v-for="(s, i) in main" :key="s.key" class="sec" :aria-labelledby="`fs-${s.key}`">
+        <span class="no num" aria-hidden="true">{{ i + 1 }}</span>
+        <h2 :id="`fs-${s.key}`">
+          {{ s.title }}
+        </h2>
+        <div class="body">
           <ul v-if="s.body.length > 1">
-            <li v-for="(b, i) in s.body" :key="i">
+            <li v-for="(b, j) in s.body" :key="j">
               {{ b }}
             </li>
           </ul>
           <p v-else>
             {{ s.body[0] }}
           </p>
-        </section>
-        <details v-if="tech" class="fold">
-          <summary>For the technical reviewer</summary>
-          <p v-for="(b, i) in fold?.body ?? []" :key="i" class="muted">
-            {{ b }}
+        </div>
+      </section>
+
+      <section v-if="fairness" class="sec" aria-labelledby="fs-fair">
+        <span class="no num" aria-hidden="true">{{ nFair }}</span>
+        <h2 id="fs-fair">
+          Fairness, version {{ fairness.version }}
+        </h2>
+        <div class="body">
+          <p>
+            Overall <b class="num">{{ pct(fairness.overallRate) }}</b> are sent for a closer look; the allowed band is <b class="num">{{ (fairness.band * 100).toFixed(1) }} points</b> either side.
           </p>
-          <p class="muted">
-            {{ tech.split }}
-          </p>
-          <table class="mt">
-            <thead><tr><th>Measured on the test period</th><th>Area under ROC</th><th>Area under precision–recall</th><th>Brier</th><th>Calibration error</th></tr></thead>
-            <tbody>
-              <tr v-for="r in metricRows" :key="r.name">
-                <td>{{ r.name }}</td><td class="num">{{ two(r.m.auc) }}</td><td class="num">{{ two(r.m.prAuc) }}</td><td class="num">{{ two(r.m.brier) }}</td><td class="num">{{ two(r.m.ece) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <h3>Calibration: predicted vs what happened</h3>
-          <div class="calib" role="img" :aria-label="tech.calibration.map(c => `predicted ${pct(c.predicted, 0)}, observed ${pct(c.observed, 0)}`).join('; ')">
-            <span v-for="(c, i) in tech.calibration" :key="i" class="cb">
-              <i class="p" :style="{ height: `${c.predicted * 100}%` }" /><i class="o" :style="{ height: `${c.observed * 100}%` }" />
-            </span>
-          </div>
-          <p class="legend muted">
-            <span><i class="p" />Predicted</span><span><i class="o" />What happened</span>
-          </p>
-          <h3>What it looks at</h3>
-          <p class="muted">
-            {{ tech.features.join(' · ') }}
-          </p>
-        </details>
-      </article>
-      <aside class="side">
-        <section v-if="fairness" class="card tint">
-          <h2>Fairness, version {{ fairness.version }}</h2>
-          <p class="muted">
-            Overall {{ pct(fairness.overallRate) }}; the allowed band is {{ (fairness.band * 100).toFixed(1) }} points either side.
-          </p>
-          <table class="ft">
-            <tbody>
-              <template v-for="(name, d) in dims" :key="d">
-                <tr><th colspan="3">{{ name }}</th></tr>
-                <tr v-for="r in fairness.rows.filter(x => x.dimension === d)" :key="r.group">
-                  <td>{{ r.label }}</td><td class="num">{{ pct(r.flaggedRate) }}</td>
-                  <td><CvTag :kind="r.withinBand ? 'fast' : 'urgent'" :icon="r.withinBand ? 'check' : 'urgent'">{{ r.withinBand ? 'Inside' : 'Outside' }}</CvTag></td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-          <p class="note">
-            <CvIcon name="shield" size="s" />{{ fairness.note }}
-          </p>
-        </section>
-        <section class="card">
-          <h2>Versions and sign-offs</h2>
-          <ol class="versions">
-            <li v-for="v in sheet.versions" :key="v.version">
-              <b>Version {{ v.version }}</b>
-              <CvTag :kind="v.stage === 'in_use' ? 'fast' : v.stage === 'candidate' ? 'orchid' : 'plain'" :icon="v.stage === 'in_use' ? 'check' : 'clock'">
-                {{ v.stage === 'in_use' ? `In use${v.inUseSince ? ` since ${fmtDate(v.inUseSince)}` : ''}` : v.stage === 'candidate' ? 'On trial' : 'Retired' }}
+          <UTable :data="fairRows" :columns="fairCols" class="tbl">
+            <template #dimension-cell="{ row }">
+              <span class="text-muted font-semibold">{{ firstOfDim(row.index) ? dims[row.original.dimension] : '' }}</span>
+            </template>
+            <template #band-cell="{ row }">
+              <CvTag :kind="row.original.withinBand ? 'fast' : 'urgent'" :icon="row.original.withinBand ? 'check' : 'urgent'">
+                {{ row.original.withinBand ? 'Inside' : 'Outside' }}
               </CvTag>
-              <span class="muted">{{ v.trainedOn }}</span>
-              <span v-for="s in v.signOffs" :key="s.side" class="so" :class="s.state">
-                <CvIcon :name="s.state === 'signed' ? 'check' : 'clock'" size="s" />{{ s.sideLabel }}: {{ s.state === 'signed' ? `${s.by?.name}, ${s.at ? fmtDayShort(s.at) : ''}` : 'waiting' }}
-              </span>
-            </li>
-          </ol>
-        </section>
-      </aside>
-    </main>
-    <div v-else-if="!error" class="sheet wrap" aria-busy="true">
-      <span class="skeleton" style="height: 600px; border-radius: 28px" /><span class="skeleton" style="height: 400px; border-radius: 28px" />
+            </template>
+          </UTable>
+          <p class="note">
+            <UIcon name="i-lucide-shield-check" class="size-4 shrink-0" />{{ fairness.note }}
+          </p>
+        </div>
+      </section>
+
+      <section class="sec" aria-labelledby="fs-versions">
+        <span class="no num" aria-hidden="true">{{ nVersions }}</span>
+        <h2 id="fs-versions">
+          Versions and sign-offs
+        </h2>
+        <div class="body">
+          <UTimeline :items="versionItems" color="neutral" size="sm" class="versions" :ui="{ title: 'font-voice text-[17px] font-semibold [font-variation-settings:\'FLAR\'_100]', date: 'text-[13px] text-muted', wrapper: 'pb-5' }">
+            <template #description="{ item }">
+              <p class="m-0 text-muted text-[13.5px]">
+                {{ item.description }}
+              </p>
+              <ul class="so">
+                <li v-for="s in item.version.signOffs" :key="s.side">
+                  <CvTag :kind="s.state === 'signed' ? 'fast' : 'plain'" :icon="s.state === 'signed' ? 'check' : 'clock'">
+                    {{ s.sideLabel }}: {{ s.state === 'signed' ? `${s.by?.name}, ${s.at ? fmtDayShort(s.at) : ''}` : 'waiting' }}
+                  </CvTag>
+                </li>
+              </ul>
+            </template>
+          </UTimeline>
+        </div>
+      </section>
+
+      <section v-if="tech" class="sec tech" aria-label="For the technical reviewer">
+        <span class="no num" aria-hidden="true">{{ nVersions + 1 }}</span>
+        <UAccordion :items="techItems" :ui="{ trigger: 'py-0 text-[22px] font-voice font-semibold [font-variation-settings:\'FLAR\'_100]', item: 'border-0' }">
+          <template #tech>
+            <div class="body pt-4">
+              <p v-for="(b, i) in fold?.body ?? []" :key="i" class="muted">
+                {{ b }}
+              </p>
+              <p class="muted">
+                {{ tech.split }}
+              </p>
+              <UTable :data="metricRows" :columns="metricCols" class="tbl" />
+              <h3>Calibration: predicted vs what happened</h3>
+              <div class="calib" role="img" :aria-label="tech.calibration.map(c => `predicted ${pct(c.predicted, 0)}, observed ${pct(c.observed, 0)}`).join('; ')">
+                <span v-for="(c, i) in tech.calibration" :key="i" class="cb">
+                  <i class="p" :style="{ height: `${c.predicted * 100}%` }" /><i class="o" :style="{ height: `${c.observed * 100}%` }" />
+                </span>
+              </div>
+              <p class="legend muted">
+                <span><i class="p" />Predicted</span><span><i class="o" />What happened</span>
+              </p>
+              <UTable :data="tech.calibration" :columns="calCols" class="tbl" />
+              <h3>What it looks at</h3>
+              <p class="muted">
+                {{ tech.features.join(' · ') }}
+              </p>
+            </div>
+          </template>
+        </UAccordion>
+      </section>
+    </article>
+
+    <div v-else-if="!error" class="doc" aria-busy="true" aria-label="Loading the fact sheet">
+      <div v-for="n in 4" :key="n" class="sec">
+        <USkeleton class="h-7 w-7" /><USkeleton class="h-7 w-48" /><USkeleton class="h-24 w-full" />
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.wrap { margin-left: 32px; margin-right: 32px; }
-.sheet { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.card { padding: 22px 24px; }
-.body { display: grid; gap: 18px; }
-.sec h2, .side h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
-.sec p, .sec li { font-size: 15.5px; line-height: 1.55; }
-.sec ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
-.muted { color: var(--cv-muted); font-size: 14px; }
-.fold { background: var(--cv-sunk); border-radius: 20px; padding: 12px 16px; }
-.fold summary { cursor: pointer; font-weight: 700; font-family: var(--font-display); font-size: 17px; }
-.fold h3 { font-family: var(--font-sans); font-size: 13px; font-weight: 750; color: var(--cv-muted); margin: 14px 0 6px; letter-spacing: 0; }
-.mt, .ft { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
-.mt th { text-align: left; font-size: 12px; color: var(--cv-muted); font-weight: 700; padding: 4px 6px; }
-.mt td { padding: 6px; border-top: 1px solid var(--cv-sunk-2); }
-.calib { display: flex; gap: 6px; align-items: flex-end; height: 100px; }
+.doc { display: grid; }
+.sec {
+  display: grid; gap: 8px 24px; padding: 22px 32px; border-bottom: 1px solid var(--cv-rule);
+  grid-template-columns: 44px minmax(180px, 280px) minmax(0, 1fr); align-items: start;
+}
+.no { font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 24px; font-weight: 720; line-height: 1.1; color: var(--cv-orchid-ink); }
+.sec h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
+.body { min-width: 0; display: grid; gap: 10px; max-width: 980px; }
+.body p, .body li { font-size: 15.5px; line-height: 1.55; margin: 0; }
+.body ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.tech { grid-template-columns: 44px minmax(0, 1fr); }
+.tech .body { max-width: none; }
+.muted, .body p.muted { color: var(--cv-muted); font-size: 14px; }
+.body h3 { font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; font-weight: 700; color: var(--cv-muted); margin: 10px 0 0; letter-spacing: 0; }
+.tbl { border-top: 1px solid var(--cv-rule); }
+.note { display: flex; gap: 6px; align-items: flex-start; font-size: 13px !important; color: var(--cv-muted); }
+.so { list-style: none; margin: 6px 0 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.calib { display: flex; gap: 6px; align-items: flex-end; height: 100px; max-width: 640px; border-bottom: 1px solid var(--cv-rule); }
 .cb { flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 100%; }
-.cb i, .legend i { display: inline-block; width: 50%; border-radius: 3px 3px 0 0; }
-.p { background: var(--cv-faint); } .o { background: var(--cv-orchid); }
-.legend { display: flex; gap: 14px; } .legend span { display: inline-flex; gap: 6px; align-items: center; } .legend i { width: 10px; height: 10px; border-radius: 3px; }
-.side { display: grid; gap: 16px; }
-.ft th { text-align: left; font-size: 12px; color: var(--cv-muted); font-weight: 750; padding: 10px 0 4px; }
-.ft td { padding: 4px 0; }
-.ft td:nth-child(2) { font-weight: 700; text-align: right; padding-right: 12px; }
-.ft td:last-child { text-align: right; }
-.note { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; color: var(--cv-muted); margin: 12px 0 0; }
-.versions { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.versions li { display: grid; gap: 6px; justify-items: start; padding-bottom: 12px; border-bottom: 1px solid var(--cv-sunk); }
-.so { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; font-weight: 600; }
-.so.signed { color: var(--cv-fast); } .so.waiting { color: var(--cv-muted); }
-@media (max-width: 1100px) { .sheet { grid-template-columns: 1fr; } }
-@media (max-width: 720px) { .wrap { margin-left: 16px; margin-right: 16px; } .mt { display: block; overflow-x: auto; } }
+.cb i { display: inline-block; width: 50%; border-radius: 3px 3px 0 0; }
+.p { background: var(--cv-faint); }
+.o { background: var(--cv-orchid); }
+.legend { display: flex; gap: 14px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+@media (max-width: 1100px) {
+  .sec { grid-template-columns: 36px minmax(0, 1fr); }
+  .sec > .body { grid-column: 2; }
+}
+@media (max-width: 720px) {
+  .sec { padding: 18px 16px; grid-template-columns: 28px minmax(0, 1fr); gap: 8px 12px; }
+  .no { font-size: 20px; }
+  .tbl { overflow-x: auto; }
+}
 </style>

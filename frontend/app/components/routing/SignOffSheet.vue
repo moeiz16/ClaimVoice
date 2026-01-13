@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Review and sign off a candidate version: the gates it passed, the side you sign for (claims or model risk), and
-// a statement for the activity log. Two different people must sign before it goes into use.
+// Review and sign off a candidate version (a dialog): the gates it passed, the side you sign for (claims or model
+// risk), and a statement for the activity log. Two different people must sign before it goes into use.
 import type { Check } from '~/types/api'
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
@@ -13,6 +13,7 @@ const error = ref<string | null>(null)
 const busy = ref(false)
 const side = computed(() => (role.value === 'supervisor' ? 'Claims' : 'Model risk'))
 const v = computed(() => props.check?.candidate ?? null)
+const isOpen = computed({ get: () => props.open, set: (o: boolean) => { if (!o) emit('close') } })
 watch(() => props.open, (o) => { if (o) { note.value = `I have reviewed version ${v.value?.version ?? ''} and agree it can replace the version in use.`; error.value = null } })
 
 async function sign() {
@@ -33,40 +34,42 @@ async function sign() {
 </script>
 
 <template>
-  <CvSheet :open="open" :title="check && v ? `Sign off ${check.name}, version ${v.version}` : 'Sign off'" @close="emit('close')">
-    <div v-if="check && v">
-      <p class="lede">
-        You're signing for <b>{{ side }}</b>. When both sides have signed, version {{ v.version }} goes into use and version {{ check.inUse.version }} is retired.
-      </p>
-      <ul class="gates">
-        <li v-for="g in v.gates" :key="g.key" :class="g.passed ? 'ok' : 'no'">
-          <CvIcon :name="g.passed ? 'check' : 'x'" size="s" />{{ g.label }}<span class="sr-only-cv">{{ g.passed ? ', passed' : ', did not pass' }}</span>
-        </li>
-      </ul>
-      <label for="so-note">Your statement</label>
-      <textarea id="so-note" v-model="note" class="field-input" maxlength="400" />
-      <p v-if="error" class="err" role="alert">
-        <CvIcon name="urgent" size="s" />{{ error }}
-      </p>
-      <div class="acts">
-        <button class="btn primary" type="button" autofocus :disabled="busy || !v.gatesPassed || !note.trim()" @click="sign">
-          <CvIcon name="check" />Sign off for {{ side.toLowerCase() }}
-        </button>
-        <button class="btn soft" type="button" @click="emit('close')">
-          Not yet
-        </button>
+  <UModal
+    v-model:open="isOpen"
+    :title="check && v ? `Sign off ${check.name}, version ${v.version}` : 'Sign off'"
+    :description="check && v ? 'Two different people must sign before it goes into use.' : undefined"
+  >
+    <template #body>
+      <div v-if="check && v" class="grid gap-4">
+        <p class="text-[15px] m-0">
+          You're signing for <b>{{ side }}</b>. When both sides have signed, version {{ v.version }} goes into use and version {{ check.inUse.version }} is retired.
+        </p>
+        <ul class="gates" aria-label="What this version passed">
+          <li v-for="g in v.gates" :key="g.key">
+            <CvTag :kind="g.passed ? 'fast' : 'urgent'" :icon="g.passed ? 'check' : 'x'">
+              {{ g.label }}<span class="sr-only-cv">{{ g.passed ? ', passed' : ', did not pass' }}</span>
+            </CvTag>
+          </li>
+        </ul>
+        <UFormField label="Your statement" name="note" help="Written to the activity log with your name.">
+          <UTextarea v-model="note" :maxlength="400" :rows="3" autoresize class="w-full" />
+        </UFormField>
+        <UAlert v-if="error" color="error" variant="soft" icon="i-lucide-triangle-alert" :title="error" role="alert" />
       </div>
-    </div>
-  </CvSheet>
+    </template>
+    <template #footer>
+      <div v-if="check && v" class="flex gap-2 flex-wrap">
+        <UButton icon="i-lucide-check" :loading="busy" :disabled="busy || !v.gatesPassed || !note.trim()" autofocus @click="sign">
+          Sign off for {{ side.toLowerCase() }}
+        </UButton>
+        <UButton color="neutral" variant="soft" @click="emit('close')">
+          Not yet
+        </UButton>
+      </div>
+    </template>
+  </UModal>
 </template>
 
 <style scoped>
-.lede { font-size: 15px; margin: 0 0 12px; }
-.gates { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.gates li { display: inline-flex; gap: 6px; align-items: center; height: 30px; padding: 0 12px 0 10px; border-radius: 999px; font-size: 13px; font-weight: 650; }
-.ok { background: var(--cv-fast-wash); color: var(--cv-fast); }
-.no { background: var(--cv-urgent-wash); color: var(--cv-urgent); }
-label { display: block; font-size: 13px; font-weight: 700; color: var(--cv-muted); margin-bottom: 6px; }
-.err { display: flex; gap: 6px; align-items: center; color: var(--cv-urgent); font-weight: 600; font-size: 14px; margin: 10px 0 0; }
-.acts { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.gates { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 </style>

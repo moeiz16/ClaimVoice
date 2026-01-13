@@ -1,5 +1,7 @@
 <script setup lang="ts">
-// People: who can use Larkspur's lines and in which role; invitations.
+// People: who can use Larkspur's lines and in which role, as a register; invitations as a second register. Invite
+// opens a dialog.
+import type { TableColumn } from '@nuxt/ui'
 import type { Invitation, Member, Role } from '~/types/api'
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
@@ -11,15 +13,21 @@ const manage = computed(() => can('members:manage'))
 const clock = useDemoClock()
 const members = ref<Member[]>([])
 const invites = ref<Invitation[]>([])
+const loaded = ref(false)
 const email = ref('')
 const role = ref<Role>('intake_agent')
 const msg = ref<{ ok: boolean, text: string } | null>(null)
+const inviteOpen = ref(false)
+const inviteError = ref<string | null>(null)
+const sending = ref(false)
 
 onMounted(async () => {
   members.value = await api.org.members()
+  loaded.value = true
   if (manage.value) invites.value = await api.org.invitations().catch(() => [])
 })
 async function changeRole(m: Member, r: Role) {
+  if (r === m.role) return
   try {
     const out = await api.org.updateMember(m.membershipId, { role: r })
     members.value = members.value.map(x => (x.membershipId === out.membershipId ? out : x))
@@ -27,86 +35,136 @@ async function changeRole(m: Member, r: Role) {
   }
   catch (e) { msg.value = { ok: false, text: e instanceof ApiError && e.code === 'last_admin' ? 'Larkspur needs at least one administrator.' : 'That didn\'t change.' } }
 }
+function startInvite() { inviteError.value = null; inviteOpen.value = true }
 async function invite() {
+  sending.value = true
+  inviteError.value = null
   try {
     const inv = await api.org.invite(email.value.trim(), role.value)
     invites.value = [inv, ...invites.value]
     msg.value = { ok: true, text: `Invitation sent to ${inv.email}.` }
     email.value = ''
+    inviteOpen.value = false
   }
-  catch (e) { msg.value = { ok: false, text: e instanceof ApiError ? (e.fieldError('email') ?? e.message) : 'That didn\'t send.' } }
+  catch (e) { inviteError.value = e instanceof ApiError ? (e.fieldError('email') ?? e.message) : 'That didn\'t send.' }
+  sending.value = false
 }
 async function revoke(i: Invitation) {
   await api.org.revokeInvitation(i.id)
   invites.value = invites.value.map(x => (x.id === i.id ? { ...x, status: 'revoked' } : x))
 }
+
+const roleItems = ROLE_OPTIONS.map(r => ({ value: r.role, label: r.label }))
+const inviteRoles = ROLE_OPTIONS.map(r => ({ value: r.role, label: r.label, description: r.blurb }))
+const memberCols: TableColumn<Member>[] = [
+  { accessorKey: 'fullName', header: 'Person' },
+  { id: 'active', header: 'Last active', cell: ({ row }) => (row.original.lastActiveAt ? fmtAgo(row.original.lastActiveAt, clock.now.value) : '—') },
+  { accessorKey: 'role', header: 'Role' },
+]
+const inviteCols: TableColumn<Invitation>[] = [
+  { accessorKey: 'email', header: 'Invited' },
+  { accessorKey: 'roleLabel', header: 'Role' },
+  { id: 'sent', header: 'Sent', cell: ({ row }) => fmtDayShort(row.original.createdAt) },
+  { accessorKey: 'status', header: 'Where it stands' },
+  { id: 'act', header: '' },
+]
+const STATUS = { pending: 'Waiting', accepted: 'Joined', revoked: 'Withdrawn', expired: 'Expired' } as const
 </script>
 
 <template>
-  <div class="grid">
-    <section class="card body">
-      <h2>People at Larkspur Mutual <span class="n num">{{ members.length }}</span></h2>
-      <p v-if="msg" class="msg" :class="msg.ok ? 'ok' : 'err'" role="status">
-        <CvIcon :name="msg.ok ? 'check' : 'urgent'" size="s" />{{ msg.text }}
-      </p>
-      <ul class="people">
-        <li v-for="m in members" :key="m.membershipId">
-          <span class="avatar">{{ initials(m.fullName) }}</span>
-          <span class="who"><b>{{ m.fullName }}<template v-if="m.isYou"> (you)</template></b><span>{{ m.title ?? m.email }}<template v-if="m.lastActiveAt"> · active {{ fmtAgo(m.lastActiveAt, clock.now.value) }}</template></span></span>
-          <select v-if="manage && !m.isYou" class="inline-blank" :value="m.role" :aria-label="`Role for ${m.fullName}`" @change="changeRole(m, ($event.target as HTMLSelectElement).value as Role)">
-            <option v-for="r in ROLE_OPTIONS" :key="r.role" :value="r.role">{{ r.label }}</option>
-          </select>
-          <span v-else class="tag plain">{{ m.roleLabel }}</span>
-        </li>
-      </ul>
+  <div>
+    <section class="sec" aria-labelledby="people-h">
+      <header class="head">
+        <h2 id="people-h">
+          People at Larkspur Mutual <UBadge color="neutral" size="md" class="num">{{ members.length }}</UBadge>
+        </h2>
+        <UButton v-if="manage" icon="i-lucide-user-round-plus" @click="startInvite">
+          Invite someone
+        </UButton>
+      </header>
+      <div v-if="msg" role="status">
+        <CvTag :kind="msg.ok ? 'fast' : 'urgent'" :icon="msg.ok ? 'check' : 'urgent'">
+          {{ msg.text }}
+        </CvTag>
+      </div>
+      <UTable :data="members" :columns="memberCols" :loading="!loaded" class="tbl">
+        <template #fullName-cell="{ row }">
+          <span class="person">
+            <UAvatar :text="initials(row.original.fullName)" size="md" class="bg-person-wash text-person font-bold" />
+            <span class="who">
+              <b>{{ row.original.fullName }}<template v-if="row.original.isYou"> (you)</template></b>
+              <span>{{ row.original.title ?? row.original.email }}</span>
+            </span>
+          </span>
+        </template>
+        <template #role-cell="{ row }">
+          <USelect
+            v-if="manage && !row.original.isYou" :model-value="row.original.role" :items="roleItems" size="md" class="w-56"
+            :aria-label="`Role for ${row.original.fullName}`" @update:model-value="(v) => changeRole(row.original, v as Role)"
+          />
+          <CvTag v-else kind="plain" icon="person">
+            {{ row.original.roleLabel }}
+          </CvTag>
+        </template>
+      </UTable>
     </section>
-    <section v-if="manage" class="card tint body">
-      <h2>Invite someone</h2>
-      <form class="inv" @submit.prevent="invite">
-        <label for="inv-email">Work email</label>
-        <input id="inv-email" v-model="email" class="field-input sm" type="email" required placeholder="name@larkspurmutual.ca">
-        <label for="inv-role">Role</label>
-        <select id="inv-role" v-model="role" class="field-input sm">
-          <option v-for="r in ROLE_OPTIONS" :key="r.role" :value="r.role">{{ r.label }} · {{ r.blurb }}</option>
-        </select>
-        <button class="btn primary sm" type="submit">
-          <CvIcon name="send" size="s" />Send the invitation
-        </button>
-      </form>
-      <h3>Invitations</h3>
-      <ul class="invites">
-        <li v-for="i in invites" :key="i.id">
-          <span class="who"><b>{{ i.email }}</b><span>{{ i.roleLabel }} · sent {{ fmtDayShort(i.createdAt) }}</span></span>
-          <CvTag :kind="i.status === 'pending' ? 'orchid' : 'plain'" :icon="i.status === 'pending' ? 'clock' : 'x'">{{ i.status === 'pending' ? 'Waiting' : i.status === 'accepted' ? 'Joined' : i.status === 'revoked' ? 'Withdrawn' : 'Expired' }}</CvTag>
-          <button v-if="i.status === 'pending'" class="btn quiet sm" type="button" @click="revoke(i)">
+
+    <section v-if="manage" class="sec" aria-labelledby="inv-h">
+      <h2 id="inv-h">
+        Invitations
+      </h2>
+      <UTable :data="invites" :columns="inviteCols" class="tbl" empty="No invitations out.">
+        <template #email-cell="{ row }">
+          <b>{{ row.original.email }}</b>
+        </template>
+        <template #status-cell="{ row }">
+          <CvTag :kind="row.original.status === 'pending' ? 'orchid' : 'plain'" :icon="row.original.status === 'pending' ? 'clock' : 'x'">
+            {{ STATUS[row.original.status] }}
+          </CvTag>
+        </template>
+        <template #act-cell="{ row }">
+          <UButton v-if="row.original.status === 'pending'" color="neutral" variant="ghost" size="md" @click="revoke(row.original)">
             Withdraw
-          </button>
-        </li>
-        <li v-if="!invites.length" class="muted">
-          No invitations out.
-        </li>
-      </ul>
+          </UButton>
+        </template>
+      </UTable>
     </section>
+
+    <UModal v-model:open="inviteOpen" title="Invite someone" description="They get an email with a link to join Larkspur Mutual's lines. The invitation is written to the activity log.">
+      <template #body>
+        <form id="invite-form" class="grid gap-4" @submit.prevent="invite">
+          <UFormField label="Work email" name="email" required :error="inviteError ?? undefined">
+            <UInput v-model="email" type="email" required placeholder="name@larkspurmutual.ca" autocomplete="off" icon="i-lucide-mail" class="w-full" autofocus />
+          </UFormField>
+          <UFormField label="Role" name="role">
+            <USelectMenu v-model="role" :items="inviteRoles" value-key="value" :search-input="false" class="w-full" />
+          </UFormField>
+        </form>
+      </template>
+      <template #footer>
+        <div class="flex gap-2 flex-wrap">
+          <UButton type="submit" form="invite-form" icon="i-lucide-send" :loading="sending">
+            Send the invitation
+          </UButton>
+          <UButton color="neutral" variant="soft" @click="inviteOpen = false">
+            Not now
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
 <style scoped>
-.grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; align-items: start; }
-.body { padding: 18px 22px 22px; display: grid; gap: 10px; }
-h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; display: flex; gap: 8px; align-items: center; }
-h3 { font-family: var(--font-sans); font-size: 13px; font-weight: 750; color: var(--cv-muted); letter-spacing: 0; margin-top: 8px; }
-.n { font-family: var(--font-sans); font-size: 13px; background: var(--cv-sunk); border-radius: 999px; padding: 2px 10px; }
-.msg { margin: 0; display: flex; gap: 6px; align-items: center; font-weight: 600; font-size: 14px; }
-.msg.ok { color: var(--cv-fast); } .msg.err { color: var(--cv-urgent); }
-.people, .invites { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.people li, .invites li { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 14px; background: var(--cv-sunk); }
-.invites li { background: var(--cv-surface); }
-.who { display: grid; flex: 1; min-width: 0; }
-.who span { color: var(--cv-muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.inline-blank { font-family: var(--font-sans); font-size: 14px; }
-.inv { display: grid; gap: 6px; }
-.inv label { font-size: 13px; font-weight: 700; color: var(--cv-muted); }
-.inv .btn { justify-self: start; margin-top: 6px; }
-.muted { color: var(--cv-muted); font-size: 14px; }
-@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+.sec { padding: 20px 32px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 12px; }
+.head { display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap; justify-content: space-between; }
+h2 { font-size: 22px; font-weight: 700; display: flex; gap: 10px; align-items: center; }
+.tbl { border-top: 1px solid var(--cv-rule); }
+.person { display: flex; align-items: center; gap: 12px; }
+.who { display: grid; min-width: 0; }
+.who span { color: var(--cv-muted); font-size: 13px; }
+@media (max-width: 720px) {
+  .sec { padding: 16px; }
+  .tbl { overflow-x: auto; }
+}
 </style>

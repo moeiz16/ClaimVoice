@@ -1,6 +1,7 @@
 <script setup lang="ts">
-// The photo link a caller gets by text. Mobile-first: take or pick photos, add a word about each, send. Works in
-// the caller's language. No sign-in: the link itself is the key, and it expires.
+// The photo link a caller gets by text. Mobile-first: the mark, a slate with the claim number, then take or pick
+// photos, add a word about each, send. Works in the caller's language. No sign-in: the link itself is the key, and
+// it expires.
 import type { PhotoLinkInfo } from '~/types/api'
 import { api } from '~/utils/api'
 import { ApiError } from '~/utils/http'
@@ -17,6 +18,7 @@ interface Item { id: number, file: File, url: string, caption: string, status: '
 const items = ref<Item[]>([])
 const sentCount = ref(0)
 let seq = 0
+const picker = ref<HTMLInputElement | null>(null)
 
 const fr = computed(() => info.value?.language === 'fr')
 const T = computed(() => fr.value
@@ -84,58 +86,65 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
 
 <template>
   <div class="page">
-    <header><CvLogo :to="'/'" /></header>
+    <header class="top">
+      <CvLogo :to="'/'" />
+    </header>
     <main>
       <template v-if="state === 'ready' && info">
-        <p class="org">
-          {{ info.orgName }} · {{ T.sub }} <b class="num">{{ info.claimReference }}</b>
-        </p>
-        <h1>{{ T.h }}</h1>
-        <p class="tip">
-          {{ T.tip }}
-        </p>
-        <label class="btn primary big" :class="{ off: room === 0 }">
-          <CvIcon name="camera" />{{ T.add }}
-          <input type="file" accept="image/*" capture="environment" multiple class="sr-only-cv" :disabled="room === 0" @change="pick">
-        </label>
-        <p class="left">
-          {{ T.left(room) }} · <template v-if="expiryShown">
-            {{ T.expires }} {{ fmtDayLong(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}, {{ fmtTime(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}
-          </template><template v-else>
-            {{ T.forDays }}
-          </template>
-        </p>
-        <ul class="list">
+        <div class="slate">
+          <p class="org">
+            {{ info.orgName }} · {{ T.sub }} <b class="num">{{ info.claimReference }}</b>
+          </p>
+          <h1>{{ T.h }}</h1>
+          <p class="tip">
+            {{ T.tip }}
+          </p>
+        </div>
+
+        <div class="sec">
+          <input ref="picker" type="file" accept="image/*" capture="environment" multiple class="sr-only-cv" tabindex="-1" aria-hidden="true" :disabled="room === 0" @change="pick">
+          <UButton size="xl" block icon="i-lucide-camera" :disabled="room === 0" @click="picker?.click()">
+            {{ T.add }}
+          </UButton>
+          <p class="left">
+            {{ T.left(room) }} · <template v-if="expiryShown">
+              {{ T.expires }} {{ fmtDayLong(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}, {{ fmtTime(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}
+            </template><template v-else>
+              {{ T.forDays }}
+            </template>
+          </p>
+        </div>
+
+        <ul v-if="items.length" class="list">
           <li v-for="it in items" :key="it.id" :class="it.status">
             <img v-if="it.url" :src="it.url" alt="">
-            <span v-else class="noimg"><CvIcon name="camera" /></span>
+            <span v-else class="noimg"><UIcon name="i-lucide-camera" class="size-6" /></span>
             <div class="meta">
-              <input v-if="it.status === 'ready'" v-model="it.caption" class="field-input sm" :placeholder="T.caption" :aria-label="T.caption">
+              <UInput v-if="it.status === 'ready'" v-model="it.caption" :placeholder="T.caption" :aria-label="T.caption" size="lg" class="w-full" />
               <span v-else-if="it.caption" class="cap">{{ it.caption }}</span>
-              <span class="st">
-                <CvIcon :name="it.status === 'sent' ? 'check' : it.status === 'failed' ? 'urgent' : it.status === 'sending' ? 'upload' : 'camera'" size="s" />
-                {{ it.status === 'sent' ? T.sent : it.status === 'failed' ? `${T.failed}. ${it.note}` : it.status === 'sending' ? T.sending : '' }}
-              </span>
+              <CvTag v-if="it.status === 'sent'" kind="fast" icon="check">{{ T.sent }}</CvTag>
+              <CvTag v-else-if="it.status === 'sending'" kind="plain" icon="upload">{{ T.sending }}</CvTag>
+              <span v-else-if="it.status === 'failed'" class="st"><UIcon name="i-lucide-triangle-alert" class="size-4 shrink-0" />{{ T.failed }}. {{ it.note }}</span>
             </div>
-            <button v-if="it.status === 'ready'" type="button" class="iconbtn" :aria-label="T.remove" @click="items = items.filter(x => x.id !== it.id)">
-              <CvIcon name="x" />
-            </button>
+            <UButton v-if="it.status === 'ready'" color="neutral" variant="ghost" icon="i-lucide-x" :aria-label="T.remove" @click="items = items.filter(x => x.id !== it.id)" />
           </li>
         </ul>
-        <button v-if="items.some(i => i.status === 'ready')" class="btn primary big" type="button" :disabled="sending" @click="sendAll">
-          <CvIcon name="upload" />{{ sending ? T.sending : T.send }} ({{ items.filter(i => i.status === 'ready').length }})
-        </button>
-        <p v-if="allSent" class="done" role="status">
-          <CvIcon name="check" />{{ T.done }}
-        </p>
+
+        <div v-if="items.some(i => i.status === 'ready') || allSent" class="sec">
+          <UButton v-if="items.some(i => i.status === 'ready')" size="xl" block icon="i-lucide-upload" :loading="sending" :disabled="sending" @click="sendAll">
+            {{ sending ? T.sending : T.send }} ({{ items.filter(i => i.status === 'ready').length }})
+          </UButton>
+          <UAlert v-if="allSent" color="success" variant="soft" icon="i-lucide-check" :title="T.done" role="status" :ui="{ title: 'font-voice text-[18px] [font-variation-settings:\'FLAR\'_100]' }" />
+        </div>
+
         <p class="privacy">
-          <CvIcon name="lock" size="s" />{{ T.privacy }}
+          <UIcon name="i-lucide-lock" class="size-4 shrink-0" />{{ T.privacy }}
         </p>
       </template>
-      <div v-else-if="state === 'loading'" class="load" aria-busy="true">
-        <span class="skeleton" style="height: 40px; width: 70%" /><span class="skeleton" style="height: 56px" />
+      <div v-else-if="state === 'loading'" class="slate" aria-busy="true">
+        <USkeleton class="h-10 w-3/4" /><USkeleton class="h-14 w-full mt-3" />
       </div>
-      <div v-else class="gone">
+      <div v-else class="slate gone">
         <span class="hatch" aria-hidden="true" />
         <h1>{{ state === 'expired' ? T.expired : T.missing }}</h1>
         <p>{{ state === 'expired' ? T.expiredBody : 'Check the text we sent, or call us back.' }}</p>
@@ -145,26 +154,27 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
 </template>
 
 <style scoped>
-.page { min-height: 100dvh; display: grid; grid-template-rows: 64px 1fr; }
-header { display: flex; align-items: center; padding: 0 16px; }
-main { width: 100%; max-width: 520px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 12px; align-content: start; }
+.page { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
+.top { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--cv-rule); }
+main { width: 100%; max-width: 560px; display: grid; align-content: start; }
+.slate { padding: 20px 16px 16px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 8px; }
 .org { margin: 0; color: var(--cv-muted); font-size: 14px; }
-h1 { font-size: 40px; font-weight: 750; letter-spacing: -0.04em; line-height: 1.05; }
-.tip { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 550; color: var(--cv-caller); line-height: 1.3; }
-.big { height: 56px; font-size: 16px; width: 100%; cursor: pointer; }
-.big.off { opacity: .5; pointer-events: none; }
-.left { margin: 0; color: var(--cv-muted); font-size: 13px; text-align: center; }
-.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.list li { display: grid; grid-template-columns: 72px 1fr auto; gap: 10px; align-items: center; background: var(--cv-surface); border-radius: 20px; padding: 8px; }
-.list img, .noimg { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; display: grid; place-items: center; background: var(--cv-sunk); color: var(--cv-faint); }
-.meta { display: grid; gap: 4px; min-width: 0; }
+.org b { color: var(--cv-ink); }
+h1 { font-size: 36px; font-weight: 740; letter-spacing: -0.03em; line-height: 1.05; }
+.tip { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 18px; font-weight: 540; color: var(--cv-caller); line-height: 1.35; }
+.sec { padding: 16px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 10px; }
+.left { margin: 0; color: var(--cv-muted); font-size: 13px; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--cv-rule); }
+.list img, .noimg { width: 72px; height: 72px; border-radius: 6px; object-fit: cover; display: grid; place-items: center; background: var(--cv-sunk); color: var(--cv-faint); }
+.meta { display: grid; gap: 6px; min-width: 0; justify-items: start; }
 .cap { font-weight: 600; font-size: 14px; }
-.st { display: flex; gap: 4px; align-items: center; font-size: 13px; font-weight: 650; color: var(--cv-muted); }
-.sent .st { color: var(--cv-fast); } .failed .st { color: var(--cv-urgent); }
-.done { margin: 0; display: flex; gap: 8px; align-items: center; font-family: var(--font-display); font-size: 20px; font-weight: 650; color: var(--cv-fast); }
-.privacy { margin: 8px 0 0; display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-size: 13px; }
-.load { display: grid; gap: 12px; }
-.gone { display: grid; gap: 10px; padding-top: 40px; }
+.st { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; font-weight: 650; color: var(--cv-urgent); }
+.privacy { margin: 0; padding: 14px 16px 32px; display: flex; gap: 6px; align-items: flex-start; color: var(--cv-muted); font-size: 13px; }
+.gone { padding-top: 32px; }
 .gone p { margin: 0; color: var(--cv-muted); font-size: 16px; }
-.hatch { width: 100%; height: 56px; border-radius: 20px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); }
+.hatch { width: 100%; height: 56px; border-radius: 6px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); }
+@media (min-width: 721px) {
+  .top, .slate, .sec, .list li, .privacy { padding-left: 32px; padding-right: 32px; }
+}
 </style>

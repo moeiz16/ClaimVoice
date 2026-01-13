@@ -1,37 +1,46 @@
 <script setup lang="ts">
-// Call quality: the review queue (flagged calls first) with rubric beads and filter pills, and the review beside it.
-// Opening a call jumps its recording to the flagged moment. Desktop shows the queue and the review side by side.
+// Call quality: the review queue as a register, flagged calls first, with the rubric beads as a column and what was
+// missed as tabs. A row opens its review, where the recording jumps to the flagged moment. Filters live in the URL
+// (?status=, ?item=); an old ?call= link opens that review.
+import type { TableColumn } from '@nuxt/ui'
 import type { Page, QaQueueItem } from '~/types/api'
 import { api } from '~/utils/api'
 import { fmtClock, fmtDayShort, fmtTime } from '~/utils/format'
 
+definePageMeta({
+  middleware: [(to) => {
+    const { call, ...rest } = to.query
+    if (typeof call === 'string' && call) return navigateTo({ path: `/quality/${call}`, query: rest }, { replace: true })
+  }],
+})
 useHead({ title: 'Quality · ClaimVoice' })
 const route = useRoute()
 const router = useRouter()
 const status = ref(String(route.query.status ?? 'needs_review'))
-const item = ref(String(route.query.item ?? ''))
+const item = ref(String(route.query.item ?? 'all'))
 const page = ref<Page<QaQueueItem> | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
-const selected = computed(() => (typeof route.query.call === 'string' ? route.query.call : page.value?.items[0]?.callId ?? null))
 
+const statuses = [{ value: 'needs_review', label: 'To review' }, { value: 'reviewed', label: 'Reviewed' }]
 const filters = [
-  { key: '', label: 'Everything flagged' },
-  { key: 'consent_first', label: 'Missed consent' },
-  { key: 'handoff_correct', label: 'Late hand-off' },
-  { key: 'no_card_numbers', label: 'Card number' },
-  { key: 'required_fields', label: 'Low details' },
+  { value: 'all', label: 'Everything flagged' },
+  { value: 'consent_first', label: 'Missed consent' },
+  { value: 'handoff_correct', label: 'Late hand-off' },
+  { value: 'no_card_numbers', label: 'Card number' },
+  { value: 'required_fields', label: 'Low details' },
 ]
+const query = computed(() => ({ ...(status.value !== 'needs_review' ? { status: status.value } : {}), ...(item.value !== 'all' ? { item: item.value } : {}) }))
 
 async function load() {
   loading.value = true
   error.value = null
-  try { page.value = await api.qa.queue({ status: status.value, item: item.value || undefined, pageSize: 50 }) }
+  try { page.value = await api.qa.queue({ status: status.value, item: item.value === 'all' ? undefined : item.value, pageSize: 50 }) }
   catch (e) { error.value = (e as Error).message }
   loading.value = false
 }
 watch([status, item], () => {
-  void router.replace({ query: { ...(status.value !== 'needs_review' ? { status: status.value } : {}), ...(item.value ? { item: item.value } : {}) } })
+  void router.replace({ query: query.value })
   void load()
 }, { immediate: true })
 
@@ -40,82 +49,90 @@ const caption = computed(() => {
   if (status.value === 'reviewed') return `${n} reviewed this month`
   return n ? `${n} call${n === 1 ? '' : 's'} to review · flagged first, then the lowest scores` : 'Every call this week met the rubric'
 })
-function open(c: QaQueueItem) { void router.replace({ query: { ...route.query, call: c.callId } }) }
-function next() {
-  const items = page.value?.items ?? []
-  const i = items.findIndex(x => x.callId === selected.value)
-  const n = items[i + 1] ?? items[0]
-  if (n) open(n)
-  void load()
-}
+const BAND = { good: { kind: 'fast', icon: 'check' }, needs_attention: { kind: 'siu', icon: 'clock' }, failed: { kind: 'urgent', icon: 'urgent' } } as const
+const columns: TableColumn<QaQueueItem>[] = [
+  { accessorKey: 'callerLabel', header: 'Caller' },
+  { id: 'claim', header: 'Claim' },
+  { id: 'when', header: 'When' },
+  { id: 'band', header: 'Score' },
+  { id: 'rubric', header: 'Rubric' },
+  { id: 'reviewer', header: 'Reviewer' },
+]
+const hrefOf = (c: QaQueueItem) => ({ path: `/quality/${c.callId}`, query: query.value })
+function open(row: { original: QaQueueItem }) { void navigateTo(hrefOf(row.original)) }
 </script>
 
 <template>
   <div>
-    <PageHeader title="Quality" :caption="caption">
-      <div class="seg" role="group" aria-label="Which calls">
-        <button type="button" :aria-pressed="status === 'needs_review'" @click="status = 'needs_review'">
-          To review
-        </button>
-        <button type="button" :aria-pressed="status === 'reviewed'" @click="status = 'reviewed'">
-          Reviewed
-        </button>
-      </div>
-    </PageHeader>
-    <div class="layout">
-      <aside class="queue" aria-label="Review queue">
-        <div class="pills" role="group" aria-label="Filter by what was missed">
-          <button v-for="f in filters" :key="f.key" type="button" class="pill" :aria-pressed="item === f.key" @click="item = f.key">
-            {{ f.label }}
-          </button>
-        </div>
-        <StateNote v-if="error" kind="error" title="We couldn't load the queue." :body="error" retry @retry="load" />
-        <div v-else-if="loading && !page" class="rows" aria-busy="true">
-          <div v-for="n in 4" :key="n" class="row skel">
-            <span class="skeleton" style="width: 60%; height: 18px" />
-            <div class="bs">
-              <span v-for="b in 6" :key="b" class="skeleton" style="width: 70px; height: 24px" />
-            </div>
-          </div>
-        </div>
-        <StateNote v-else-if="!page?.items.length" title="Nothing to review." body="Every call this week met the rubric." />
-        <ol v-else class="rows">
-          <li v-for="c in page.items" :key="c.callId">
-            <button type="button" class="row" :aria-current="selected === c.callId ? 'true' : undefined" @click="open(c)">
-              <span class="top">
-                <b>{{ c.callerLabel }}</b>
-                <span class="band" :class="c.band"><CvIcon :name="c.band === 'good' ? 'check' : c.band === 'failed' ? 'urgent' : 'clock'" size="s" />{{ c.bandLabel }}</span>
-              </span>
-              <span class="sub num">{{ c.claimNumber ?? c.reference }} · {{ c.lineLabel ? `${c.lineLabel} · ` : '' }}{{ fmtDayShort(c.startedAt) }}, {{ fmtTime(c.startedAt) }} · {{ fmtClock(c.durationSeconds) }}</span>
-              <span class="why">{{ c.reasonQueued }}</span>
-              <RubricBeads :beads="c.beads" small />
-              <span class="rev">{{ c.reviewer ? `Reviewer: ${c.reviewer.name}` : 'Not reviewed yet' }}</span>
-            </button>
-          </li>
-        </ol>
-      </aside>
-      <ReviewPanel v-if="selected" :key="selected" :call-id="selected" class="review" @done="next" />
+    <Slate title="Quality" :caption="caption">
+      <UTabs v-model="status" :items="statuses" :content="false" variant="pill" size="sm" color="neutral" aria-label="Which calls" />
+    </Slate>
+
+    <div class="filters">
+      <UTabs v-model="item" :items="filters" :content="false" variant="link" size="sm" color="neutral" aria-label="Filter by what was missed" class="tabs" />
     </div>
+
+    <StateNote v-if="error" kind="error" title="We couldn't load the queue." :body="error" retry class="m-4 sm:mx-8" @retry="load" />
+
+    <div v-else-if="loading && !page" class="skel" aria-busy="true" aria-label="Loading the queue">
+      <div v-for="n in 4" :key="n" class="srow">
+        <USkeleton class="h-5 w-40" />
+        <div class="flex flex-wrap gap-1.5 flex-1">
+          <USkeleton v-for="b in 6" :key="b" class="h-6 w-20 rounded-full" />
+        </div>
+      </div>
+    </div>
+
+    <StateNote v-else-if="!page?.items.length" class="m-4 sm:mx-8" title="Nothing to review." body="Every call this week met the rubric." />
+
+    <UTable v-else :data="page.items" :columns="columns" class="tbl" :ui="{ tr: 'cursor-pointer hover:bg-sunk', td: 'align-top' }" aria-label="Review queue" @select="open">
+      <template #callerLabel-cell="{ row }">
+        <NuxtLink :to="hrefOf(row.original)" class="who" @click.stop>
+          {{ row.original.callerLabel }}
+        </NuxtLink>
+        <span class="why">{{ row.original.reasonQueued }}</span>
+      </template>
+      <template #claim-cell="{ row }">
+        <span class="num font-semibold">{{ row.original.claimNumber ?? row.original.reference }}</span>
+        <span v-if="row.original.lineLabel" class="sub">{{ row.original.lineLabel }}</span>
+      </template>
+      <template #when-cell="{ row }">
+        <span class="num nowrap">{{ fmtDayShort(row.original.startedAt) }}, {{ fmtTime(row.original.startedAt) }}</span>
+        <span class="sub num">{{ fmtClock(row.original.durationSeconds) }} long</span>
+      </template>
+      <template #band-cell="{ row }">
+        <CvTag :kind="BAND[row.original.band].kind" :icon="BAND[row.original.band].icon">
+          {{ row.original.bandLabel }}
+        </CvTag>
+        <span class="sub num">{{ Math.round(row.original.score) }} of 100</span>
+      </template>
+      <template #rubric-cell="{ row }">
+        <RubricBeads :beads="row.original.beads" small class="beads" />
+      </template>
+      <template #reviewer-cell="{ row }">
+        <span :class="{ 'text-muted': !row.original.reviewer }" class="nowrap">{{ row.original.reviewer ? row.original.reviewer.name : 'Not reviewed yet' }}</span>
+      </template>
+    </UTable>
   </div>
 </template>
 
 <style scoped>
-.layout { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 16px; margin: 0 32px; align-items: start; }
-.queue { display: grid; gap: 10px; position: sticky; top: 12px; max-height: calc(100dvh - 130px); overflow: auto; padding-bottom: 8px; scrollbar-width: thin; }
-.pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.pill { height: 34px; padding: 0 12px; border-radius: 999px; border: 0; background: var(--cv-sunk); font-weight: 650; font-size: 13px; color: var(--cv-muted); }
-.pill[aria-pressed="true"] { background: var(--cv-ink); color: var(--cv-bg); }
-.rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.row { width: 100%; border: 0; text-align: left; background: var(--cv-surface); border-radius: 20px; padding: 12px 14px; display: grid; gap: 6px; color: var(--cv-ink); }
-.row:hover { box-shadow: inset 0 0 0 1.5px var(--cv-orchid-wash); }
-.row[aria-current="true"] { box-shadow: inset 0 0 0 2.5px var(--cv-orchid); }
-.row.skel .bs { display: flex; gap: 5px; flex-wrap: wrap; }
-.top { display: flex; align-items: center; gap: 8px; }
-.top b { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
-.band { margin-left: auto; display: inline-flex; gap: 4px; align-items: center; font-size: 12.5px; font-weight: 700; }
-.band.failed { color: var(--cv-urgent); } .band.needs_attention { color: var(--cv-siu); } .band.good { color: var(--cv-fast); }
-.sub, .rev { color: var(--cv-muted); font-size: 12.5px; }
-.why { font-size: 13.5px; font-weight: 600; }
-@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } .queue { position: static; max-height: none; } }
-@media (max-width: 720px) { .layout { margin: 0 16px; } }
+.filters { padding: 6px 32px 0; border-bottom: 1px solid var(--cv-rule); overflow-x: auto; scrollbar-width: none; }
+.tbl { border-bottom: 1px solid var(--cv-rule); }
+.tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 32px; }
+.tbl :deep(th:last-child), .tbl :deep(td:last-child) { padding-right: 32px; }
+.who { display: block; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 660; font-size: 16.5px; color: inherit; text-decoration: none; }
+.who:hover { text-decoration: underline; text-underline-offset: 3px; }
+.why { display: block; font-size: 13.5px; font-weight: 600; margin-top: 2px; white-space: normal; max-width: 34ch; }
+.sub { display: block; color: var(--cv-muted); font-size: 12.5px; margin-top: 3px; }
+.nowrap { white-space: nowrap; }
+.beads { max-width: 460px; }
+.skel { display: grid; }
+.srow { display: flex; align-items: center; gap: 20px; padding: 16px 32px; border-bottom: 1px solid var(--cv-rule); }
+@media (max-width: 720px) {
+  .filters { padding: 4px 16px 0; }
+  .tbl { overflow-x: auto; }
+  .tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 16px; }
+  .srow { padding-left: 16px; padding-right: 16px; }
+}
 </style>
