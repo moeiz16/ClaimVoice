@@ -1,6 +1,5 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import CvIcon from '../app/components/CvIcon'
 import CvTag from '../app/components/ui/CvTag.vue'
 import RouteTag from '../app/components/ui/RouteTag.vue'
 import RubricBeads from '../app/components/quality/RubricBeads.vue'
@@ -8,7 +7,7 @@ import ScriptProgress from '../app/components/lines/ScriptProgress.vue'
 import HeardValue from '../app/components/claim/HeardValue.vue'
 import type { Slot } from '../app/types/api'
 
-const global = { components: { CvIcon, CvTag } }
+const global = { components: { CvTag } }
 
 const slot = (over: Partial<Slot>): Slot => ({
   key: 'policy_number', label: 'Policy', value: 'LM-AB-204118', display: 'LM-AB-204118', confidence: 0.95, confidenceLabel: 'sure', source: 'heard',
@@ -82,7 +81,8 @@ describe('route tags', () => {
     const w = mount(RouteTag, { props: { route: 'special_investigation' }, global })
     expect(w.text()).toBe('Closer look')
     expect(w.find('svg').exists()).toBe(true)
-    expect(w.find('.tag').classes()).toContain('siu')
+    expect(w.find('.cv-tag').classes()).toContain('k-siu')
+    expect(w.find('.cv-tag').attributes('data-color')).toBe('warning')
     const custom = mount(RouteTag, { props: { route: 'fast_track', label: 'Traitement rapide' }, global })
     expect(custom.text()).toBe('Traitement rapide')
   })
