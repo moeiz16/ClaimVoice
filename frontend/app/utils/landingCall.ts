@@ -8,7 +8,7 @@ import { phraseSpokenAt } from './transcript'
 
 export interface CallTurn { who: 'cv' | 'caller', from: number, to: number, text: string, spans?: { text: string, key: string }[], hush?: number | null }
 export interface CallMoment { key: string, label: string, at: number }
-export interface SlipItem { key: string, label: string, at: number, hushed?: boolean, fromPolicy?: boolean }
+export interface SlipItem { key: string, label: string, at: number, hushed?: boolean, fromPolicy?: boolean, quote?: string | null }
 export interface CallRouteReveal { route: Route, label: string, reasons: (string | { text: string, atSeconds?: number | null })[] }
 export interface LandingCall {
   durationSeconds: number
@@ -58,6 +58,7 @@ const EN: LandingCall = {
     { key: 'when', label: 'Wind, about 2:10 a.m.', at: 35.8 },
     { key: 'card', label: 'Card number not taken', at: 47.0, hushed: true },
     { key: 'photos', label: 'Photo link sent', at: 55.0 },
+    { key: 'claimno', label: 'Claim CV-26-01842', at: 70.0 },
   ],
   route: {
     route: 'fast_track',
@@ -105,6 +106,7 @@ const FR: LandingCall = {
     { key: 'when', label: 'Vent, vers 2 h 10', at: 35.8 },
     { key: 'card', label: 'Numéro de carte non pris', at: 47.0, hushed: true },
     { key: 'photos', label: 'Lien pour photos envoyé', at: 55.0 },
+    { key: 'claimno', label: 'Réclamation CV-26-01842', at: 70.2 },
   ],
   route: {
     route: 'fast_track',
@@ -189,4 +191,46 @@ export function horizonBars(call: LandingCall, n = 420): WaveBar[] {
     })
   }
   return conversationBars(withHushes(call.turns), call.durationSeconds, n, 11)
+}
+
+/**
+ * The landing's loss notice: the seven script steps as numbered sections, and the slip keys that fill each box.
+ * A key the layout doesn't know joins section 4 (What happened), so nothing heard is ever dropped.
+ */
+export const NOTICE_LAYOUT: { step: number, boxes: string[] }[] = [
+  { step: 1, boxes: ['consent'] },
+  { step: 2, boxes: ['policy', 'where'] },
+  { step: 3, boxes: ['hurt'] },
+  { step: 4, boxes: ['skylight', 'debris', 'when'] },
+  { step: 5, boxes: ['photos'] },
+  { step: 6, boxes: ['card'] },
+  { step: 7, boxes: ['readback', 'claimno'] },
+]
+
+/** Section number of a slip key on the landing notice. */
+export function noticeStep(key: string): number {
+  return NOTICE_LAYOUT.find(s => s.boxes.includes(key))?.step ?? 4
+}
+
+/** The caller's own words that filled a slip value (its margin note); null for values ClaimVoice said or looked up. */
+export function quoteFor(turns: CallTurn[], item: SlipItem): string | null {
+  if (item.quote !== undefined) return item.quote
+  if (item.fromPolicy || item.hushed) return null
+  const turn = [...turns].reverse().find(t => t.from <= item.at + 0.05 && t.spans?.some(s => s.key === item.key))
+  if (!turn || turn.who !== 'caller') return null
+  return turn.spans!.find(s => s.key === item.key)!.text.replace(/[.,]$/, '')
+}
+
+/**
+ * Every value the notice shows, in time order: the call's slip plus the read-back, which is filled when the caller
+ * confirms ClaimVoice's summary (the first caller turn after the read-back moment), unless the slip already has it.
+ */
+export function noticeItems(call: LandingCall, readBackLabel: string): SlipItem[] {
+  const items = [...call.slip]
+  const moment = call.moments.find(m => m.key === 'readback')
+  if (moment && !items.some(i => i.key === 'readback')) {
+    const confirm = call.turns.find(t => t.who === 'caller' && t.from >= moment.at)
+    if (confirm) items.push({ key: 'readback', label: readBackLabel, at: confirm.to, quote: confirm.text.replace(/[.,]$/, '') })
+  }
+  return items.sort((a, b) => a.at - b.at)
 }

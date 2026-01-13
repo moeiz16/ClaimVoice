@@ -1,9 +1,12 @@
 <script setup lang="ts">
-// The landing page is a call you can hear (DESIGN.md §4): ClaimVoice's own first line as the headline, the whole
-// call as a horizon you press play on, lyric captions in two alignments, values plucked into the claim slip, the
-// card-number hush, and the route unfurling at the end. Nothing auto-plays. Query flags for review: ?t=<s>|end,
-// ?play, ?read.
-import { builtInCall, horizonBars, parseLandingCall, slipAt, type LandingCall } from '~/utils/landingCall'
+// The landing page is a call you can hear, and the tape is the hero. Before play, ClaimVoice's own first line is
+// written above the line and the caller's teaser below it, with the whole call drawn as the horizon between them.
+// Pressing play writes the words being said on the tape (Larkspur above, the caller below) and fills the claim file
+// beneath it: values fly from the words into their boxes, the card number is hushed, and the route unfurls at the
+// end. Then the demo line, what each person gets, the safeguards and the compliance line. Nothing auto-plays.
+// Query flags for review: ?t=<s>|end, ?play, ?read (and ?still, ?theme, applied app-wide).
+import { builtInCall, horizonBars, noticeItems, parseLandingCall, slipAt, type LandingCall } from '~/utils/landingCall'
+import { STEPS } from '~/utils/notice'
 import { fmtClock, fmtDurationWords } from '~/utils/format'
 import { stripCardToken, turnAt } from '~/utils/transcript'
 
@@ -16,9 +19,11 @@ const route = useRoute()
 const COPY = {
   en: {
     nav: ['Ring the demo line', 'What your team gets', 'Safeguards'],
+    navLabel: 'Sections',
     signin: 'Supervisors, sign in',
     eyebrow: 'A claim call to Larkspur Mutual, Calgary · Thursday 8 January, 2:14 a.m., during a Chinook windstorm',
     sample: 'Sample call, shortened · voices are synthetic',
+    tape: 'The sample call',
     h1a: 'Tell me what happened.',
     h1b: 'I\'ll take it from there.',
     teaserWho: 'Dana, policyholder',
@@ -26,8 +31,26 @@ const COPY = {
     lede: 'ClaimVoice answers your claims line at any hour, in English or French. It takes the first report, asks the right follow-up questions, and hands your team a claim file where every detail links back to the words it came from.',
     names: { cv: 'ClaimVoice', caller: 'Dana, policyholder' },
     removed: 'removed',
-    horizon: { play: 'Play the call', pause: 'Pause the call', playLabel: 'Play the call', playSub: '', paused: 'Recording paused · card number', wave: 'Recording of the call. Click to move through it. Moments:', moments: 'Moments in the call' },
+    horizon: { play: 'Play the call', pause: 'Pause the call', playLabel: 'Play the call', playSub: '', paused: 'Recording paused · card number', wave: 'Recording of the call. Click to move through it. Moments:', moments: 'Moments in the call', jump: 'jump here' },
     slip: { label: 'Claim file', empty: 'Fills in here as each detail is heard.', fromPolicy: 'from the policy' },
+    notice: {
+      pending: 'Not heard yet',
+      heardAt: 'Heard at',
+      steps: [...STEPS] as string[],
+      boxes: {
+        consent: 'Recording consent', policy: 'Policy and policyholder', where: 'Insured address', hurt: 'Anyone hurt',
+        skylight: 'Damage', debris: 'Cause', when: 'When it happened', photos: 'Photos', card: 'Deductible payment',
+        readback: 'Read back to the caller', claimno: 'Claim number',
+      } as Record<string, string>,
+      other: 'Also heard',
+      states: { done: 'Complete', current: 'Filling in', waiting: 'Not reached yet', open: 'Still open' },
+      stepOf: 'Step {n} of 7',
+      allDone: 'Every step of the call is done',
+      whereTitle: 'Where it goes',
+      whereLabel: 'Route, with three reasons',
+      wherePending: 'Decided when the call ends',
+    },
+    readBack: 'Read back, the caller agreed',
     captions: 'Captions', read: 'Read instead',
     legendCv: 'ClaimVoice, above the line', legendCaller: 'Caller, below',
     ringSmall: ['Or talk to it yourself.', 'Works in this browser, no app.'],
@@ -39,13 +62,14 @@ const COPY = {
     saidH: 'What the caller hears, and what your team gets.',
     rows: [
       { role: 'Policyholder', line: '“Is everyone safe right now? Then let\'s get your claim started. It takes about four minutes.”', caller: false, gets: 'They get', pills: ['A claim number before hanging up', 'A photo link by text', 'A time someone will call'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
-      { role: 'Intake team', line: '“The wind tore the cover off my gas meter and I can smell gas.”', caller: true, gets: 'You get', pills: ['The caller told to leave and call 911', 'A summary, so nobody asks twice'], tag: { kind: 'urgent' as const, icon: 'urgent', text: 'Urgent safety, waiting for a person' } },
-      { role: 'Adjuster', line: '“Here\'s what I have. Is that right?”', caller: false, gets: 'You get', pills: ['Every detail linked to the words it came from', 'The recording, by speaker'], tag: { kind: 'fast' as const, icon: 'check', text: 'A route, with reasons in plain words' } },
+      { role: 'Intake team', line: '“The wind tore the cover off my gas meter and I can smell gas.”', caller: true, gets: 'You get', pills: ['The caller told to leave and call 911', 'A summary, so nobody asks twice'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Urgent safety, waiting for a person' } },
+      { role: 'Adjuster', line: '“Here\'s what I have. Is that right?”', caller: false, gets: 'You get', pills: ['Every detail linked to the words it came from', 'The recording, by speaker'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'A route, with reasons in plain words' } },
     ],
+    guardsLabel: 'Safeguards',
     guards: [
-      { icon: 'shield', h: 'Recording consent comes first', p: 'Every call opens by asking. Where both people must agree to be recorded, nothing is kept until the caller says yes.', demo: '“This call is recorded so we get your claim right. Is that okay?”', hush: false },
-      { icon: 'card', h: 'Card numbers are never taken', p: 'If a caller starts reading a card number, ClaimVoice stops them, and that moment is cut from the recording and the transcript.', demo: '“It\'s four-five', hush: true },
-      { icon: 'person', h: 'A person can take over any call', p: 'Callers can ask for a person at any time. Supervisors can listen, pass ClaimVoice a note, or take the call. Nothing is ever denied automatically.', demo: '“Of course. I\'m bringing in Renée now.”', hush: false },
+      { icon: 'i-lucide-shield-check', h: 'Recording consent comes first', p: 'Every call opens by asking. Where both people must agree to be recorded, nothing is kept until the caller says yes.', demo: '“This call is recorded so we get your claim right. Is that okay?”', hush: false, caller: false },
+      { icon: 'i-lucide-credit-card', h: 'Card numbers are never taken', p: 'If a caller starts reading a card number, ClaimVoice stops them, and that moment is cut from the recording and the transcript.', demo: '“It\'s four-five', hush: true, caller: true },
+      { icon: 'i-lucide-user-round', h: 'A person can take over any call', p: 'Callers can ask for a person at any time. Supervisors can listen, pass ClaimVoice a note, or take the call. Nothing is ever denied automatically.', demo: '“Of course. I\'m bringing in Renée now.”', hush: false, caller: false },
     ],
     comply: 'Designed to support the NAIC model bulletin on insurers\' use of AI, state call-recording consent rules, PCI DSS, GLBA, PIPEDA and Québec\'s Law 25. In English and French.',
     foot: 'Built for claims teams at regional insurers and agencies.',
@@ -54,9 +78,11 @@ const COPY = {
   },
   fr: {
     nav: ['Appeler la ligne de démo', 'Ce que votre équipe reçoit', 'Garanties'],
+    navLabel: 'Sections',
     signin: 'Superviseurs, connexion',
     eyebrow: 'Un appel de réclamation à Larkspur Mutual, Calgary · jeudi 8 janvier, 2 h 14, pendant une tempête de vent chinook',
     sample: 'Appel d\'exemple, abrégé · voix synthétiques',
+    tape: 'L\'appel d\'exemple',
     h1a: 'Dites-moi ce qui s\'est passé.',
     h1b: 'Je m\'occupe du reste.',
     teaserWho: 'Dana, assurée',
@@ -64,8 +90,26 @@ const COPY = {
     lede: 'ClaimVoice répond à votre ligne de réclamations à toute heure, en français ou en anglais. Il prend la première déclaration, pose les bonnes questions et remet à votre équipe un dossier où chaque détail renvoie aux mots d\'où il vient.',
     names: { cv: 'ClaimVoice', caller: 'Dana, assurée' },
     removed: 'retiré',
-    horizon: { play: 'Écouter l\'appel', pause: 'Mettre en pause', playLabel: 'Écouter l\'appel', playSub: '', paused: 'Enregistrement en pause · numéro de carte', wave: 'Enregistrement de l\'appel. Cliquez pour vous déplacer. Moments :', moments: 'Moments de l\'appel' },
+    horizon: { play: 'Écouter l\'appel', pause: 'Mettre en pause', playLabel: 'Écouter l\'appel', playSub: '', paused: 'Enregistrement en pause · numéro de carte', wave: 'Enregistrement de l\'appel. Cliquez pour vous déplacer. Moments :', moments: 'Moments de l\'appel', jump: 'aller ici' },
     slip: { label: 'Dossier', empty: 'Se remplit ici à mesure que chaque détail est entendu.', fromPolicy: 'selon la police' },
+    notice: {
+      pending: 'Pas encore entendu',
+      heardAt: 'Entendu à',
+      steps: ['Consentement', 'Police', 'Sécurité', 'Ce qui s\'est passé', 'Photos', 'Couverture', 'Relecture'],
+      boxes: {
+        consent: 'Consentement à l\'enregistrement', policy: 'Police et titulaire', where: 'Adresse assurée', hurt: 'Personnes blessées',
+        skylight: 'Dommages', debris: 'Cause', when: 'Quand c\'est arrivé', photos: 'Photos', card: 'Paiement de la franchise',
+        readback: 'Relu à l\'appelante', claimno: 'Numéro de réclamation',
+      } as Record<string, string>,
+      other: 'Aussi entendu',
+      states: { done: 'Complète', current: 'En cours', waiting: 'Pas encore', open: 'Encore ouverte' },
+      stepOf: 'Étape {n} sur 7',
+      allDone: 'Toutes les étapes de l\'appel sont faites',
+      whereTitle: 'Où va la réclamation',
+      whereLabel: 'Acheminement, avec trois raisons',
+      wherePending: 'Décidé à la fin de l\'appel',
+    },
+    readBack: 'Relu, l\'appelante est d\'accord',
     captions: 'Sous-titres', read: 'Lire plutôt',
     legendCv: 'ClaimVoice, au-dessus de la ligne', legendCaller: 'Appelant, en dessous',
     ringSmall: ['Ou parlez-lui vous-même.', 'Dans ce navigateur, sans appli.'],
@@ -77,13 +121,14 @@ const COPY = {
     saidH: 'Ce que l\'appelant entend, et ce que votre équipe reçoit.',
     rows: [
       { role: 'Assuré', line: '« Est-ce que tout le monde est en sécurité? Alors, commençons votre réclamation. Ça prend environ quatre minutes. »', caller: false, gets: 'Ils reçoivent', pills: ['Un numéro de réclamation avant de raccrocher', 'Un lien pour photos par texto', 'L\'heure où on les rappellera'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
-      { role: 'Équipe d\'accueil', line: '« Le vent a arraché le couvercle de mon compteur de gaz et ça sent le gaz. »', caller: true, gets: 'Vous recevez', pills: ['L\'appelant invité à sortir et à faire le 911', 'Un résumé, pour ne rien redemander'], tag: { kind: 'urgent' as const, icon: 'urgent', text: 'Sécurité urgente, attend une personne' } },
-      { role: 'Expert en sinistres', line: '« Voici ce que j\'ai. C\'est bien ça? »', caller: false, gets: 'Vous recevez', pills: ['Chaque détail relié aux mots d\'où il vient', 'L\'enregistrement, par voix'], tag: { kind: 'fast' as const, icon: 'check', text: 'Un acheminement, avec des raisons claires' } },
+      { role: 'Équipe d\'accueil', line: '« Le vent a arraché le couvercle de mon compteur de gaz et ça sent le gaz. »', caller: true, gets: 'Vous recevez', pills: ['L\'appelant invité à sortir et à faire le 911', 'Un résumé, pour ne rien redemander'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Sécurité urgente, attend une personne' } },
+      { role: 'Expert en sinistres', line: '« Voici ce que j\'ai. C\'est bien ça? »', caller: false, gets: 'Vous recevez', pills: ['Chaque détail relié aux mots d\'où il vient', 'L\'enregistrement, par voix'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'Un acheminement, avec des raisons claires' } },
     ],
+    guardsLabel: 'Garanties',
     guards: [
-      { icon: 'shield', h: 'Le consentement d\'abord', p: 'Chaque appel commence par la question. Là où les deux personnes doivent accepter, rien n\'est gardé avant le oui de l\'appelant.', demo: '« L\'appel est enregistré pour bien traiter votre réclamation. Ça vous convient? »', hush: false },
-      { icon: 'card', h: 'Jamais de numéro de carte', p: 'Si un appelant commence à lire un numéro de carte, ClaimVoice l\'arrête, et ce moment est retiré de l\'enregistrement et de la transcription.', demo: '« C\'est quatre-cinq', hush: true },
-      { icon: 'person', h: 'Une personne peut prendre l\'appel', p: 'L\'appelant peut demander une personne en tout temps. Les superviseurs peuvent écouter, glisser une note à ClaimVoice ou prendre l\'appel. Rien n\'est jamais refusé automatiquement.', demo: '« Bien sûr. Je fais venir Renée. »', hush: false },
+      { icon: 'i-lucide-shield-check', h: 'Le consentement d\'abord', p: 'Chaque appel commence par la question. Là où les deux personnes doivent accepter, rien n\'est gardé avant le oui de l\'appelant.', demo: '« L\'appel est enregistré pour bien traiter votre réclamation. Ça vous convient? »', hush: false, caller: false },
+      { icon: 'i-lucide-credit-card', h: 'Jamais de numéro de carte', p: 'Si un appelant commence à lire un numéro de carte, ClaimVoice l\'arrête, et ce moment est retiré de l\'enregistrement et de la transcription.', demo: '« C\'est quatre-cinq', hush: true, caller: true },
+      { icon: 'i-lucide-user-round', h: 'Une personne peut prendre l\'appel', p: 'L\'appelant peut demander une personne en tout temps. Les superviseurs peuvent écouter, glisser une note à ClaimVoice ou prendre l\'appel. Rien n\'est jamais refusé automatiquement.', demo: '« Bien sûr. Je fais venir Renée. »', hush: false, caller: false },
     ],
     comply: 'Conçu pour soutenir le bulletin type de la NAIC sur l\'usage de l\'IA par les assureurs, les règles de consentement à l\'enregistrement, PCI DSS, GLBA, la LPRPDE et la Loi 25 du Québec. En français et en anglais.',
     foot: 'Conçu pour les équipes de réclamations des assureurs et cabinets régionaux.',
@@ -93,6 +138,22 @@ const COPY = {
 }
 const c = computed(() => COPY[lang.value])
 useHead(() => ({ title: lang.value === 'fr' ? 'ClaimVoice · la ligne de réclamations qui écoute d\'abord' : 'ClaimVoice · the claims line that listens first', htmlAttrs: { lang: lang.value } }))
+
+// ------------------------------------------------------------- language and view switches (Nuxt UI tabs)
+const langItems = [{ label: 'English', short: 'EN', value: 'en' }, { label: 'Français', short: 'FR', value: 'fr' }]
+const langModel = computed<string>({
+  get: () => lang.value,
+  set: (v) => { prefs.lang.value = v === 'fr' ? 'fr' : 'en' },
+})
+const reading = ref(false)
+const viewItems = computed(() => [
+  { label: c.value.captions, value: 'captions', icon: 'i-lucide-captions' },
+  { label: c.value.read, value: 'read', icon: 'i-lucide-scroll-text' },
+])
+const viewModel = computed<string>({
+  get: () => (reading.value ? 'read' : 'captions'),
+  set: (v) => { reading.value = v === 'read' },
+})
 
 // ------------------------------------------------------------- the call
 const call = ref<LandingCall>(builtInCall(lang.value))
@@ -122,16 +183,18 @@ const bars = computed(() => horizonBars(call.value))
 const idx = computed(() => turnAt(call.value.turns, t.value))
 const started = computed(() => t.value > 0.05 || playing.value)
 const hushing = computed(() => call.value.turns.some(x => x.hush != null && t.value >= x.hush && t.value < x.to + 1.9))
-const slip = computed(() => slipAt(call.value.slip, t.value))
+const allItems = computed(() => noticeItems(call.value, c.value.readBack))
+const filled = computed(() => slipAt(allItems.value, t.value))
 const showRoute = computed(() => t.value >= duration.value - 0.05)
-const reading = ref(false)
 const durationWords = computed(() => fmtDurationWords(duration.value, lang.value))
 const horizonCopy = computed(() => ({ ...c.value.horizon, playSub: `${durationWords.value} · ${lang.value === 'fr' ? 'sous-titres activés' : 'captions on'}` }))
+const noticeCopy = computed(() => ({ ...c.value.notice, title: c.value.slip.label, empty: c.value.slip.empty, fromPolicy: c.value.slip.fromPolicy }))
 const finished = computed(() => call.value.turns.filter(x => x.to <= t.value))
 const lastFinal = computed(() => {
   const f = finished.value[finished.value.length - 1]
   return f ? { ...f, text: stripCardToken(f.text) } : null
 })
+const callerShort = computed(() => c.value.names.caller.split(',')[0] ?? c.value.names.caller)
 
 function seekTurn(dir: 1 | -1) {
   const i = idx.value + dir
@@ -146,6 +209,8 @@ function seekMoment(dir: 1 | -1) {
 function onKey(e: KeyboardEvent) {
   const el = e.target as HTMLElement | null
   if (el && (['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable)) return
+  // Tabs move between their options with the arrow keys; leave those alone.
+  if (el?.closest('[role="tablist"]')) return
   // On a button or link, Space and Enter keep their own meaning; the call shortcuts still work after pressing Play.
   if (el && ['BUTTON', 'A'].includes(el.tagName) && (e.key === ' ' || e.key === 'Enter')) return
   if (e.key === ' ') { e.preventDefault(); player.toggle() }
@@ -167,156 +232,169 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
-function ring(mode: 'voice' | 'typed' | 'other') {
-  const otherLang = lang.value === 'fr' ? 'en' : 'fr'
-  void navigateTo({ path: '/call', query: mode === 'typed' ? { type: '1', lang: lang.value } : mode === 'other' ? { lang: otherLang } : { lang: lang.value } })
-}
+// ------------------------------------------------------------- the demo line
+const otherLang = computed(() => (lang.value === 'fr' ? 'en' : 'fr'))
+const phone = useMediaQuery('(max-width: 720px)')
 </script>
 
 <template>
   <div class="landing">
     <header class="lp-top">
       <CvLogo />
-      <nav aria-label="Sections" class="lp-nav">
+      <nav :aria-label="c.navLabel" class="lp-nav">
         <a href="#ring">{{ c.nav[0] }}</a><a href="#said">{{ c.nav[1] }}</a><a href="#guards">{{ c.nav[2] }}</a>
       </nav>
       <div class="right">
-        <div class="seg lang" role="group" aria-label="Language / Langue">
-          <button type="button" :aria-pressed="lang === 'en'" @click="prefs.lang.value = 'en'">
-            English
-          </button>
-          <button type="button" :aria-pressed="lang === 'fr'" lang="fr" @click="prefs.lang.value = 'fr'">
-            Français
-          </button>
-        </div>
-        <NuxtLink class="signin" to="/sign-in">
-          {{ c.signin }}
-        </NuxtLink>
+        <UTabs v-model="langModel" :items="langItems" :content="false" variant="pill" size="xs" color="neutral" aria-label="Language / Langue" class="langtabs">
+          <template #default="{ item }">
+            <span :lang="item.value"><span class="long">{{ item.label }}</span><span class="short" aria-hidden="true">{{ item.short }}</span></span>
+          </template>
+        </UTabs>
+        <UButton to="/sign-in" color="neutral" variant="link" size="md" icon="i-lucide-log-in" :aria-label="c.signin" class="signin">
+          <span class="signin-word">{{ c.signin }}</span>
+        </UButton>
       </div>
     </header>
 
     <div class="eyebrow">
-      <span class="dot" aria-hidden="true" /><span>{{ c.eyebrow }}</span><span class="sample tag plain">{{ c.sample }}</span>
+      <span class="dot" aria-hidden="true" /><span>{{ c.eyebrow }}</span>
+      <UBadge color="neutral" variant="soft" size="md" class="sample">
+        {{ c.sample }}
+      </UBadge>
     </div>
 
-    <section class="stage" :aria-label="c.captions">
-      <div class="intro" :class="{ gone: started || reading }">
-        <h1>{{ c.h1a }}<br><em>{{ c.h1b }}</em></h1>
-        <p class="teaser">
-          <small>{{ c.teaserWho }}</small>{{ c.teaser }}
-        </p>
-        <p class="lede">
-          {{ c.lede }}
-        </p>
-      </div>
-      <LyricSheet v-if="started && !reading" :turns="call.turns" :t="t" :names="c.names" :removed="c.removed" />
-      <div v-if="reading" class="readpanel">
-        <ol :aria-label="c.readLabel">
-          <li v-for="(x, i) in call.turns" :key="i" :class="{ cur: i === idx }">
-            <button type="button" class="tm num" @click="player.seek(x.from)">
+    <Tape class="hero" :label="c.tape">
+      <template #above>
+        <div class="words up" :class="{ reading }">
+          <div class="headline" :class="{ gone: started || reading }">
+            <h1>{{ c.h1a }} <em>{{ c.h1b }}</em></h1>
+          </div>
+          <LyricSheet v-if="started && !reading" :turns="call.turns" :t="t" side="cv" :name="c.names.cv" :removed="c.removed" :lang="lang" />
+        </div>
+      </template>
+
+      <HorizonWave
+        :bars="bars" :duration="duration" :t="t" :playing="playing" :turn-index="idx" :moments="call.moments"
+        :hushing="hushing" :copy="horizonCopy" @toggle="player.toggle()" @seek="player.seek($event)"
+      />
+
+      <template #below>
+        <div v-if="!reading" class="words down">
+          <p class="teaser" :class="{ gone: started }">
+            <small>{{ c.teaserWho }}</small>{{ c.teaser }}
+          </p>
+          <LyricSheet v-if="started" :turns="call.turns" :t="t" side="caller" :name="c.names.caller" :removed="c.removed" :lang="lang" />
+        </div>
+        <ol v-else class="readlist" :aria-label="c.readLabel">
+          <li v-for="(x, i) in call.turns" :key="i" :class="[x.who, { cur: i === idx && started }]">
+            <button type="button" class="tm num" :aria-label="`${fmtClock(x.from)}, ${x.who === 'cv' ? c.names.cv : callerShort}`" @click="player.seek(x.from)">
               {{ fmtClock(x.from) }}
             </button>
-            <b>{{ x.who === 'cv' ? c.names.cv : 'Dana' }}</b>
-            <span>{{ stripCardToken(x.text) }}<template v-if="x.hush != null"> <span class="hush">■■■■ {{ c.removed }}</span></template></span>
+            <b>{{ x.who === 'cv' ? c.names.cv : callerShort }}</b>
+            <span class="said">{{ stripCardToken(x.text) }}<template v-if="x.hush != null"> <span class="hush">■■■■ {{ c.removed }}</span></template></span>
           </li>
         </ol>
-      </div>
-      <p class="sr-only-cv" aria-live="polite">
-        <template v-if="lastFinal && playing">
-          {{ lastFinal.who === 'cv' ? c.names.cv : c.names.caller }}: {{ lastFinal.text }}
-        </template>
-      </p>
-    </section>
-
-    <HorizonWave
-      :bars="bars" :duration="duration" :t="t" :playing="playing" :turn-index="idx" :moments="call.moments"
-      :hushing="hushing" :copy="horizonCopy" @toggle="player.toggle()" @seek="player.seek($event)"
-    />
-
-    <ClaimSlip :items="slip" :route="call.route" :show-route="showRoute" :animate="playing" :copy="c.slip" />
-
-    <div class="controls">
-      <time class="num clock">{{ fmtClock(t) }} / {{ fmtClock(duration) }}</time>
-      <div class="seg" role="group" :aria-label="c.captions">
-        <button type="button" :aria-pressed="!reading" @click="reading = false">
-          <CvIcon name="captions" size="s" />{{ c.captions }}
-        </button>
-        <button type="button" :aria-pressed="reading" @click="reading = true">
-          {{ c.read }}
-        </button>
-      </div>
-      <div class="legend" aria-hidden="true">
-        <span><i />{{ c.legendCv }}</span><span class="cl"><i />{{ c.legendCaller }}</span>
-      </div>
-      <div class="ring-cta">
-        <small>{{ c.ringSmall[0] }}<br>{{ c.ringSmall[1] }}</small>
-        <a class="btn soft" href="#ring"><CvIcon name="phone" />{{ c.ringH }}</a>
-      </div>
-    </div>
-
-    <section id="ring" class="ringband" aria-labelledby="ring-h">
-      <h2 id="ring-h">
-        {{ c.ringH }}
-      </h2>
-      <p>{{ c.ringP }}</p>
-      <div class="orbwrap">
-        <DemoOrb state="idle" />
-      </div>
-      <p class="ringcap">
-        {{ c.ringTry }}
-      </p>
-      <div class="ringactions">
-        <button class="btn primary" type="button" @click="ring('voice')">
-          <CvIcon name="mic" />{{ c.ringBtns[0] }}
-        </button>
-        <button class="btn soft on-sunk" type="button" @click="ring('typed')">
-          <CvIcon name="keys" />{{ c.ringBtns[1] }}
-        </button>
-        <button class="btn soft on-sunk" type="button" :lang="lang === 'fr' ? 'en' : 'fr'" @click="ring('other')">
-          <CvIcon name="lang" />{{ c.ringBtns[2] }}
-        </button>
-      </div>
-      <p class="ringnote">
-        {{ c.ringNote }}
-      </p>
-    </section>
-
-    <section id="said" class="said">
-      <h2>{{ c.saidH }}</h2>
-      <div v-for="(r, i) in c.rows" :key="i" class="pair fade-scroll">
-        <div class="role">
-          {{ r.role }}
-        </div>
-        <div class="heardq" :class="{ caller: r.caller }">
-          {{ r.line }}
-        </div>
-        <div class="gets">
-          <p>{{ r.gets }}</p>
-          <CvTag v-if="r.tag && r.tag.kind === 'urgent'" kind="urgent" :icon="r.tag.icon">
-            {{ r.tag.text }}
-          </CvTag>
-          <span v-for="p in r.pills" :key="p" class="heard plain">{{ p }}</span>
-          <CvTag v-if="r.tag && r.tag.kind === 'fast'" kind="fast" :icon="r.tag.icon">
-            {{ r.tag.text }}
-          </CvTag>
-        </div>
-      </div>
-    </section>
-
-    <section id="guards" class="guards" aria-label="Safeguards">
-      <div v-for="g in c.guards" :key="g.h" class="guard">
-        <div class="ic">
-          <CvIcon :name="g.icon" size="l" />
-        </div>
-        <h3>{{ g.h }}</h3>
-        <p>{{ g.p }}</p>
-        <p class="demo">
-          {{ g.demo }}<template v-if="g.hush">
-            <span class="hush">■■■■ {{ c.removed }}</span>”
+        <p class="sr-only-cv" aria-live="polite">
+          <template v-if="lastFinal && playing">
+            {{ lastFinal.who === 'cv' ? c.names.cv : c.names.caller }}: {{ lastFinal.text }}
           </template>
         </p>
+      </template>
+
+      <template #foot>
+        <div class="controls">
+          <time class="num clock">{{ fmtClock(t) }} / {{ fmtClock(duration) }}</time>
+          <UTabs v-model="viewModel" :items="viewItems" :content="false" variant="pill" size="sm" color="neutral" :aria-label="c.captions" />
+          <div class="legend" aria-hidden="true">
+            <span><i />{{ c.legendCv }}</span><span class="cl"><i />{{ c.legendCaller }}</span>
+          </div>
+          <div class="ring-cta">
+            <small>{{ c.ringSmall[0] }}<br>{{ c.ringSmall[1] }}</small>
+            <UButton to="#ring" color="neutral" variant="soft" icon="i-lucide-phone" :label="c.ringH" />
+          </div>
+        </div>
+      </template>
+    </Tape>
+
+    <p class="lede">
+      {{ c.lede }}
+    </p>
+
+    <LandingNotice
+      :items="filled" :turns="call.turns" :route="call.route" :show-route="showRoute" :started="started" :animate="playing"
+      :copy="noticeCopy" :lang="lang" @seek="player.seek($event)"
+    />
+
+    <section id="ring" class="ringband" aria-labelledby="ring-h">
+      <div class="orbwrap">
+        <DemoOrb state="idle" :size="phone ? 128 : 176" />
+      </div>
+      <div class="ringtext">
+        <h2 id="ring-h">
+          {{ c.ringH }}
+        </h2>
+        <p class="ringp">
+          {{ c.ringP }}
+        </p>
+        <p class="ringcap">
+          {{ c.ringTry }}
+        </p>
+        <p class="ringnote">
+          <UIcon name="i-lucide-mic" class="size-4 shrink-0" />{{ c.ringNote }}
+        </p>
+        <div class="ringactions">
+          <UButton :to="{ path: '/call', query: { lang } }" color="primary" icon="i-lucide-mic" :label="c.ringBtns[0]" />
+          <UButton :to="{ path: '/call', query: { type: '1', lang } }" color="neutral" variant="soft" icon="i-lucide-keyboard" :label="c.ringBtns[1]" class="on-wash" />
+          <UButton :to="{ path: '/call', query: { lang: otherLang } }" color="neutral" variant="soft" icon="i-lucide-languages" :label="c.ringBtns[2]" :lang="otherLang" class="on-wash" />
+        </div>
       </div>
     </section>
+
+    <section id="said" class="said" aria-labelledby="said-h">
+      <h2 id="said-h">
+        {{ c.saidH }}
+      </h2>
+      <ul class="rows">
+        <li v-for="(r, i) in c.rows" :key="i" class="row fade-scroll">
+          <div class="say">
+            <span class="role">{{ r.role }}</span>
+            <p class="quote" :class="{ caller: r.caller }">
+              {{ r.line }}
+            </p>
+          </div>
+          <div class="gets">
+            <span class="label">{{ r.gets }}</span>
+            <div class="pills">
+              <CvTag v-if="r.tag && r.tag.kind === 'urgent'" kind="urgent" :icon="r.tag.icon">
+                {{ r.tag.text }}
+              </CvTag>
+              <span v-for="p in r.pills" :key="p" class="heard plain">{{ p }}</span>
+              <CvTag v-if="r.tag && r.tag.kind === 'fast'" kind="fast" :icon="r.tag.icon">
+                {{ r.tag.text }}
+              </CvTag>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <section id="guards" class="guards" :aria-label="c.guardsLabel">
+      <ol>
+        <li v-for="(g, i) in c.guards" :key="g.h" class="guard fade-scroll">
+          <span class="no num" aria-hidden="true">{{ i + 1 }}</span>
+          <div class="gtext">
+            <h3><UIcon :name="g.icon" class="gicon" />{{ g.h }}</h3>
+            <p>{{ g.p }}</p>
+          </div>
+          <p class="demo" :class="{ caller: g.caller }">
+            {{ g.demo }}<template v-if="g.hush">
+              <span class="hush">■■■■ {{ c.removed }}</span>{{ lang === 'fr' ? ' »' : '”' }}
+            </template>
+          </p>
+        </li>
+      </ol>
+    </section>
+
     <p class="comply">
       {{ c.comply }}
     </p>
@@ -324,112 +402,160 @@ function ring(mode: 'voice' | 'typed' | 'other') {
       <CvLogo />
       <span>{{ c.foot }}</span>
       <div class="right">
-        <NuxtLink to="/sign-in">
-          {{ c.footLinks[0] }}
-        </NuxtLink>
-        <button type="button" class="linkbtn" @click="prefs.lang.value = lang === 'fr' ? 'en' : 'fr'">
-          {{ c.footLinks[1] }}
-        </button>
-        <a href="#guards">{{ c.footLinks[2] }}</a>
+        <UButton to="/sign-in" color="neutral" variant="link" size="sm" :label="c.footLinks[0]" />
+        <UButton color="primary" variant="link" size="sm" :label="c.footLinks[1]" :lang="otherLang" @click="prefs.lang.value = otherLang" />
+        <UButton to="#guards" color="neutral" variant="link" size="sm" :label="c.footLinks[2]" />
       </div>
     </footer>
   </div>
 </template>
 
 <style scoped>
-.lp-top { display: flex; align-items: center; gap: 22px; height: 76px; padding: 0 40px; }
-.lp-nav { display: flex; gap: 26px; margin-left: 36px; }
+/* ------------------------------------------------------------ top: a quiet line, then the eyebrow */
+.lp-top { display: flex; align-items: center; gap: 22px; height: 68px; padding: 0 32px; }
+.lp-nav { display: flex; gap: 24px; margin-left: 28px; }
 .lp-nav a { color: var(--cv-muted); text-decoration: none; font-weight: 600; font-size: 14.5px; }
 .lp-nav a:hover { color: var(--cv-ink); }
-.right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-.signin { font-weight: 650; font-size: 14.5px; color: var(--cv-ink); text-decoration: none; }
-.lang button { height: 38px; padding: 0 14px; font-size: 14px; }
+.right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.langtabs { width: auto; }
+.langtabs .short { display: none; }
+.signin { font-weight: 650; }
 
-.eyebrow { padding: 0 40px; display: flex; align-items: center; gap: 10px; color: var(--cv-muted); font-size: 14px; font-weight: 550; min-height: 30px; }
+.eyebrow { padding: 4px 32px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--cv-muted); font-size: 14px; font-weight: 550; }
 .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cv-orchid); flex: none; }
-.eyebrow .sample { margin-left: 6px; }
+.eyebrow .sample { margin-left: 4px; }
 
-.stage { position: relative; height: 352px; margin: 4px 40px 0; overflow: hidden; }
-.intro { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 18px; transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice); }
-.intro.gone { opacity: 0; transform: translateY(-24px); pointer-events: none; visibility: hidden; transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice), visibility 0s 400ms; }
-.intro h1 { font-size: 82px; line-height: .98; font-weight: 750; letter-spacing: -0.045em; max-width: 900px; }
-.intro h1 em { font-style: normal; color: var(--cv-orchid); }
-.teaser { align-self: flex-end; text-align: right; margin: -96px 0 0; font-family: var(--font-display); font-size: 30px; font-weight: 600; color: var(--cv-caller); letter-spacing: -0.02em; max-width: 420px; line-height: 1.15; }
-.teaser small { display: block; font-family: var(--font-sans); font-size: 13px; font-weight: 700; color: var(--cv-muted); letter-spacing: 0; margin-bottom: 4px; }
-.lede { max-width: 560px; margin: 22px 0 0; color: var(--cv-muted); font-size: 17px; line-height: 1.55; }
+/* ------------------------------------------------------------ the tape, as the hero */
+.tape.hero { padding-top: 26px; padding-bottom: 14px; border-top: 1px solid var(--cv-rule); }
+.hero :deep(.line) { height: auto; }
+.words { display: grid; }
+.words > * { grid-area: 1 / 1; min-height: 0; }
+.words.up { height: 236px; }
+.words.up.reading { height: 0; overflow: hidden; }
+.words.down { height: 156px; }
+.headline { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 6px; transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice); }
+.headline h1 { font-size: clamp(44px, 6.2vw, 90px); line-height: .98; font-weight: 720; letter-spacing: -0.035em; max-width: 1040px; }
+.headline h1 em { display: block; font-style: normal; color: var(--cv-orchid); }
+.teaser {
+  margin: 0; padding-top: 6px; justify-self: end; max-width: 520px; text-align: right; color: var(--cv-caller);
+  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 30px; font-weight: 600; line-height: 1.15; letter-spacing: -0.015em;
+  transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice);
+}
+.teaser small { display: block; font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; font-weight: 650; color: var(--cv-muted); letter-spacing: 0; margin-bottom: 4px; }
+/* Pressing play: the headline lifts away and the teaser sinks; both stay readable to assistive technology. */
+.headline.gone { opacity: 0; transform: translateY(-24px); pointer-events: none; }
+.teaser.gone { opacity: 0; transform: translateY(16px); pointer-events: none; }
 
-.readpanel { position: absolute; inset: 0; overflow: auto; background: var(--cv-bg); padding: 4px 0; }
-.readpanel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.readpanel li { display: grid; grid-template-columns: 56px 110px 1fr; gap: 10px; font-size: calc(16px * var(--cv-caption-scale)); border-radius: 12px; padding: 2px 6px; }
-.readpanel li.cur { background: var(--cv-orchid-wash); }
-.readpanel .tm { border: 0; background: none; color: var(--cv-muted); text-align: left; padding: 0; font-weight: 600; }
+.readlist { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 2px; text-align: left; max-height: 440px; overflow: auto; font-family: var(--font-sans); font-variation-settings: normal; font-weight: 400; letter-spacing: 0; color: var(--cv-ink); }
+.readlist li { display: grid; grid-template-columns: 56px 130px minmax(0, 1fr); gap: 10px; padding: 6px 8px; border-radius: 6px; font-size: calc(15.5px * var(--cv-caption-scale)); line-height: 1.55; border-bottom: 1px solid var(--cv-rule); }
+.readlist li.cur { background: var(--cv-orchid-wash); }
+.readlist li.caller b, .readlist li.caller .said { color: var(--cv-caller); }
+.readlist b { font-weight: 650; }
+.readlist .tm { border: 0; background: none; color: var(--cv-muted); text-align: left; padding: 0; font-weight: 600; font-size: 14px; }
+.readlist .tm:hover { color: var(--cv-orchid-ink); }
 
-.controls { display: flex; align-items: center; gap: 12px; margin: 10px 40px 0; min-height: 56px; }
+.controls { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; border-top: 1px solid var(--cv-rule); padding-top: 12px; }
 .clock { font-weight: 650; font-size: 14px; color: var(--cv-muted); min-width: 92px; }
-.legend { display: flex; gap: 14px; font-size: 12.5px; font-weight: 650; color: var(--cv-muted); margin-left: 10px; }
+.controls :deep([role="tablist"]) { width: auto; }
+.legend { display: flex; gap: 14px; font-size: 12.5px; font-weight: 650; color: var(--cv-muted); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 4px; height: 14px; border-radius: 2px; background: var(--cv-orchid); display: inline-block; }
 .legend .cl i { background: var(--cv-caller); }
 .ring-cta { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .ring-cta small { color: var(--cv-muted); font-size: 13px; text-align: right; line-height: 1.35; }
 
-.ringband { margin: 96px 0 0; padding: 88px 40px 96px; background: var(--cv-orchid-wash); display: grid; justify-items: center; text-align: center; }
-.ringband h2 { font-size: 54px; font-weight: 750; letter-spacing: -0.04em; }
-.ringband > p { color: var(--cv-muted); max-width: 560px; font-size: 17px; margin: 12px 0 0; }
-.orbwrap { margin: 42px 0 28px; }
-.ringcap { font-family: var(--font-display); font-size: 26px !important; font-weight: 600; color: var(--cv-caller) !important; max-width: 640px !important; line-height: 1.25; letter-spacing: -0.02em; }
-.ringactions { display: flex; gap: 12px; margin-top: 28px; justify-content: center; flex-wrap: wrap; }
-.ringnote { font-size: 13.5px !important; margin-top: 18px !important; }
+.lede { margin: 0; padding: 20px 32px 4px; max-width: calc(640px + 64px); color: var(--cv-muted); font-size: 17px; line-height: 1.55; }
 
-.said { padding: 110px 40px 40px; max-width: 1240px; margin: 0 auto; }
-.said h2 { font-size: 46px; font-weight: 750; letter-spacing: -0.04em; max-width: 760px; }
-.pair { display: grid; grid-template-columns: 180px 1fr 1fr; gap: 28px; align-items: start; padding: 34px 0; }
-.pair .role { font-weight: 750; font-size: 14px; color: var(--cv-muted); padding-top: 6px; }
-.heardq { font-family: var(--font-display); font-size: 27px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
-.heardq.caller { color: var(--cv-caller); }
-.gets { background: var(--cv-surface); border-radius: 20px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
-.gets p { margin: 0 0 4px; width: 100%; font-size: 13px; font-weight: 750; color: var(--cv-muted); }
+/* ------------------------------------------------------------ ring the demo line */
+.ringband {
+  margin: 64px 0 0; padding: 64px 32px 72px; background: var(--cv-orchid-wash); border-block: 1px solid var(--cv-rule);
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px 56px; align-items: center;
+}
+.orbwrap { padding: 18px; }
+.ringtext { max-width: 760px; }
+.ringband h2 { font-size: 54px; font-weight: 740; letter-spacing: -0.035em; line-height: 1.02; }
+.ringp { color: var(--cv-muted); max-width: 580px; font-size: 17px; margin: 12px 0 0; }
+.ringcap { margin: 22px 0 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 26px; font-weight: 600; color: var(--cv-caller); line-height: 1.25; letter-spacing: -0.015em; max-width: 680px; }
+.ringnote { display: flex; align-items: flex-start; gap: 8px; margin: 22px 0 0; font-size: 14px; color: var(--cv-muted); max-width: 580px; }
+.ringnote :deep(svg), .ringnote > span:first-child { margin-top: 3px; }
+.ringactions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.on-wash { background: var(--cv-surface); }
+.on-wash:hover { background: var(--cv-sunk); }
+
+/* ------------------------------------------------------------ said → filed: three ruled rows */
+.said { padding: 88px 32px 32px; }
+.said h2 { font-size: 44px; font-weight: 740; letter-spacing: -0.03em; max-width: 820px; line-height: 1.06; }
+.rows { list-style: none; margin: 32px 0 0; padding: 0; border-bottom: 1px solid var(--cv-rule); }
+.row { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px 48px; align-items: start; padding: 28px 0; border-top: 1px solid var(--cv-rule); }
+.role { display: block; font-weight: 650; font-size: 13.5px; color: var(--cv-muted); margin-bottom: 6px; }
+.quote { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 27px; font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; color: var(--cv-ink); }
+.quote.caller { color: var(--cv-caller); }
+.gets { padding-top: 2px; }
+.gets .label { display: block; margin-bottom: 8px; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .fade-scroll { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
 @media (prefers-reduced-motion: reduce) { .fade-scroll { animation: none; } }
 :global(:root.reduce-motion) .fade-scroll { animation: none; }
 
-.guards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 60px 40px; max-width: 1320px; margin: 0 auto; }
-.guard { background: var(--cv-sunk); border-radius: 28px; padding: 28px; }
-.guard .ic { width: 52px; height: 52px; border-radius: 50%; background: var(--cv-surface); display: grid; place-items: center; color: var(--cv-orchid-ink); margin-bottom: 18px; }
-.guard h3 { font-size: 25px; font-weight: 700; letter-spacing: -0.025em; }
-.guard p { color: var(--cv-muted); margin: 8px 0 0; }
-.guard .demo { margin-top: 18px; font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--cv-caller); }
-.guard .demo .hush { margin-left: 6px; }
-.comply { text-align: center; color: var(--cv-muted); font-size: 14.5px; padding: 10px 40px 40px; max-width: 900px; margin: 0 auto; }
-.foot { display: flex; align-items: center; gap: 18px; padding: 28px 40px 40px; color: var(--cv-muted); font-size: 13.5px; }
-.foot .right { gap: 18px; }
-.linkbtn { border: 0; background: none; color: var(--cv-orchid-ink); text-decoration: underline; text-underline-offset: 3px; padding: 0; font-size: 13.5px; }
+/* ------------------------------------------------------------ safeguards: a numbered list */
+.guards { padding: 56px 32px 24px; }
+.guards ol { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--cv-rule); }
+.guard { display: grid; grid-template-columns: 44px minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px 32px; align-items: start; padding: 26px 0; border-top: 1px solid var(--cv-rule); }
+.guard .no {
+  width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-ink); color: var(--cv-bg);
+  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 720; font-size: 16px;
+}
+.guard h3 { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.gicon { width: 22px; height: 22px; color: var(--cv-orchid-ink); flex: none; }
+.gtext p { color: var(--cv-muted); margin: 8px 0 0; max-width: 560px; }
+.demo { margin: 0; padding-top: 2px; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 20px; font-weight: 600; line-height: 1.3; color: var(--cv-ink); }
+.demo.caller { color: var(--cv-caller); }
+.demo .hush { margin-left: 6px; }
 
-@media (max-width: 1100px) { .intro h1 { font-size: 64px; } .teaser { font-size: 24px; margin-top: -76px; } }
+/* ------------------------------------------------------------ compliance + footer */
+.comply { margin: 0; padding: 28px 32px 32px; max-width: calc(860px + 64px); color: var(--cv-muted); font-size: 14.5px; }
+.foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 22px 32px 36px; border-top: 1px solid var(--cv-rule); color: var(--cv-muted); font-size: 13.5px; }
+.foot .right { gap: 6px; }
+
+@media (max-width: 1100px) {
+  .words.up { height: 216px; }
+  .teaser { font-size: 25px; }
+  .lp-nav { gap: 18px; margin-left: 12px; }
+  .ring-cta small { display: none; }
+}
+@media (max-width: 900px) {
+  .lp-nav { display: none; }
+}
 @media (max-width: 720px) {
-  .lp-top { padding: 0 16px; height: 64px; }
-  .lp-nav, .lp-top .lang { display: none; }
-  .eyebrow { padding: 0 16px; font-size: 12.5px; display: block; line-height: 1.5; }
-  .eyebrow .dot { display: inline-block; margin-right: 8px; vertical-align: 1px; } /* beside the line it marks */
+  .lp-top { padding: 0 16px; height: 60px; gap: 12px; }
+  .langtabs .long, .signin-word { display: none; }
+  .langtabs .short { display: inline; }
+  .eyebrow { padding: 2px 16px 12px; font-size: 12.5px; display: block; line-height: 1.5; }
+  .eyebrow .dot { display: inline-block; margin-right: 8px; vertical-align: 1px; }
   .eyebrow .sample { display: table; margin: 6px 0 0; font-size: 12px; }
-  .stage { margin: 4px 16px 0; height: 476px; }
-  .intro h1 { font-size: 48px; }
-  .teaser { margin: 22px 0 0; font-size: 22px; }
-  .lede { font-size: 15.5px; margin-top: 14px; }
-  .readpanel li { grid-template-columns: 44px 1fr; }
-  .readpanel li b { grid-column: 2; }
-  .readpanel li > span { grid-column: 2; }
-  .controls { margin: 10px 16px 0; flex-wrap: wrap; }
-  .legend, .ring-cta small { display: none; }
-  .ringband { padding: 64px 16px; }
-  .ringband h2 { font-size: 36px; }
-  .ringcap { font-size: 21px !important; }
-  .said { padding: 72px 16px 24px; }
-  .said h2 { font-size: 32px; }
-  .pair { grid-template-columns: 1fr; gap: 12px; }
-  .heardq { font-size: 22px; }
-  .guards { grid-template-columns: 1fr; padding: 32px 16px; }
-  .foot { flex-wrap: wrap; padding: 24px 16px; }
+  .tape.hero { padding-top: 18px; }
+  .words.up { height: 228px; }
+  .words.down { height: 132px; }
+  .teaser { font-size: 21px; max-width: 92%; }
+  .readlist li { grid-template-columns: 44px minmax(0, 1fr); gap: 2px 10px; }
+  .readlist li b, .readlist li .said { grid-column: 2; }
+  .legend { display: none; }
+  .ring-cta { margin-left: 0; }
+  .lede { padding: 16px 16px 0; font-size: 15.5px; }
+  .ringband { margin-top: 48px; padding: 48px 16px 56px; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 18px; }
+  .orbwrap { padding: 10px; }
+  .ringband h2 { font-size: 34px; }
+  .ringcap { font-size: 21px; }
+  .said { padding: 64px 16px 24px; }
+  .said h2 { font-size: 30px; }
+  .row { grid-template-columns: minmax(0, 1fr); padding: 22px 0; }
+  .quote { font-size: 22px; }
+  .guards { padding: 40px 16px 16px; }
+  .guard { grid-template-columns: 36px minmax(0, 1fr); gap: 10px 14px; }
+  .guard .demo { grid-column: 2; font-size: 18px; }
+  .guard h3 { font-size: 20px; }
+  .comply { padding: 24px 16px; }
+  .foot { padding: 20px 16px 28px; }
   .foot .right { margin-left: 0; flex-wrap: wrap; }
 }
 </style>

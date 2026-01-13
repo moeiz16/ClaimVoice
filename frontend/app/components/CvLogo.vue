@@ -10,10 +10,11 @@ withDefaults(defineProps<{ to?: string }>(), { to: '/' })
 </template>
 
 <style scoped>
-.cv-logo { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--cv-ink); }
+.cv-logo { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--cv-ink); flex: none; }
+/* The name is said, so it is set in the voice face: Commissioner, flared. */
 .cv-logo b {
-  font-family: var(--font-display); font-weight: 750; font-size: 21px; letter-spacing: -0.035em;
-  font-variation-settings: "opsz" 48, "wdth" 92;
+  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 720; font-size: 21px;
+  letter-spacing: -0.025em; line-height: 1;
 }
 .cv-logo b span { color: var(--cv-orchid); }
 </style>
