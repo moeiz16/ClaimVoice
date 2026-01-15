@@ -5,7 +5,7 @@ applyPrefs()
 </script>
 
 <template>
-  <UApp :toaster="{ position: 'bottom-left', duration: 4200 }" :tooltip="{ delayDuration: 250 }">
+  <UApp :toaster="{ position: 'bottom-right', duration: 4200 }" :tooltip="{ delayDuration: 250 }">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

@@ -1,4 +1,4 @@
-// ClaimVoice web app ("The switchboard", frontend/DESIGN.md §0). Client-rendered; the browser talks to the API
+// ClaimVoice web app ("Ask and answer", frontend/DESIGN.md). Client-rendered; the browser talks to the API
 // through the same origin: server/routes/api/[...].ts forwards /api/** (including the event streams) to the Litestar
 // API on :8040. The voice WebSocket fallback connects to the API directly.
 //
@@ -22,6 +22,9 @@ export default defineNuxtConfig({
     theme: { colors: ['primary', 'secondary', 'success', 'info', 'warning', 'error'] },
   },
   icon: {
+    // Nuxt Icon injects its styles ahead of the stylesheet; in the `components` layer that would create the layer
+    // before `base` and put every base reset above our component classes. In `base` the order stays Tailwind's.
+    cssLayer: 'base',
     provider: 'none',
     serverBundle: false,
     clientBundle: {
@@ -48,7 +51,7 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'ClaimVoice answers your claims line at any hour, in English or French, and hands your team a claim file where every detail links back to the words it came from.' },
-        { name: 'theme-color', content: '#FBF7F9' },
+        { name: 'theme-color', content: '#EEF4F1' },
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },

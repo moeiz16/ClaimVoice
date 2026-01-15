@@ -1,42 +1,25 @@
-/* ClaimVoice: "The switchboard" (frontend/DESIGN.md §0). Nuxt UI 3 on Tailwind 4, themed to the pink palette.
+/* ClaimVoice: "Ask and answer" (frontend/DESIGN.md). Nuxt UI 3 on Tailwind 4, re-shaped to the sea-glass tokens.
    Order: Tailwind, Nuxt UI, self-hosted fonts, tokens, then the theme mapping. */
 @import "tailwindcss";
 @import "@nuxt/ui";
-@import "@fontsource-variable/commissioner/flar.css";
-@import "@fontsource-variable/inclusive-sans/wght.css";
-@import "@fontsource-variable/inclusive-sans/wght-italic.css";
+@import "@fontsource-variable/nunito/wght.css";
+@import "@fontsource-variable/lexend/wght.css";
 @import "./tokens.css";
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 @custom-variant phone (@media (max-width: 720px));
 
-/* Palettes Nuxt UI's semantic colours are built from (app.config.ts). Each is generated around one token: the 600
-   step is the token itself. */
+/* Palettes Nuxt UI's semantic colours are built from (app.config.ts). The 600 step is the token itself. */
 @theme static {
-  --color-orchid-50: #FCF3F7; --color-orchid-100: #F7E2EC; --color-orchid-200: #F0C6DA; --color-orchid-300: #E59DBF;
-  --color-orchid-400: #D76C9F; --color-orchid-500: #CC4385; --color-orchid-600: #C8337A; --color-orchid-700: #A92C68;
-  --color-orchid-800: #8D2658; --color-orchid-900: #712048; --color-orchid-950: #591A3B;
-  --color-plum-50: #F5F4F6; --color-plum-100: #E8E6EA; --color-plum-200: #D1CCD5; --color-plum-300: #B0A8B7;
-  --color-plum-400: #897D92; --color-plum-500: #685874; --color-plum-600: #5B4A68; --color-plum-700: #4F3F59;
-  --color-plum-800: #45354C; --color-plum-900: #3A2B40; --color-plum-950: #312234;
-  --color-cobalt-50: #F3F5FC; --color-cobalt-100: #E2E8F9; --color-cobalt-200: #C5D1F3; --color-cobalt-300: #9BB0EA;
-  --color-cobalt-400: #6989DF; --color-cobalt-500: #4068D7; --color-cobalt-600: #2F5BD3; --color-cobalt-700: #2B4DB1;
-  --color-cobalt-800: #284093; --color-cobalt-900: #243475; --color-cobalt-950: #22285B;
-  --color-meadow-50: #F2F7F4; --color-meadow-100: #E0EBE6; --color-meadow-200: #C0D8CE; --color-meadow-300: #93BCAB;
-  --color-meadow-400: #5D9A81; --color-meadow-500: #307E5E; --color-meadow-600: #1E7350; --color-meadow-700: #1D6046;
-  --color-meadow-800: #1D503D; --color-meadow-900: #1C4034; --color-meadow-950: #1B312C;
-  --color-ochre-50: #F8F5F0; --color-ochre-100: #EEE7DB; --color-ochre-200: #DDD0B8; --color-ochre-300: #C5AE85;
-  --color-ochre-400: #A98647; --color-ochre-500: #916414; --color-ochre-600: #875700; --color-ochre-700: #734A04;
-  --color-ochre-800: #623E08; --color-ochre-900: #50320C; --color-ochre-950: #41270F;
-  --color-scarlet-50: #FBF2F2; --color-scarlet-100: #F6E1E0; --color-scarlet-200: #EDC3C1; --color-scarlet-300: #E09994;
-  --color-scarlet-400: #D0665E; --color-scarlet-500: #C33B32; --color-scarlet-600: #BE2A20; --color-scarlet-700: #A0251E;
-  --color-scarlet-800: #86201D; --color-scarlet-900: #6C1B1C; --color-scarlet-950: #55171A;
-  --color-mauve-50: #F6F5F6; --color-mauve-100: #EAE7E9; --color-mauve-200: #D6D0D4; --color-mauve-300: #B8AEB5;
-  --color-mauve-400: #94858F; --color-mauve-500: #776470; --color-mauve-600: #6B5664; --color-mauve-700: #5C4956;
-  --color-mauve-800: #4F3D4A; --color-mauve-900: #42313E; --color-mauve-950: #372733;
+  --color-jade-50: #F3F8F7; --color-jade-100: #E2EFED; --color-jade-200: #C2DED9; --color-jade-300: #94C6BC; --color-jade-400: #5EA99A; --color-jade-500: #2D8F7B; --color-jade-600: #0B7D66; --color-jade-700: #0A6C58; --color-jade-800: #095A4A; --color-jade-900: #09493C; --color-jade-950: #083A30;
+  --color-harbour-50: #F4F6FC; --color-harbour-100: #E5EAF8; --color-harbour-200: #C8D4F0; --color-harbour-300: #9FB4E4; --color-harbour-400: #6E8ED7; --color-harbour-500: #436CCB; --color-harbour-600: #2454C2; --color-harbour-700: #1F49A5; --color-harbour-800: #1A3F89; --color-harbour-900: #16346C; --color-harbour-950: #112A53;
+  --color-ochre-50: #F9F7F2; --color-ochre-100: #F1EBE0; --color-ochre-200: #E2D5BF; --color-ochre-300: #CCB58F; --color-ochre-400: #B28F57; --color-ochre-500: #9A6E24; --color-ochre-600: #8A5600; --color-ochre-700: #754B02; --color-ochre-800: #604005; --color-ochre-900: #4B3507; --color-ochre-950: #382B09;
+  --color-coral-50: #FBF5F4; --color-coral-100: #F6E6E4; --color-coral-200: #EDCCC6; --color-coral-300: #E0A59A; --color-coral-400: #D07868; --color-coral-500: #C24F3A; --color-coral-600: #B8321A; --color-coral-700: #9C2D18; --color-coral-800: #7F2716; --color-coral-900: #632215; --color-coral-950: #4A1E13;
+  --color-sea-50: #F6F7F7; --color-sea-100: #E9EDEC; --color-sea-200: #D1D8D7; --color-sea-300: #AEBBB9; --color-sea-400: #859996; --color-sea-500: #607B76; --color-sea-600: #466560; --color-sea-700: #3C5853; --color-sea-800: #324A46; --color-sea-900: #273D39; --color-sea-950: #1E312E;
+  --color-driftwood-50: #F8F6F5; --color-driftwood-100: #EFEBE6; --color-driftwood-200: #DED4CB; --color-driftwood-300: #C4B4A4; --color-driftwood-400: #A78F76; --color-driftwood-500: #8D6D4D; --color-driftwood-600: #7A5530; --color-driftwood-700: #674A2B; --color-driftwood-800: #553F25; --color-driftwood-900: #423420; --color-driftwood-950: #322B1C;
 }
 
-/* ClaimVoice tokens as Tailwind colours (bg-orchid-wash, text-fast, ring-urgent …). */
+/* ClaimVoice tokens as Tailwind colours (bg-jade-wash, text-fast, ring-urgent …). */
 @theme inline {
   --color-bg: var(--cv-bg);
   --color-surface: var(--cv-surface);
@@ -46,17 +29,13 @@
   --color-ink: var(--cv-ink);
   --color-muted: var(--cv-muted);
   --color-faint: var(--cv-faint);
-  --color-orchid: var(--cv-orchid);
-  --color-orchid-ink: var(--cv-orchid-ink);
-  --color-orchid-wash: var(--cv-orchid-wash);
-  --color-on-orchid: var(--cv-on-orchid);
-  --color-dock: var(--cv-dock);
-  --color-on-dock: var(--cv-on-dock);
-  --color-dock-muted: var(--cv-dock-muted);
-  --color-dock-orchid: var(--cv-dock-orchid);
-  --color-dock-raise: var(--cv-dock-raise);
+  --color-jade: var(--cv-jade);
+  --color-jade-ink: var(--cv-jade-ink);
+  --color-jade-wash: var(--cv-jade-wash);
+  --color-on-jade: var(--cv-on-jade);
+  --color-seaglass: var(--cv-seaglass);
   --color-caller: var(--cv-caller);
-  --color-caller-wash: var(--cv-caller-wash);
+  --color-sand: var(--cv-sand);
   --color-person: var(--cv-person);
   --color-person-wash: var(--cv-person-wash);
   --color-fast: var(--cv-fast);
@@ -67,20 +46,22 @@
   --color-siu-wash: var(--cv-siu-wash);
   --color-urgent: var(--cv-urgent);
   --color-urgent-wash: var(--cv-urgent-wash);
-  --font-voice: "Commissioner Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inclusive Sans Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-voice);
-  --ease-voice: cubic-bezier(.2, .8, .2, 1);
-  --ease-breath: cubic-bezier(.45, 0, .55, 1);
-  --ease-lift: cubic-bezier(.3, 1.3, .5, 1);
-  --animate-breathe: breathe 3200ms var(--ease-breath) infinite;
+  --font-round: "Nunito Variable", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-sans: "Lexend Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-round);
+  --ease-tide: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.4, .64, 1);
   --shadow-float: var(--cv-shadow-float);
   --shadow-lift: var(--cv-shadow-lift);
+  --shadow-soft: var(--cv-shadow-soft);
+  --radius-pebble: 16px;
+  --radius-bubble: 24px;
+  --radius-sheet: 32px;
 }
 
 /* Nuxt UI's variables pinned to the exact tokens (unlayered, so they win over the colour plugin's base layer). */
-:root, :root.light, [data-theme="light"] {
-  --ui-primary: var(--cv-orchid);
+:root, :root.light, [data-theme="light"], :root.dark, [data-theme="dark"] {
+  --ui-primary: var(--cv-jade);
   --ui-secondary: var(--cv-caller);
   --ui-success: var(--cv-fast);
   --ui-info: var(--cv-person);
@@ -88,7 +69,7 @@
   --ui-error: var(--cv-urgent);
   --ui-bg: var(--cv-surface);
   --ui-bg-muted: var(--cv-sunk);
-  --ui-bg-elevated: var(--cv-sunk);
+  --ui-bg-elevated: var(--cv-surface);
   --ui-bg-accented: var(--cv-sunk-2);
   --ui-bg-inverted: var(--cv-ink);
   --ui-text: var(--cv-ink);
@@ -96,40 +77,24 @@
   --ui-text-toned: var(--cv-ink);
   --ui-text-muted: var(--cv-muted);
   --ui-text-dimmed: var(--cv-muted);
-  --ui-text-inverted: var(--cv-on-orchid);
+  --ui-text-inverted: var(--cv-on-jade);
   --ui-border: var(--cv-rule);
   --ui-border-muted: var(--cv-sunk-2);
   --ui-border-accented: var(--cv-faint);
   --ui-border-inverted: var(--cv-ink);
-  --ui-radius: 0.375rem;
-}
-:root.dark, [data-theme="dark"] {
-  --ui-primary: var(--cv-orchid);
-  --ui-secondary: var(--cv-caller);
-  --ui-success: var(--cv-fast);
-  --ui-info: var(--cv-person);
-  --ui-warning: var(--cv-siu);
-  --ui-error: var(--cv-urgent);
-  --ui-text-inverted: var(--cv-on-orchid);
+  --ui-radius: 1rem;
 }
 
-@keyframes breathe { 50% { transform: scale(1.04); } }
-@keyframes livedot {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--cv-dock-orchid) 55%, transparent); }
-  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--cv-dock-orchid) 0%, transparent); }
-}
-@keyframes ripple { from { transform: scale(.7); opacity: .55; } to { transform: scale(1.9); opacity: 0; } }
-@keyframes settle { from { opacity: .35; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
-@keyframes span-lit { 0%, 40% { background-color: var(--cv-orchid); color: var(--cv-on-orchid); } }
-@keyframes route-in { from { clip-path: inset(0 100% 0 0 round 999px); } to { clip-path: inset(0 0 0 0 round 999px); } }
-@keyframes rise-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@keyframes hand-in { from { transform: translateX(-40px); opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes inflate-l { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(.85); box-shadow: 0 0 0 0 color-mix(in srgb, var(--cv-jade) 45%, transparent); } 60% { transform: scale(1.03); } 100% { transform: none; box-shadow: 0 0 0 10px transparent; } }
+@keyframes nudge { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-10deg); } 30% { transform: rotate(10deg); } 45% { transform: rotate(-8deg); } 60% { transform: rotate(6deg); } 75% { transform: rotate(0); } }
+@keyframes swell { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes halo { from { transform: scale(.9); opacity: .55; } to { transform: scale(1.6); opacity: 0; } }
 @keyframes skeleton { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-@keyframes bar-pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
-/* Lamp: a line waiting for a person blinks softly, once a second. */
-@keyframes lamp { 0%, 55% { opacity: 1; } 70%, 100% { opacity: .28; } }
-/* Fill: a notice box's rule draws orchid when a value lands, then settles back. */
-@keyframes fill-rule { 0% { box-shadow: inset 0 0 0 2px var(--cv-orchid); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+@keyframes dots { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@keyframes settle { from { opacity: .35; filter: blur(2px); } to { opacity: 1; filter: blur(0); } }
+@keyframes span-lit { 0%, 40% { background-color: var(--cv-jade); color: var(--cv-on-jade); } }
 
 @layer base {
   html { background: var(--cv-bg); }
@@ -139,107 +104,116 @@
     color: var(--cv-ink);
     font-family: var(--font-sans);
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.55;
+    font-weight: 380;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  h1, h2, h3, .voice, .display {
-    font-family: var(--font-voice);
-    font-variation-settings: "FLAR" 100;
+  /* Headings: Nunito, heavy and round, with a sea-glass cushion beneath (DESIGN.md §4). */
+  h1, h2, h3, .round {
+    font-family: var(--font-round);
+    font-weight: 850;
     letter-spacing: -0.015em;
     margin: 0;
   }
-  a { color: var(--cv-orchid-ink); text-underline-offset: 3px; }
+  h1, .cushion { text-shadow: 0 0.055em 0 var(--cv-cushion); }
+  a { color: var(--cv-jade-ink); text-underline-offset: 3px; text-decoration-thickness: 2px; }
   button { font: inherit; color: inherit; cursor: pointer; }
   button:disabled { cursor: not-allowed; }
-  :focus-visible { outline: 3px solid var(--cv-orchid); outline-offset: 2px; }
-  time, .num { font-variant-numeric: tabular-nums; }
-  ::selection { background: var(--cv-orchid-wash); }
+  :focus-visible { outline: 3px solid var(--cv-jade); outline-offset: 3px; }
+  time, .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+  ::selection { background: var(--cv-jade-wash); }
+  strong, b { font-weight: 600; }
 }
 
-/* Shared voice vocabulary (not components a kit provides): heard values, spans, Hush, sound tags, interim words. */
+/* Shared vocabulary (not components a kit provides): answer pebbles, spans, Hush, sound tags, interim words. */
 @layer components {
   .sr-only-cv { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-  /* A value heard on the call: always a pill linked to its words. */
+  /* A value heard on the call: always a pebble linked to its words, with its ▸ time. */
   .heard {
-    display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 3px 5px 3px 11px;
-    border-radius: 999px; background: var(--cv-surface); font-weight: 600; font-size: 14px; color: var(--cv-ink);
-    box-shadow: inset 0 0 0 1.5px var(--cv-orchid-wash); border: 0; text-align: left;
-    transition: background-color 160ms, color 160ms;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 4px 5px 4px 13px;
+    border-radius: 999px; background: var(--cv-surface); font-weight: 500; font-size: 14px; color: var(--cv-ink);
+    border: 2px solid var(--cv-rule); text-align: left; line-height: 1.3;
+    transition: background-color 160ms, color 160ms, border-color 160ms;
   }
-  .heard.plain { padding-right: 11px; }
+  .heard.plain { padding-right: 13px; }
+  button.heard:hover { border-color: var(--cv-jade); }
   .heard .at {
-    display: inline-flex; align-items: center; gap: 3px; height: 22px; padding: 0 8px 0 6px; border-radius: 999px;
-    background: var(--cv-orchid-wash); color: var(--cv-orchid-ink); font-size: 12px; font-weight: 650;
+    display: inline-flex; align-items: center; gap: 3px; height: 24px; padding: 0 9px 0 7px; border-radius: 999px;
+    background: var(--cv-jade-wash); color: var(--cv-jade-ink); font-size: 12px; font-weight: 600;
     font-variant-numeric: tabular-nums; white-space: nowrap;
   }
-  .heard.linked, .heard.lit { background: var(--cv-orchid); color: var(--cv-on-orchid); box-shadow: none; }
-  .heard.linked .at, .heard.lit .at { background: rgba(255, 255, 255, .22); color: inherit; }
-  .heard.settling { box-shadow: inset 0 0 0 1.5px var(--cv-orchid); }
+  .heard.linked, .heard.lit { background: var(--cv-jade); border-color: var(--cv-jade); color: var(--cv-on-jade); }
+  .heard.linked .at, .heard.lit .at { background: color-mix(in srgb, var(--cv-on-jade) 22%, transparent); color: inherit; }
+  .heard.settling { border-style: dashed; border-color: var(--cv-jade); }
   .heard.settling .at { background: transparent; }
   .heard.hushed {
-    box-shadow: none; color: var(--cv-muted);
+    border-color: transparent; color: var(--cv-muted);
     background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px);
   }
   .heard.hushed .at { background: var(--cv-surface); color: var(--cv-muted); }
+  .heard.popped { animation: pop var(--m-pop) var(--ease-tide); }
   .pending {
-    display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border-radius: 999px;
-    border: 1.5px dashed var(--cv-faint); color: var(--cv-muted); font-size: 13px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 13px; border-radius: 999px;
+    border: 2px dashed var(--cv-rule); color: var(--cv-muted); font-size: 13px; font-weight: 450;
   }
 
-  /* Spoken words that filled a field. */
+  /* Spoken words that filled an answer. */
   .span {
-    background: var(--cv-orchid-wash); border-radius: 6px; padding: 0 3px; margin: 0 -1px;
-    box-shadow: inset 0 -2px 0 var(--cv-orchid); color: inherit; cursor: pointer; font: inherit;
+    background: var(--cv-jade-wash); border-radius: 8px; padding: 0 4px; margin: 0 -1px;
+    box-shadow: inset 0 -2px 0 var(--cv-jade); color: inherit; cursor: pointer; font: inherit;
     border: 0; text-align: inherit; display: inline;
   }
-  .span.linked { background: var(--cv-orchid); color: var(--cv-on-orchid); box-shadow: none; }
-  .span.lit { animation: span-lit 1.6s var(--ease-voice); }
-  .span.sign { background: var(--cv-siu-wash); color: var(--cv-siu); box-shadow: inset 0 -2px 0 var(--cv-siu); font-weight: 650; }
+  .span.linked { background: var(--cv-jade); color: var(--cv-on-jade); box-shadow: none; }
+  .span.lit { animation: span-lit 1.6s var(--ease-tide); }
+  .span.sign { background: var(--cv-siu-wash); color: var(--cv-siu); box-shadow: inset 0 -2px 0 var(--cv-siu); font-weight: 600; }
   .hush {
-    display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; height: 26px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; height: 26px; border-radius: 999px;
     background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px);
-    color: var(--cv-muted); font-size: 13px; font-weight: 650; letter-spacing: .08em; vertical-align: 2px;
+    color: var(--cv-muted); font-size: 13px; font-weight: 600; letter-spacing: .06em; vertical-align: 2px;
     white-space: nowrap; font-family: var(--font-sans);
   }
   .sound { color: var(--cv-muted); font-style: italic; font-size: .92em; }
   .interim { color: var(--cv-faint); }
-  .interim.settle { animation: settle var(--m-settle) var(--ease-voice) both; }
-  /* A margin note: the caller's own words that filled a notice box. */
-  .margin-note { font-style: italic; color: var(--cv-muted); font-size: 13px; line-height: 1.4; }
-  .margin-note::before { content: "“"; } .margin-note::after { content: "”"; }
-  .margin-note:lang(fr)::before { content: "« "; } .margin-note:lang(fr)::after { content: " »"; }
+  .interim.settle { animation: settle 240ms var(--ease-tide) both; }
 
   .skeleton {
-    border-radius: 6px;
+    border-radius: 12px;
     background: linear-gradient(90deg, var(--cv-sunk) 0%, var(--cv-sunk-2) 50%, var(--cv-sunk) 100%);
     background-size: 200% 100%; animation: skeleton 1.4s linear infinite;
   }
-  .breathe { animation: breathe var(--m-breathe) var(--ease-breath) infinite; }
   .live-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--cv-orchid); flex: none;
-    animation: livedot 1.8s var(--ease-breath) infinite;
+    width: 9px; height: 9px; border-radius: 50%; background: var(--cv-jade); flex: none; position: relative;
   }
-  .ripple-ring {
-    position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--cv-orchid); opacity: 0;
-    pointer-events: none; animation: ripple var(--m-ripple) var(--ease-voice);
+  .live-dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--cv-jade); animation: halo 1.6s var(--ease-tide) infinite; }
+  .fade-up { animation: rise 360ms var(--ease-tide) both; }
+  /* Typing dots: ClaimVoice is still asking, or a section is still being answered. */
+  .typing { display: inline-flex; gap: 4px; align-items: center; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: dots 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  /* Labels in the record's voice: sentence case, never tracked caps. */
+  .label { font-size: 13px; font-weight: 500; color: var(--cv-muted); }
+  /* A pool or section heading inside a page: Nunito, with its count as a round chip. */
+  .pool-h { display: flex; align-items: center; gap: 10px; font-size: 26px; line-height: 1.1; font-weight: 850; letter-spacing: -0.015em; }
+  .pool-h .n {
+    font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 0; min-width: 28px; height: 28px; padding: 0 9px;
+    display: inline-grid; place-items: center; border-radius: 999px; background: var(--cv-surface); color: var(--cv-muted);
   }
-  .fade-up { animation: rise-in 360ms var(--ease-voice) both; }
-  .filled { animation: fill-rule 900ms var(--ease-voice); }
-  /* Section label in the record's voice: sentence case, never tracked caps. */
-  .label { font-size: 12.5px; font-weight: 650; color: var(--cv-muted); }
+  /* The page column: centred, generous gutters. */
+  .page { width: min(1280px, 100%); margin: 0 auto; padding: 0 40px 72px; }
+  @media (max-width: 720px) { .page { padding: 0 16px 56px; } }
 }
 
-/* Caption size (account menu: S/M/L) scales every transcript and caption surface. */
+/* Caption size (Questions sheet: S/M/L) scales every conversation and caption surface. */
 :root { --cv-caption-scale: 1; }
 :root[data-captions="s"] { --cv-caption-scale: .9; }
 :root[data-captions="l"] { --cv-caption-scale: 1.18; }
 
-/* Page change: the work area fades and rises 8 px; the key bank never moves. */
-.page-enter-active { transition: opacity 180ms var(--ease-voice), transform 180ms var(--ease-voice); }
-.page-leave-active { transition: opacity 120ms linear; }
-.page-enter-from { opacity: 0; transform: translateY(8px); }
+/* Page change: Rise. */
+.page-enter-active { transition: opacity 200ms var(--ease-tide), transform 260ms var(--ease-tide); }
+.page-leave-active { transition: opacity 110ms linear; }
+.page-enter-from { opacity: 0; transform: translateY(10px); }
 .page-leave-to { opacity: 0; }
 
 /* Reduced motion: the OS setting and the in-app setting both apply (Nuxt UI's overlays included). */
@@ -251,6 +225,6 @@
 }
 
 @media print {
-  .no-print, [data-keybank] { display: none !important; }
+  .no-print, [data-shell] { display: none !important; }
   body { background: #fff; }
 }

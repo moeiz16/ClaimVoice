@@ -15,17 +15,15 @@ const back = () => clearError({ redirect: '/' })
       <CvLogo />
     </header>
     <main>
-      <div class="slate">
-        <h1>{{ notFound ? 'This line isn\'t connected.' : 'Something went quiet.' }}</h1>
-        <p>{{ notFound ? 'The page you asked for isn\'t here. It may have moved, or the link was mistyped.' : 'We hit a problem showing this page. Calls carry on; ClaimVoice keeps taking them.' }}</p>
-      </div>
-      <div class="flat" aria-hidden="true" />
+      <CvMark :size="88" />
+      <h1>{{ notFound ? 'Hmm, nobody\'s on this line.' : 'Something went quiet.' }}</h1>
+      <p>{{ notFound ? 'The page you asked for isn\'t here. It may have moved, or the link was mistyped.' : 'We hit a problem showing this page. Calls carry on; ClaimVoice keeps taking them.' }}</p>
       <div class="acts">
-        <UButton trailing-icon="i-lucide-arrow-right" @click="back">
+        <UButton size="xl" trailing-icon="i-lucide-arrow-right" @click="back">
           Back to ClaimVoice
         </UButton>
-        <UButton to="/lines" color="neutral" variant="soft" icon="i-lucide-list-checks">
-          Open the lines
+        <UButton to="/lines" size="xl" color="neutral" variant="soft" icon="i-lucide-audio-lines">
+          Who's on the line?
         </UButton>
       </div>
     </main>
@@ -34,19 +32,14 @@ const back = () => clearError({ redirect: '/' })
 
 <style scoped>
 .err { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; background: var(--cv-bg); }
-.top { display: flex; align-items: center; padding: 14px 32px; border-bottom: 1px solid var(--cv-rule); }
-main { display: grid; align-content: start; }
-.slate { padding: 48px 32px 22px; display: grid; gap: 10px; }
-h1 { font-size: 48px; font-weight: 740; letter-spacing: -0.03em; line-height: 1.05; }
-p { color: var(--cv-muted); font-size: 17px; max-width: 620px; margin: 0; }
-.flat { height: 2px; margin: 18px 32px 30px; border-radius: 2px; background: var(--cv-faint); animation: breathe var(--m-breathe) var(--ease-breath) infinite; }
-.acts { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 32px; }
-@media (prefers-reduced-motion: reduce) { .flat { animation: none; } }
+.top { display: flex; align-items: center; padding: 18px 40px; }
+main { display: grid; justify-items: center; align-content: start; text-align: center; gap: 16px; padding: 64px 24px; }
+h1 { font-size: 60px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; max-width: 14ch; }
+p { color: var(--cv-muted); font-size: 17px; max-width: 560px; margin: 0; }
+.acts { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
 @media (max-width: 720px) {
-  .top { padding: 12px 16px; }
-  .slate { padding: 32px 16px 18px; }
-  h1 { font-size: 34px; }
-  .flat { margin: 14px 16px 24px; }
-  .acts { padding: 0 16px; }
+  .top { padding: 14px 16px; }
+  main { padding: 40px 16px; }
+  h1 { font-size: 38px; }
 }
 </style>
