@@ -53,16 +53,16 @@ time. Images live in [`docs/screenshots/`](docs/screenshots/).
 
 | | |
 |---|---|
-| ![The recorded claim call, ready to play.](docs/screenshots/01-landing-opening.jpg) | ![The caller starts reading a card number; the recording pauses and the digits never appear.](docs/screenshots/03-landing-card-number-hush.jpg) |
-| **Landing call.** The recorded claim call, ready to play. | **Card number hushed.** The caller starts reading a card number; the recording pauses and the digits never appear. |
-| ![The claim file fills as you talk, and the route comes back with three reasons.](docs/screenshots/07-demo-line-claim-in.jpg) | ![The Chinook surge: three live lines and two callers waiting for a person.](docs/screenshots/09-switchboard.jpg) |
-| **Ring the demo line.** The claim file fills as you talk, and the route comes back with three reasons. | **The line desk.** The Chinook surge: three live lines and two callers waiting for a person. |
-| ![Following a live call: a whispered note, and the line asks it at its next turn.](docs/screenshots/11-live-call-whisper.jpg) | ![A two-lane recording, every phrase linked to its moment, and where the claim goes.](docs/screenshots/13-claim-file-playback.jpg) |
-| **Whisper.** Following a live call: a whispered note, and the line asks it at its next turn. | **Claim file.** A two-lane recording, every phrase linked to its moment, and where the claim goes. |
-| ![Three signs, each with where it came from, for a person to review.](docs/screenshots/14-claim-file-signs.jpg) | ![A call opened at the moment consent was missed.](docs/screenshots/16-quality-review.jpg) |
-| **Closer look.** Three signs, each with where it came from, for a person to review. | **Quality review.** A call opened at the moment consent was missed. |
-| ![Answered as plain questions, with fairness by region, language and age.](docs/screenshots/17-routing-checks-fairness.jpg) | ![The line desk at 390 px.](docs/screenshots/24-phone-switchboard.jpg) |
-| **Routing checks.** Answered as plain questions, with fairness by region, language and age. | **On a phone.** The line desk at 390 px. |
+| ![The recorded claim call is the hero: ClaimVoice's first line above the line, the caller's below.](docs/screenshots/01-landing-opening.jpg) | ![The caller starts reading a card number; the recording pauses and the digits never appear.](docs/screenshots/03-landing-card-number-hush.jpg) |
+| **Landing call.** The recorded claim call is the hero: ClaimVoice's first line above the line, the caller's below. | **Card number hushed.** The caller starts reading a card number; the recording pauses and the digits never appear. |
+| ![The claim file fills step by step as you talk, and section 8 brings back the route with three reasons.](docs/screenshots/07-demo-line-claim-in.jpg) | ![The Chinook surge as a screener's board: urgent safety first, then the longest wait, then the lines; line keys with lamps on the right.](docs/screenshots/09-switchboard.jpg) |
+| **Ring the demo line.** The claim file fills step by step as you talk, and section 8 brings back the route with three reasons. | **The board.** The Chinook surge as a screener's board: urgent safety first, then the longest wait, then the lines; line keys with lamps on the right. |
+| ![A live call as a tape over its claim file: a whispered note, and the line asks it at its next turn.](docs/screenshots/11-live-call-whisper.jpg) | ![The recording across the top with the words being said, then where the claim goes, each reason linked to its moment.](docs/screenshots/13-claim-file-playback.jpg) |
+| **Whisper.** A live call as a tape over its claim file: a whispered note, and the line asks it at its next turn. | **Claim file.** The recording across the top with the words being said, then where the claim goes, each reason linked to its moment. |
+| ![Three signs, each with where it came from, for a person to review.](docs/screenshots/14-claim-file-signs.jpg) | ![A call opened at the moment consent was missed, with the rubric as a form.](docs/screenshots/16-quality-review.jpg) |
+| **Closer look.** Three signs, each with where it came from, for a person to review. | **Quality review.** A call opened at the moment consent was missed, with the rubric as a form. |
+| ![Answered as plain questions, with fairness by region, language and age.](docs/screenshots/17-routing-checks-fairness.jpg) | ![The board at 390 px, with the line keys across the top.](docs/screenshots/24-phone-switchboard.jpg) |
+| **Routing checks.** Answered as plain questions, with fairness by region, language and age. | **On a phone.** The board at 390 px, with the line keys across the top. |
 
 ## Features by role
 
@@ -72,7 +72,7 @@ any other role.
 
 | Role | Person | What they get |
 |---|---|---|
-| **Claims supervisor** | Renée Kowalchuk (`renee.kowalchuk@larkspur.example`) | The **line desk**: one channel strip per live call with its step in the seven-step script and what has been heard so far, a hand-off tray with urgent callers first, the surge ribbon and the morning's finished claims, all kept live over Server-Sent Events. **Listen** (follow the call by live captions), **Whisper** (a typed note the line acts on; the caller never hears it), **Take over** (type, and the line says it in its own voice while ClaimVoice keeps taking notes) and hand back. Signs routing-check versions for claims |
+| **Claims supervisor** | Renée Kowalchuk (`renee.kowalchuk@larkspur.example`) | The **board**: every live line and every caller waiting for a person as one numbered row, in the order to take them (urgent safety first, then the longest wait), with the step in the seven-step script, what ClaimVoice last asked and what has been heard so far; a **Take the next caller** key; the surge band and the morning's finished claims, all kept live over Server-Sent Events. Line keys with lamps sit in the key bank on every page. **Listen** (follow the call by live captions), **Whisper** (a typed note the line acts on; the caller never hears it), **Take over** (type, and the line says it in its own voice while ClaimVoice keeps taking notes) and hand back. Signs routing-check versions for claims |
 | **Intake agent** | Jamal Haddad, Sofía Herrera, Aurélie Fortin (French), plus a standby team of two | Hand-offs that arrive with a two-line summary, so nobody asks the caller twice |
 | **Adjuster** | Lena Ortiz | The **claim file**: a two-lane recording (wavesurfer.js), the summary with every phrase linked to its moment, photos from the text link, the route with three reasons and a likely settlement range. Can change a route with a reason |
 | **Special investigator** | Dev Malhotra | Closer-look referrals: which of the 14 signs are present, and where in the call or the policy each came from, under the note that a sign is never a reason to deny a claim |
@@ -391,7 +391,7 @@ Measured on one laptop with everything offline and the demo clock set to Thursda
 
 - **Tests:** **760 backend tests** with pytest, all passing (platform, API, RBAC, tenant isolation, SSE, the call
   sink, dialogue, understanding and redaction, the voice runtime over a real SmallWebRTC data channel and the
-  WebSocket fallback, routing checks, the quality scorer and the seed story), and **82 web tests** with Vitest across
+  WebSocket fallback, routing checks, the quality scorer and the seed story), and **102 web tests** with Vitest across
   8 files (formatting, waveforms, transcripts, streams, the landing call, the API layer, the mock API and key
   components). Ruff (178 files), mypy (127 files), `nuxt typecheck` and ESLint are clean, and `alembic check` finds
   no drift.
@@ -428,7 +428,7 @@ Measured on one laptop with everything offline and the demo clock set to Thursda
   (peak 342 MB; 70 to 85 MB resident). The web server's footprint is 45 MB (peak 50 MB).
 - **Evaluation and seed:** `make eval` runs all 38 gates in about 22 s. `make reset` (migrate and seed) takes about
   4 s and builds 201 policies, 79 calls, 63 claims, 6 routing-check versions and 143 audit entries.
-- **Web build:** a clean production build takes 5 to 6 s; the output is 1.8 MB (436 kB gzipped), client and server
+- **Web build:** a clean production build takes about 9 s; the output is 2.0 MB (495 kB gzipped), client and server
   together.
 
 CI runs Ruff, mypy, a migrations check, the backend tests, the offline seed, the voice toolchain smoke test
@@ -458,7 +458,7 @@ endorsed by any regulator and not legal advice.
 | Dialogue | An explicit state machine, versioned bilingual scripts (YAML seeded into the database), rule-based EN/FR understanding with spans, optional LiteLLM reader with schema checks |
 | API and platform | Python 3.13, **Litestar** 2, msgspec, **SQLAlchemy 2 + Alembic** (SQLite by default, Postgres-ready), Argon2id, structlog, Prometheus client, Server-Sent Events |
 | Routing checks | **XGBoost** 3, scikit-learn (logistic regression, random forest, isotonic calibration), **Optuna**, **SHAP** (TreeSHAP), **MLflow** (local tracking), PSI drift, freMTPL2 via fastparquet |
-| Web | **Nuxt 3** (Vue 3), TypeScript, Tailwind CSS 4.1, Motion for Vue, VueUse, Web Audio `AnalyserNode` + canvas waveforms, **wavesurfer.js** 7 for recordings |
+| Web | **Nuxt 3** (Vue 3), TypeScript, **Nuxt UI 3** (Reka UI) themed to the pink palette, Tailwind CSS 4.1, Motion for Vue, VueUse, Web Audio `AnalyserNode` + canvas waveforms, **wavesurfer.js** 7 for recordings, Commissioner and Inclusive Sans self-hosted |
 | Quality | pytest, Ruff, mypy, ESLint, `nuxt typecheck`, Vitest, an evaluation harness with 38 gates, GitHub Actions CI |
 
 Pinned versions and why each was chosen: [ADR 0001](docs/adr/0001-toolchain-and-versions.md).
@@ -489,7 +489,7 @@ backend/
     qa/                           call-quality rubric and scorer
     settings/ seed/               scripts, consent, hand-off, retention, privacy; the Larkspur Mutual seed
   alembic/ tests/
-frontend/        Nuxt 3 app: landing, demo line, sign-in, line desk, live call, claims, quality, routing checks, settings
+frontend/        Nuxt 3 + Nuxt UI app: landing, demo line, sign-in, the board, live call, claims, quality, routing checks, settings
 eval/            evaluation harness (run.py), suites, scripted and held-out callers, labelled calls, RESULTS.md
 scripts/         freMTPL2 download, toolchain smoke checks, landing-call audio generator
 docs/            problem statement, architecture, API contract, data, compliance map, demo script, ADRs, fact sheets

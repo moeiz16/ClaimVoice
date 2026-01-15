@@ -1,4 +1,4 @@
-# ClaimVoice frontend design: "On the line"
+# ClaimVoice frontend design: "On the line", on the switchboard
 
 > Built to this document. The design was prototyped as static pages first (landing, live call, line desk, claim file, routing checks, sign-in); the web app in `app/` is the implementation. Screens the prototype didn't cover (quality review, settings, activity, the live demo line, the photo-upload page, and the empty, loading and error states) follow §5 here. Review flags in the app: `?theme=light|dark`, `?still` (reduced motion); the landing also takes `?t=<seconds>|end`, `?play` and `?read`; the claim file takes `?signs`. Screenshots are taken with the browser clock frozen at **Thu 8 Jan 2026 07:42 America/Edmonton**.
 
@@ -6,8 +6,50 @@ ClaimVoice is a voice line that takes the **first notice of loss** (FNOL) for au
 
 - **Seed insurer:** Larkspur Mutual (Calgary, Alberta and Denver, Colorado; EN/FR service including Québec).
 - **Demo moment:** Thursday 8 January 2026, 7:42 a.m. Calgary time, the morning after an overnight Chinook windstorm (gusts over 100 km/h: roofs, siding, fences and skylights smashed by blown debris). Every displayed date sits in Dec 2025 to Jan 2026.
-- **Stack:** Nuxt 3 (Vue 3) + TypeScript + Tailwind 4.1, Motion for Vue (`motion-v`), VueUse, Web Audio `AnalyserNode` + canvas for live audio, wavesurfer.js v7 for recordings.
+- **Stack:** Nuxt 3 (Vue 3) + TypeScript + **Nuxt UI 3** (Reka UI) on Tailwind 4.1, Motion for Vue (`motion-v`), VueUse, Web Audio `AnalyserNode` + canvas for live audio, wavesurfer.js v7 for recordings.
 - **Copy date:** written as of early January 2026; anything time-sensitive is computed at runtime from `CLAIMVOICE_DEMO_TODAY`.
+
+---
+
+## 0. The switchboard (the current design; where §1–§13 differ, this section wins)
+
+The first round (§1–§13) gave ClaimVoice its palette, its two voices and its motion. Its bones were generic, though: a page header with the avatar on the right, rounded white cards on porcelain, a three-strip desk with a tray on the right, a conversation | claim-file split, and hand-rolled buttons, tags, sheets and toasts. This round keeps everything a caller or an adjuster would recognise and rebuilds the frame from how intake desks actually work.
+
+### 0.1 What the work looks like
+- **Live supervision is a list of lines with states and timers, actions on the row** (Genesys Cloud queue activity; NICE CXone live monitoring; Dialpad's listen → whisper → barge ladder). A broadcast screener's phone set is closer still: **numbered lines** with a state, a wait timer and a typed note, and a **NEXT** key that takes the longest-waiting screened caller first (Telos VSet / VXs). Listen, whisper and take over are a mixing desk's cue, talkback and on-air.
+- **During a call the record gets the room and the conversation is evidence on it** (a dispatcher's incident template; Amazon Connect's step-by-step guides "like claim submissions"; Genesys Copilot's transcript at the foot of its panel).
+- **First notice of loss is a numbered, boxed notice** (the ACORD loss notices; Guidewire ClaimCenter's FNOL wizard that becomes a claim at Finish).
+- **Review is a horizontal tape** with talk bars and moments, the transcript synced beneath and the scorecard on the same screen (Gong, Observe.AI).
+
+### 0.2 Layout: key bank · slate · tape · notice
+- **Key bank** (right edge, 96 px, aubergine in both themes; it replaces the floating dock). The mark; a numbered **line key** with a lamp for every live line, kept in line order (steady orchid = you're listening, a soft 1 Hz blink = waiting for a person, blink + red ring = urgent safety, cobalt = a person has it; every lamp also has a glyph, a word in its tooltip and an accessible name); **Next** (take the next caller in NEXT order); the feature keys Board · Claims · Quality · Routing · Settings with counts; **Find** (a command palette: lines, this morning's claims, pages; `/` or ⌘K); the avatar menu (Night line, caption size, Reduce motion, Activity log, Sign out). The line you're listening to stays lit wherever you go; its talkback controls (live wave, Whisper, Take over / Hand back, Hand off, Stop) open from its key. Phones: a key row across the top, feature keys in a drawer from the right.
+- **Slate**: the top of every page is a caption block, not a bar: back link, the title in the line's voice, one context line, page-level controls, a hairline beneath. No navigation, search or avatar.
+- **Tape**: the call across the full width. The two-voice waveform runs along the middle (live on canvas, recorded on wavesurfer.js); Larkspur's current words are written above the line, the caller's below (interim words Settle); the left column holds the line key or the play button and the talkback keys; the foot holds the whisper / say / typed-call input. "Read instead" opens the whole conversation in a slide-over from the left.
+- **Notice**: the claim as a boxed loss notice under the tape. A seven-step stepper (Consent · Policy · Safety · What happened · Photos · Coverage · Read-back) runs above numbered sections that are those same steps; each box carries its label in the corner, the value with its source (heard pill with ▸ time, "from the policy", or a dashed "Not heard yet") and a **margin note**: the caller's own words that filled it. Section 8, **Where it goes**, holds the route, its three reasons, the likely size and the signs (never a reason to deny).
+- **Board** (the supervisor's home): slate, the surge band, the Next key with who it takes, then one **ruled row per caller in NEXT order** (line key · state with glyph, word and timer · caller · "ClaimVoice asked …" or the hand-off summary with what was heard · step meter and mood · Listen / Whisper / Take over or Take the call / Listen first / Read the summary), who is free, and "Finished this morning" as a table.
+
+Screen by screen: the live call is slate → tape → notice (route as section 8 at hang-up); the claim file is slate → recorded tape → section 8 first → notice with "In short" as its remarks and photos in section 5; claims, the quality queue, consent rules, people and the routing checks' two checks are tables; a quality review is slate → tape opened at the flagged moment with rubric pins → the rubric as a numbered form (Agree / Disagree, coaching note, Done → next call); routing checks and fact sheets are numbered full-width sections (answer left, one chart right); the activity log is a timeline per day; settings sections are links under the slate; sign-in is "Pick up your lines." with the demo roles as numbered line keys; the landing's hero is the tape (ClaimVoice's first line above the line, Dana's below), with the loss notice filling beneath it as the call plays.
+
+No floating dock, no page header with an avatar, no rounded cards on porcelain, no card grids, no right-hand panels.
+
+### 0.3 Component system: Nuxt UI 3
+`@nuxt/ui` 3.3.7 (Reka UI, Tailwind 4) on Nuxt 3.17.7 (its module declares Nuxt ≥ 3.16). Theme in `app/app.config.ts`: primary = orchid, secondary = plum (the caller), info = cobalt (a person, the adjuster route), success = meadow (fast-track), warning = ochre (closer look, surge), error = scarlet (urgent), neutral = mauve; each palette is built around its token (`main.css` `@theme`), and Nuxt UI's CSS variables are pinned to the exact tokens in both themes. Soft and subtle variants use the wash + ink pairs that pass AA (a colour on its own 10 % tint does not). Icons are lucide, bundled into the client. Fonts are self-hosted (`@fontsource-variable`), with no font or icon requests at runtime.
+
+Used: UApp, UButton, UButtonGroup, UBadge (inside `CvTag` / `RouteTag`, which keep "icon + word"), UTabs, UModal (take over, hand off, change route, sign-off, invite, photo viewer, Find), USlideover (Read instead, hand-off summary), UDrawer (phone keys), UPopover (talkback, What's covered), UTooltip, UToast, UDropdownMenu (account), UCommandPalette, UTable, UPagination, UStepper, UProgress, UAccordion, UTimeline, UAlert, URadioGroup, USelectMenu, USelect, UInputMenu, UInputTags, UInput, UTextarea, USwitch, USlider, UFormField, UNavigationMenu, UAvatar, UAvatarGroup, UKbd, USkeleton. Our own, because no kit has them: the waveforms, the orb, heard values and source chips, the Hush hatch, transcript spans, the step meter and the line-key lamps. UDashboard* is not used: its sidebar + navbar is the skeleton this round removes.
+
+### 0.4 Type: Commissioner speaks, Inclusive Sans keeps the record
+- **Commissioner** (Kostas Bartsokas), a flared sans in the glyphic tradition of Optima, with its flare axis at 100 for titles, the words on the tape, the headline, names and "ClaimVoice asked …": strokes swell into their terminals, so it reads as spoken rather than drawn on a grid, calm and unhurried.
+- **Inclusive Sans** (Olivia King) for the UI, the transcript, notice labels and values, and tables: designed for legibility, with I/l/1 and 0/O kept apart (policy numbers like `LM-AB-204118`) and italics that stay readable at 13 px (the margin notes).
+- Both cover Latin Extended (French guillemets, accents, œ). No monospace and no tracked capitals; figures are tabular. Bricolage Grotesque and Figtree are retired.
+
+### 0.5 Motion
+Breathe, Settle, Pluck, Ripple, Hush, Hand, Route and Ride stay (§9). Pluck now lands in a notice box, whose rule draws orchid and settles (**Fill**); a line key's **Lamp** blinks once a second while a caller waits; a waiting row slides to its NEXT place (spring 260/26), the urgent one entering from the left; dialogs rise 24 px, slide-overs come 16 px from the left, toasts slide 8 px. `prefers-reduced-motion` and the in-app setting turn all of it into instant changes or 120 ms fades; lamps stop blinking (glyph and word still say the state).
+
+### 0.6 Palette
+Unchanged (§7), plus `--cv-rule` (`#E2D4DD` day, `#3E2C3C` night), the hairline of notice boxes and board rows. The lamps on the aubergine bank use the night-line values of their colours (amber `#F2C36B`, red `#FF8070`, cobalt `#8FAEFF`), each paired with a glyph.
+
+### 0.7 References for this round
+Genesys Cloud queue activity (https://help.genesys.cloud/?p=185887) and monitor / coach / barge (https://help.genesys.cloud/?p=69) · Amazon Connect workspace layouts (https://docs.aws.amazon.com/connect/latest/adminguide/agent-workspace-layouts.html) and step-by-step guides (https://docs.aws.amazon.com/connect/latest/adminguide/step-by-step-guided-experiences.html) · NICE CXone supervisor actions (https://help.nicecxone.com/Content/supervisorwem/supervisoractions.htm) · Gong call player (https://help.gong.io/v1/docs/listen-to-and-navigate-a-call-recording.md) · Guidewire ClaimCenter FNOL (https://docs.guidewire.com/) · Hi Marley (https://www.himarley.com/claims/) · ACORD forms (https://www.acord.org/forms-pages/acord-forms) · Telos VSet (https://telosalliance.com/Telos/Telos-VSet) and VXs operation (https://docs.telosalliance.com/docs/vxs-operation) · Computer-aided dispatch (https://en.wikipedia.org/wiki/Computer-aided_dispatch) · Nuxt UI v3 (https://ui3.nuxt.com) · Commissioner (https://github.com/kosbarts/Commissioner) · Inclusive Sans (https://github.com/LivKing/Inclusive-Sans).
 
 ---
 
