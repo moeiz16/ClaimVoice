@@ -1,12 +1,13 @@
 <script setup lang="ts">
-// Routing checks, for compliance (DESIGN.md §5.6). The slate, the two checks as one register, then the four
-// questions a regulator asks as numbered sections (the answer in frequencies on the left, its one chart on the
-// right), the "It never" list, and two sign-offs per version, reviewed in a dialog.
+// Routing checks, for compliance (DESIGN.md §3): "Is routing working, and fair?" answered in a sentence, the two
+// checks as pebble rows, then the four questions a regulator asks as answer cards (the answer in frequencies with
+// its one chart), the "It never" promises, and two sign-offs per version, reviewed in a dialog.
 import type { TableColumn } from '@nuxt/ui'
 import type { Check, RoutingChecks } from '~/types/api'
 import { api } from '~/utils/api'
 import { fmtDate } from '~/utils/format'
 import { statusStyle } from '~/utils/labels'
+import { questionFor } from '~/utils/places'
 
 useHead({ title: 'Routing checks · ClaimVoice' })
 const data = ref<RoutingChecks | null>(null)
@@ -38,23 +39,23 @@ function openCheck(row: { original: Check }) { void navigateTo(`/routing/${row.o
 
 <template>
   <div>
-    <Slate title="Routing checks" :caption="data?.caption ?? ''">
+    <PageHead :title="questionFor('routing')" :caption="data?.caption ?? ''">
       <UButton to="/routing/size" color="neutral" variant="soft" icon="i-lucide-file-text" class="hide-phone">
         Fact sheets
       </UButton>
       <UButton :href="api.routing.regulatorPackUrl()" external download color="neutral" icon="i-lucide-download" class="hide-phone">
         Pack for the regulator
       </UButton>
-    </Slate>
+    </PageHead>
 
-    <StateNote v-if="error" kind="error" class="m-4 sm:mx-8" title="We couldn't load the routing checks." :body="error" retry @retry="load" />
+    <StateNote v-if="error" kind="error" class="mb-4" title="We couldn't load the routing checks." :body="error" retry @retry="load" />
 
     <template v-if="data">
       <section class="checks" aria-labelledby="checks-h">
-        <h2 id="checks-h" class="sr-only-cv">
+        <h2 id="checks-h" class="pool-h">
           The two checks
         </h2>
-        <UTable :data="data.checks" :columns="checkCols" class="tbl" :ui="{ tr: 'cursor-pointer hover:bg-sunk', td: 'align-top whitespace-normal' }" @select="openCheck">
+        <UTable :data="data.checks" :columns="checkCols" class="tbl" :ui="{ tr: 'cursor-pointer', td: 'align-top whitespace-normal' }" @select="openCheck">
           <template #name-cell="{ row }">
             <NuxtLink :to="`/routing/${row.original.key}`" class="cname">
               <UIcon :name="row.original.key === 'size' ? 'i-lucide-user-round' : 'i-lucide-search'" class="size-5 shrink-0" />{{ row.original.name }}
@@ -80,6 +81,9 @@ function openCheck(row: { original: Check }) { void navigateTo(`/routing/${row.o
         </UTable>
       </section>
 
+      <h2 class="pool-h qh">
+        What a regulator asks
+      </h2>
       <ol class="qs" aria-label="The four questions">
         <QuestionCard v-for="(q, i) in questions" :key="q.key" :q="q" :n="i + 1" @signoff="signing = candidateCheck" />
       </ol>
@@ -90,19 +94,15 @@ function openCheck(row: { original: Check }) { void navigateTo(`/routing/${row.o
         </h2>
         <ul>
           <li v-for="n in data.never" :key="n">
-            <CvTag kind="plain" icon="x">
-              {{ n }}
-            </CvTag>
+            <span class="x" aria-hidden="true"><UIcon name="i-lucide-x" /></span>{{ n }}
           </li>
         </ul>
       </section>
     </template>
 
     <div v-else-if="!error" class="loading" aria-busy="true" aria-label="Loading the routing checks">
-      <USkeleton class="h-28 w-full" />
-      <div v-for="n in 4" :key="n" class="skel">
-        <USkeleton class="h-8 w-2/5" /><USkeleton class="h-40 w-full" />
-      </div>
+      <USkeleton class="h-28 w-full rounded-[24px]" />
+      <USkeleton v-for="n in 3" :key="n" class="h-56 w-full rounded-[32px]" />
     </div>
 
     <SignOffSheet :open="!!signing" :check="signing" @close="signing = null" @signed="onSigned" />
@@ -110,24 +110,17 @@ function openCheck(row: { original: Check }) { void navigateTo(`/routing/${row.o
 </template>
 
 <style scoped>
-.checks { padding: 0 32px; border-bottom: 1px solid var(--cv-rule); }
-.cname { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 18px; font-weight: 680; white-space: nowrap; }
-.cname:hover { text-decoration: underline; text-underline-offset: 4px; }
-.cq { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 16px; font-weight: 560; color: var(--cv-caller); white-space: normal; }
+.checks { display: grid; gap: 8px; }
+.cname { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-family: var(--font-round); font-size: 19px; font-weight: 900; white-space: nowrap; }
+.cname:hover { text-decoration: underline; text-decoration-color: var(--cv-seaglass); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+.cq { margin: 0; font-size: 15px; font-weight: 500; white-space: normal; }
 .cd { margin: 2px 0 0; font-size: 13px; color: var(--cv-muted); white-space: normal; }
-.qs { margin: 0; padding: 0; list-style: none; }
-.never { padding: 22px 32px 32px; display: grid; grid-template-columns: 200px 1fr; gap: 12px 24px; align-items: start; }
-.never h2 { font-size: 22px; font-weight: 700; }
-.never ul { margin: 0; padding: 0; list-style: none; }
-.never li { padding: 8px 0; border-bottom: 1px solid var(--cv-rule); }
-.never li:first-child { border-top: 1px solid var(--cv-rule); }
-.loading { display: grid; gap: 0; }
-.loading > :first-child { margin: 16px 32px; width: auto; }
-.skel { display: grid; gap: 14px; padding: 24px 32px; border-top: 1px solid var(--cv-rule); }
-@media (max-width: 720px) {
-  .checks { padding: 0 16px; overflow-x: auto; }
-  .never { padding: 18px 16px 24px; grid-template-columns: 1fr; }
-  .skel { padding: 18px 16px; }
-  .loading > :first-child { margin: 12px 16px; }
-}
+.qh { margin-top: 40px; }
+.qs { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+.never { margin-top: 40px; display: grid; gap: 12px; }
+.never h2 { font-size: 26px; font-weight: 900; }
+.never ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.never li { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border-radius: 999px; background: var(--cv-surface); font-size: 14.5px; }
+.x { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-urgent-wash); color: var(--cv-urgent); flex: none; }
+.loading { display: grid; gap: 16px; }
 </style>

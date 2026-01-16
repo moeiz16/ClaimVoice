@@ -39,7 +39,7 @@ async function save() {
         </h2>
         <span class="flex flex-wrap gap-1.5">
           <CvTag :kind="langs.enabled.includes(l) ? 'fast' : 'plain'" :icon="langs.enabled.includes(l) ? 'check' : 'x'">{{ langs.enabled.includes(l) ? 'Answering in this language' : 'Off' }}</CvTag>
-          <CvTag v-if="langs.default === l" kind="orchid" icon="lang">First language</CvTag>
+          <CvTag v-if="langs.default === l" kind="jade" icon="lang">First language</CvTag>
         </span>
       </div>
       <div class="said">
@@ -94,25 +94,24 @@ async function save() {
 </template>
 
 <style scoped>
-.doc { display: grid; }
-.lang { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1.4fr) minmax(220px, 1fr); gap: 12px 32px; align-items: start; padding: 20px 32px; border-bottom: 1px solid var(--cv-rule); }
+.doc { display: grid; gap: 3px; border-radius: 28px; overflow: hidden; }
+.lang { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1.4fr) minmax(220px, 1fr); gap: 12px 32px; align-items: start; padding: 20px 24px; background: var(--cv-surface); }
 .pick { grid-template-columns: minmax(200px, 260px) minmax(0, 1fr); }
 .name { display: grid; gap: 8px; justify-items: start; }
-h2 { font-size: 22px; font-weight: 700; }
+h2 { font-size: 22px; font-weight: 900; }
 .said { display: grid; gap: 2px; }
-.say { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 18px; font-weight: 560; line-height: 1.35; }
+.say { margin: 0; font-family: var(--font-round); font-size: 18px; font-weight: 560; line-height: 1.35; }
 .voice-set { margin: 0; display: grid; grid-template-columns: 64px 1fr; gap: 10px 12px; align-items: center; }
-.voice-set dt { color: var(--cv-muted); font-size: 13px; font-weight: 650; }
+.voice-set dt { color: var(--cv-muted); font-size: 13px; font-weight: 500; }
 .voice-set dd { margin: 0; }
 .speed { display: flex; gap: 12px; align-items: center; }
 .muted { margin: 0; color: var(--cv-muted); font-size: 14px; display: flex; gap: 6px; align-items: flex-start; }
 .muted :deep(svg), .muted > span:first-child { margin-top: 2px; }
-.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 18px 32px 28px; }
+.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 18px 0 8px; }
 @media (max-width: 1100px) {
   .lang, .pick { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) {
   .lang { padding: 16px; }
-  .save { padding: 14px 16px 22px; }
 }
 </style>

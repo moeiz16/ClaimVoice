@@ -118,7 +118,7 @@ const STATUS = { pending: 'Waiting', accepted: 'Joined', revoked: 'Withdrawn', e
           <b>{{ row.original.email }}</b>
         </template>
         <template #status-cell="{ row }">
-          <CvTag :kind="row.original.status === 'pending' ? 'orchid' : 'plain'" :icon="row.original.status === 'pending' ? 'clock' : 'x'">
+          <CvTag :kind="row.original.status === 'pending' ? 'jade' : 'plain'" :icon="row.original.status === 'pending' ? 'clock' : 'x'">
             {{ STATUS[row.original.status] }}
           </CvTag>
         </template>
@@ -156,15 +156,14 @@ const STATUS = { pending: 'Waiting', accepted: 'Joined', revoked: 'Withdrawn', e
 </template>
 
 <style scoped>
-.sec { padding: 20px 32px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 12px; }
+.sec { padding: 20px 24px; background: var(--cv-surface); display: grid; gap: 12px; }
 .head { display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap; justify-content: space-between; }
-h2 { font-size: 22px; font-weight: 700; display: flex; gap: 10px; align-items: center; }
+h2 { font-size: 23px; font-weight: 900; display: flex; gap: 10px; align-items: center; }
 .tbl { border-top: 1px solid var(--cv-rule); }
 .person { display: flex; align-items: center; gap: 12px; }
 .who { display: grid; min-width: 0; }
 .who span { color: var(--cv-muted); font-size: 13px; }
 @media (max-width: 720px) {
-  .sec { padding: 16px; }
   .tbl { overflow-x: auto; }
 }
 </style>

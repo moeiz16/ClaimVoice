@@ -85,7 +85,7 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
 </script>
 
 <template>
-  <div class="page">
+  <div class="ppage">
     <header class="top">
       <CvLogo :to="'/'" />
     </header>
@@ -103,9 +103,10 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
 
         <div class="sec">
           <input ref="picker" type="file" accept="image/*" capture="environment" multiple class="sr-only-cv" tabindex="-1" aria-hidden="true" :disabled="room === 0" @change="pick">
-          <UButton size="xl" block icon="i-lucide-camera" :disabled="room === 0" @click="picker?.click()">
-            {{ T.add }}
-          </UButton>
+          <button type="button" class="cam" :disabled="room === 0" @click="picker?.click()">
+            <span class="cc" aria-hidden="true"><UIcon name="i-lucide-camera" /></span>
+            <b class="round">{{ T.add }}</b>
+          </button>
           <p class="left">
             {{ T.left(room) }} · <template v-if="expiryShown">
               {{ T.expires }} {{ fmtDayLong(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}, {{ fmtTime(info.expiresAt, ORG_ZONE, fr ? 'fr' : 'en') }}
@@ -134,7 +135,7 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
           <UButton v-if="items.some(i => i.status === 'ready')" size="xl" block icon="i-lucide-upload" :loading="sending" :disabled="sending" @click="sendAll">
             {{ sending ? T.sending : T.send }} ({{ items.filter(i => i.status === 'ready').length }})
           </UButton>
-          <UAlert v-if="allSent" color="success" variant="soft" icon="i-lucide-check" :title="T.done" role="status" :ui="{ title: 'font-voice text-[18px] [font-variation-settings:\'FLAR\'_100]' }" />
+          <UAlert v-if="allSent" color="success" variant="soft" icon="i-lucide-check" :title="T.done" role="status" :ui="{ title: 'font-round text-[19px] font-[850]' }" />
         </div>
 
         <p class="privacy">
@@ -154,27 +155,31 @@ onBeforeUnmount(() => items.value.forEach(i => i.url && URL.revokeObjectURL(i.ur
 </template>
 
 <style scoped>
-.page { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; }
-.top { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--cv-rule); }
-main { width: 100%; max-width: 560px; display: grid; align-content: start; }
-.slate { padding: 20px 16px 16px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 8px; }
+/* The photo link (DESIGN.md §3): phone-first, one question, a big round camera button. */
+.ppage { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr; justify-items: center; }
+.top { display: flex; align-items: center; padding: 14px 16px; width: 100%; max-width: 560px; }
+main { width: 100%; max-width: 560px; display: grid; align-content: start; gap: 14px; padding: 0 14px 32px; }
+.slate { padding: 22px 20px 20px; border-radius: 28px; background: var(--cv-surface); display: grid; gap: 8px; box-shadow: var(--cv-shadow-soft); }
 .org { margin: 0; color: var(--cv-muted); font-size: 14px; }
-.org b { color: var(--cv-ink); }
-h1 { font-size: 36px; font-weight: 740; letter-spacing: -0.03em; line-height: 1.05; }
-.tip { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 18px; font-weight: 540; color: var(--cv-caller); line-height: 1.35; }
-.sec { padding: 16px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 10px; }
-.left { margin: 0; color: var(--cv-muted); font-size: 13px; }
-.list { list-style: none; margin: 0; padding: 0; }
-.list li { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--cv-rule); }
-.list img, .noimg { width: 72px; height: 72px; border-radius: 6px; object-fit: cover; display: grid; place-items: center; background: var(--cv-sunk); color: var(--cv-faint); }
+.org b { color: var(--cv-ink); font-weight: 600; }
+h1 { font-size: 36px; font-weight: 900; letter-spacing: -0.025em; line-height: 1.02; }
+.tip { margin: 4px 0 0; padding: 12px 16px; border-radius: 6px 22px 22px 22px; background: var(--cv-jade-wash); font-size: 16px; line-height: 1.4; }
+.sec { padding: 4px 0; display: grid; gap: 10px; justify-items: center; }
+.cam { display: grid; justify-items: center; gap: 10px; border: 0; background: none; color: var(--cv-ink); padding: 8px; border-radius: 28px; }
+.cc { width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; font-size: 44px; background: var(--cv-jade); color: var(--cv-on-jade); box-shadow: inset 0 -6px 0 var(--cv-lip); transition: transform 160ms var(--ease-spring); }
+.cam:active .cc { transform: translateY(2px); }
+.cam:disabled { opacity: .5; }
+.cam b { font-size: 20px; font-weight: 900; }
+.left { margin: 0; color: var(--cv-muted); font-size: 13px; text-align: center; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.list li { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px; border-radius: 22px; background: var(--cv-surface); }
+.list img, .noimg { width: 72px; height: 72px; border-radius: 16px; object-fit: cover; display: grid; place-items: center; background: var(--cv-sunk); color: var(--cv-faint); }
 .meta { display: grid; gap: 6px; min-width: 0; justify-items: start; }
-.cap { font-weight: 600; font-size: 14px; }
-.st { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; font-weight: 650; color: var(--cv-urgent); }
-.privacy { margin: 0; padding: 14px 16px 32px; display: flex; gap: 6px; align-items: flex-start; color: var(--cv-muted); font-size: 13px; }
-.gone { padding-top: 32px; }
+.cap { font-weight: 500; font-size: 14px; }
+.st { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; font-weight: 500; color: var(--cv-urgent); }
+.privacy { margin: 0; padding: 6px 6px 0; display: flex; gap: 6px; align-items: flex-start; color: var(--cv-muted); font-size: 13px; }
+.gone { padding-top: 26px; }
 .gone p { margin: 0; color: var(--cv-muted); font-size: 16px; }
-.hatch { width: 100%; height: 56px; border-radius: 6px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); }
-@media (min-width: 721px) {
-  .top, .slate, .sec, .list li, .privacy { padding-left: 32px; padding-right: 32px; }
-}
+.hatch { width: 100%; height: 56px; border-radius: 999px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); }
+.sec :deep(button[data-slot="base"]), .sec > :deep(.w-full) { width: 100%; }
 </style>

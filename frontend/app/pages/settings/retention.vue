@@ -12,7 +12,7 @@ const msg = ref<{ ok: boolean, text: string } | null>(null)
 const busy = ref(false)
 onMounted(async () => { r.value = await api.settings.retention() })
 const years = [1, 2, 3, 5, 7, 10].map(y => ({ value: y, label: `${y} year${y > 1 ? 's' : ''}` }))
-const blank = { base: 'font-sans font-semibold text-[15px] text-orchid-ink bg-orchid-wash', trailingIcon: 'text-orchid-ink' }
+const blank = { base: 'font-sans font-semibold text-[15px] text-jade-ink bg-jade-wash', trailingIcon: 'text-jade-ink' }
 async function save() {
   if (!r.value) return
   busy.value = true
@@ -72,19 +72,17 @@ async function save() {
 </template>
 
 <style scoped>
-.doc { display: grid; }
-.rule { margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 16px 32px; border-bottom: 1px solid var(--cv-rule); font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 20px; font-weight: 520; }
-.rule .ic { color: var(--cv-orchid-ink); }
-.rule b { font-weight: 720; }
+.doc { display: grid; gap: 3px; border-radius: 28px; overflow: hidden; }
+.rule { margin: 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 18px 24px; background: var(--cv-surface); font-family: var(--font-round); font-size: 20px; font-weight: 520; }
+.rule .ic { color: var(--cv-jade-ink); }
+.rule b { font-weight: 800; }
 .blank { display: inline-flex; width: auto; }
-.lk { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; font-weight: 650; color: var(--cv-muted); }
-.queue { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 16px 32px 0; }
+.lk { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--cv-muted); }
+.queue { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 18px 0 0; }
 .muted { color: var(--cv-muted); font-size: 13.5px; }
-.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 16px 32px 28px; }
+.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 18px 0 8px; }
 @media (max-width: 720px) {
   .rule { font-size: 17px; padding: 14px 16px; }
   .lk { margin-left: 0; }
-  .queue { padding: 14px 16px 0; }
-  .save { padding: 14px 16px 22px; }
 }
 </style>

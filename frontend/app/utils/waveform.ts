@@ -66,23 +66,12 @@ export function cssVar(name: string, el: Element = document.documentElement): st
 
 export function themeColors(): WaveColors {
   return {
-    cv: cssVar('--cv-orchid'),
+    cv: cssVar('--cv-jade'),
     caller: cssVar('--cv-caller'),
     person: cssVar('--cv-person'),
     gap: cssVar('--cv-faint'),
     hush: cssVar('--cv-faint'),
     hushBand: cssVar('--cv-sunk-2'),
-  }
-}
-
-export function dockColors(): WaveColors {
-  return {
-    cv: cssVar('--cv-dock-orchid'),
-    caller: cssVar('--cv-dock-muted'),
-    person: '#8FAEFF',
-    gap: cssVar('--cv-dock-gap'),
-    hush: cssVar('--cv-dock-gap'),
-    hushBand: cssVar('--cv-dock-raise'),
   }
 }
 

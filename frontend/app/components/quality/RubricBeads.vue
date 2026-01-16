@@ -23,12 +23,12 @@ withDefaults(defineProps<{ beads: Bead[], small?: boolean }>(), { small: false }
 
 <style scoped>
 .beads { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 5px; }
-li { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 8px 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 650; white-space: nowrap; }
+li { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 9px 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 500; white-space: nowrap; }
 .ic, .mk { width: 14px; height: 14px; flex: none; }
 .ok { background: var(--cv-fast-wash); color: var(--cv-fast); }
 .miss { background: var(--cv-urgent-wash); color: var(--cv-urgent); }
 .na { background: var(--cv-sunk); color: var(--cv-muted); }
-.small li { height: 24px; font-size: 11.5px; padding: 0 7px; gap: 4px; }
+.small li { height: 26px; font-size: 11.5px; padding: 0 7px; gap: 4px; }
 .small .ic, .small .mk { width: 12px; height: 12px; }
 .small .lb { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
 </style>

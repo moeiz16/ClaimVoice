@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// A routing check's fact sheet, read as a document: numbered sections ruled full width (what it's for and not for,
-// what it looks at in words, how it was tested, known limits), then the fairness results and the sign-off history,
-// with the technical measures folded away for the reviewer.
+// A routing check's fact sheet, read as a document of answers (DESIGN.md §3): each section a rounded card with its
+// number in a pebble (what it's for and not for, what it looks at in words, how it was tested, known limits), then
+// the fairness results and the sign-off history, with the technical measures folded away for the reviewer.
 import type { TableColumn, TimelineItem } from '@nuxt/ui'
 import type { FactSheet, Fairness, FairnessRow, MetricSet } from '~/types/api'
 import { api } from '~/utils/api'
@@ -88,11 +88,11 @@ const techItems = [{ label: 'For the technical reviewer', icon: 'i-lucide-slider
 
 <template>
   <div>
-    <Slate :title="sheet?.name ?? 'Fact sheet'" :caption="sheet ? `Fact sheet · version ${sheet.version}` : ''" :back="{ to: '/routing', label: 'Routing checks' }">
-      <UTabs v-model="which" :items="checks" :content="false" variant="pill" size="sm" color="neutral" class="hide-phone" aria-label="Which check" />
-    </Slate>
+    <PageHead :title="sheet?.name ?? 'Fact sheet'" :caption="sheet ? `The fact sheet for version ${sheet.version}: what it is for, how it was tested, and who signed it off.` : ''" :back="{ to: '/routing', label: 'Routing checks' }">
+      <UTabs v-model="which" :items="checks" :content="false" size="sm" color="neutral" class="hide-phone" aria-label="Which check" />
+    </PageHead>
 
-    <StateNote v-if="error" kind="error" class="m-4 sm:mx-8" title="We couldn't load this fact sheet." :body="error" retry @retry="load" />
+    <StateNote v-if="error" kind="error" class="mb-4" title="We couldn't load this fact sheet." :body="error" retry @retry="load" />
 
     <article v-if="sheet" class="doc">
       <section v-for="(s, i) in main" :key="s.key" class="sec" :aria-labelledby="`fs-${s.key}`">
@@ -143,7 +143,7 @@ const techItems = [{ label: 'For the technical reviewer', icon: 'i-lucide-slider
           Versions and sign-offs
         </h2>
         <div class="body">
-          <UTimeline :items="versionItems" color="neutral" size="sm" class="versions" :ui="{ title: 'font-voice text-[17px] font-semibold [font-variation-settings:\'FLAR\'_100]', date: 'text-[13px] text-muted', wrapper: 'pb-5' }">
+          <UTimeline :items="versionItems" color="neutral" size="sm" class="versions" :ui="{ title: 'font-round text-[17px] font-semibold [font-variation-settings:\'FLAR\'_100]', date: 'text-[13px] text-muted', wrapper: 'pb-5' }">
             <template #description="{ item }">
               <p class="m-0 text-muted text-[13.5px]">
                 {{ item.description }}
@@ -162,7 +162,7 @@ const techItems = [{ label: 'For the technical reviewer', icon: 'i-lucide-slider
 
       <section v-if="tech" class="sec tech" aria-label="For the technical reviewer">
         <span class="no num" aria-hidden="true">{{ nVersions + 1 }}</span>
-        <UAccordion :items="techItems" :ui="{ trigger: 'py-0 text-[22px] font-voice font-semibold [font-variation-settings:\'FLAR\'_100]', item: 'border-0' }">
+        <UAccordion :items="techItems" :ui="{ trigger: 'py-0 text-[22px] font-round font-semibold [font-variation-settings:\'FLAR\'_100]', item: 'border-0' }">
           <template #tech>
             <div class="body pt-4">
               <p v-for="(b, i) in fold?.body ?? []" :key="i" class="muted">
@@ -193,46 +193,45 @@ const techItems = [{ label: 'For the technical reviewer', icon: 'i-lucide-slider
     </article>
 
     <div v-else-if="!error" class="doc" aria-busy="true" aria-label="Loading the fact sheet">
-      <div v-for="n in 4" :key="n" class="sec">
-        <USkeleton class="h-7 w-7" /><USkeleton class="h-7 w-48" /><USkeleton class="h-24 w-full" />
-      </div>
+      <USkeleton v-for="n in 4" :key="n" class="h-40 w-full rounded-[28px]" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.doc { display: grid; }
+.doc { display: grid; gap: 14px; }
 .sec {
-  display: grid; gap: 8px 24px; padding: 22px 32px; border-bottom: 1px solid var(--cv-rule);
-  grid-template-columns: 44px minmax(180px, 280px) minmax(0, 1fr); align-items: start;
+  display: grid; gap: 10px 24px; padding: 22px 24px; border-radius: 28px; background: var(--cv-surface); box-shadow: var(--cv-shadow-soft);
+  grid-template-columns: 48px minmax(180px, 280px) minmax(0, 1fr); align-items: start;
 }
-.no { font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 24px; font-weight: 720; line-height: 1.1; color: var(--cv-orchid-ink); }
-.sec h2 { font-size: 21px; font-weight: 700; line-height: 1.2; }
-.body { min-width: 0; display: grid; gap: 10px; max-width: 980px; }
-.body p, .body li { font-size: 15.5px; line-height: 1.55; margin: 0; }
+.no { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-round); font-size: 20px; font-weight: 900; background: var(--cv-jade-wash); color: var(--cv-jade-ink); }
+.sec h2 { font-size: 23px; font-weight: 900; line-height: 1.15; padding-top: 6px; }
+.body { min-width: 0; display: grid; gap: 10px; max-width: 980px; padding-top: 6px; }
+.body p, .body li { font-size: 15.5px; line-height: 1.6; margin: 0; }
 .body ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
-.tech { grid-template-columns: 44px minmax(0, 1fr); }
+.body li::marker { color: var(--cv-jade); }
+.tech { grid-template-columns: 48px minmax(0, 1fr); }
 .tech .body { max-width: none; }
 .muted, .body p.muted { color: var(--cv-muted); font-size: 14px; }
-.body h3 { font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; font-weight: 700; color: var(--cv-muted); margin: 10px 0 0; letter-spacing: 0; }
-.tbl { border-top: 1px solid var(--cv-rule); }
+.body h3 { font-family: var(--font-sans); font-size: 13px; font-weight: 500; color: var(--cv-muted); margin: 10px 0 0; letter-spacing: 0; }
 .note { display: flex; gap: 6px; align-items: flex-start; font-size: 13px !important; color: var(--cv-muted); }
 .so { list-style: none; margin: 6px 0 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
-.calib { display: flex; gap: 6px; align-items: flex-end; height: 100px; max-width: 640px; border-bottom: 1px solid var(--cv-rule); }
-.cb { flex: 1; display: flex; gap: 2px; align-items: flex-end; height: 100%; }
-.cb i { display: inline-block; width: 50%; border-radius: 3px 3px 0 0; }
+.calib { display: flex; gap: 6px; align-items: flex-end; height: 100px; max-width: 640px; border-bottom: 2px solid var(--cv-rule); }
+.cb { flex: 1; display: flex; gap: 3px; align-items: flex-end; height: 100%; }
+.cb i { display: inline-block; width: 50%; border-radius: 999px 999px 3px 3px; }
 .p { background: var(--cv-faint); }
-.o { background: var(--cv-orchid); }
+.o { background: var(--cv-jade); }
 .legend { display: flex; gap: 14px; }
 .legend span { display: inline-flex; gap: 6px; align-items: center; }
-.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 @media (max-width: 1100px) {
-  .sec { grid-template-columns: 36px minmax(0, 1fr); }
+  .sec { grid-template-columns: 48px minmax(0, 1fr); }
   .sec > .body { grid-column: 2; }
 }
 @media (max-width: 720px) {
-  .sec { padding: 18px 16px; grid-template-columns: 28px minmax(0, 1fr); gap: 8px 12px; }
-  .no { font-size: 20px; }
-  .tbl { overflow-x: auto; }
+  .sec { padding: 16px; grid-template-columns: 36px minmax(0, 1fr); gap: 8px 12px; border-radius: 24px; }
+  .sec > .body { grid-column: 1 / -1; }
+  .no { width: 34px; height: 34px; font-size: 16px; }
+  .sec h2 { font-size: 20px; padding-top: 3px; }
 }
 </style>

@@ -48,16 +48,16 @@ const open = computed({ get: () => !!shown.value, set: (v: boolean) => { if (!v)
 </template>
 
 <style scoped>
-.ph-wrap { border: 1px solid var(--cv-rule); border-radius: 6px; padding: 10px 12px 12px; background: var(--cv-surface); margin-top: 8px; }
-.k { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--cv-muted); }
+.ph-wrap { padding: 4px 0 0; margin-top: 4px; }
+.k { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--cv-muted); }
 .photos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
-.ph { aspect-ratio: 4 / 3; border-radius: 6px; position: relative; overflow: hidden; border: 0; padding: 0; background: var(--cv-sunk-2); display: block; cursor: zoom-in; }
+.ph { aspect-ratio: 4 / 3; border-radius: 18px; position: relative; overflow: hidden; border: 0; padding: 0; background: var(--cv-sunk-2); display: block; cursor: zoom-in; }
 .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.ph span { position: absolute; left: 8px; bottom: 6px; right: 8px; color: #fff; font-size: 11.5px; font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); text-align: left; }
-.ph.waiting { background: transparent; border: 1.5px dashed var(--cv-faint); display: grid; place-items: center; color: var(--cv-muted); cursor: default; }
+.ph span { position: absolute; left: 8px; bottom: 6px; right: 8px; color: #fff; font-size: 11.5px; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); text-align: left; }
+.ph.waiting { background: transparent; border: 2px dashed var(--cv-rule); display: grid; place-items: center; color: var(--cv-muted); cursor: default; }
 .wait { grid-column: span 3; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px; }
-.wait p { margin: 0; font-size: 13.5px; color: var(--cv-muted); font-weight: 600; }
-.big { width: 100%; border-radius: 6px; display: block; }
+.wait p { margin: 0; font-size: 13.5px; color: var(--cv-muted); font-weight: 500; }
+.big { width: 100%; border-radius: 22px; display: block; }
 @media (max-width: 1100px) { .photos { grid-template-columns: repeat(3, minmax(0, 1fr)); } .wait { grid-column: 1 / -1; } }
 @media print { .wait :deep(button) { display: none; } }
 </style>

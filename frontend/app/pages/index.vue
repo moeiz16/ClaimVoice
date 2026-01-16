@@ -1,13 +1,11 @@
 <script setup lang="ts">
-// The landing page is a call you can hear, and the tape is the hero. Before play, ClaimVoice's own first line is
-// written above the line and the caller's teaser below it, with the whole call drawn as the horizon between them.
-// Pressing play writes the words being said on the tape (Larkspur above, the caller below) and fills the claim file
-// beneath it: values fly from the words into their boxes, the card number is hushed, and the route unfurls at the
-// end. Then the demo line, what each person gets, the safeguards and the compliance line. Nothing auto-plays.
+// The landing page (DESIGN.md §6): an incoming claim call you answer. The headline, then the call as a phone shows
+// it beside the conversation: pressing Answer plays the call, its bubbles inflating as each line is said, and the
+// claim filling as pebbles underneath (the card number hushed, the route turning in at the end). Then the demo line,
+// what each person gets, the safeguards and the compliance line. Nothing auto-plays.
 // Query flags for review: ?t=<s>|end, ?play, ?read (and ?still, ?theme, applied app-wide).
-import { builtInCall, horizonBars, noticeItems, parseLandingCall, slipAt, type LandingCall } from '~/utils/landingCall'
-import { STEPS } from '~/utils/notice'
-import { fmtClock, fmtDurationWords } from '~/utils/format'
+import { builtInCall, noticeItems, parseLandingCall, slipAt, type LandingCall } from '~/utils/landingCall'
+import { fmtDurationWords } from '~/utils/format'
 import { stripCardToken, turnAt } from '~/utils/transcript'
 
 definePageMeta({ layout: 'public' })
@@ -18,126 +16,84 @@ const route = useRoute()
 
 const COPY = {
   en: {
-    nav: ['Ring the demo line', 'What your team gets', 'Safeguards'],
+    nav: ['Hear a call', 'What your team gets', 'Safeguards'],
     navLabel: 'Sections',
-    signin: 'Supervisors, sign in',
-    eyebrow: 'A claim call to Larkspur Mutual, Calgary · Thursday 8 January, 2:14 a.m., during a Chinook windstorm',
-    sample: 'Sample call, shortened · voices are synthetic',
-    tape: 'The sample call',
-    h1a: 'Tell me what happened.',
-    h1b: 'I\'ll take it from there.',
-    teaserWho: 'Dana, policyholder',
-    teaser: '“The wind just smashed our skylight.”',
-    lede: 'ClaimVoice answers your claims line at any hour, in English or French. It takes the first report, asks the right follow-up questions, and hands your team a claim file where every detail links back to the words it came from.',
-    names: { cv: 'ClaimVoice', caller: 'Dana, policyholder' },
-    removed: 'removed',
-    horizon: { play: 'Play the call', pause: 'Pause the call', playLabel: 'Play the call', playSub: '', paused: 'Recording paused · card number', wave: 'Recording of the call. Click to move through it. Moments:', moments: 'Moments in the call', jump: 'jump here' },
-    slip: { label: 'Claim file', empty: 'Fills in here as each detail is heard.', fromPolicy: 'from the policy' },
-    notice: {
-      pending: 'Not heard yet',
-      heardAt: 'Heard at',
-      steps: [...STEPS] as string[],
-      boxes: {
-        consent: 'Recording consent', policy: 'Policy and policyholder', where: 'Insured address', hurt: 'Anyone hurt',
-        skylight: 'Damage', debris: 'Cause', when: 'When it happened', photos: 'Photos', card: 'Deductible payment',
-        readback: 'Read back to the caller', claimno: 'Claim number',
-      } as Record<string, string>,
-      other: 'Also heard',
-      states: { done: 'Complete', current: 'Filling in', waiting: 'Not reached yet', open: 'Still open' },
-      stepOf: 'Step {n} of 7',
-      allDone: 'Every step of the call is done',
-      whereTitle: 'Where it goes',
-      whereLabel: 'Route, with three reasons',
-      wherePending: 'Decided when the call ends',
+    signin: 'Sign in',
+    eyebrow: 'For claims teams at insurers and agencies · English and French · every hour of the day',
+    h1: 'The claims line that always picks up.',
+    lede: 'ClaimVoice answers your claims line at any hour, in English or French. It takes the first report kindly, asks the right follow-up questions, and hands your team a claim file where every answer links back to the words it came from.',
+    stage: {
+      incoming: 'Incoming claim call', when: 'Thursday 8 January, 2:14 a.m.', who: 'Dana Whitcombe', about: 'Policyholder · Calgary, in a Chinook windstorm',
+      answer: 'Answer', pause: 'Pause', resume: 'Resume', again: 'Hear it again', read: 'Read instead', captions: 'Captions',
+      onCall: 'On the call', paused: 'Paused', ended: 'Call ended · claim filed', cv: 'ClaimVoice', caller: 'Dana',
+      filed: 'Filed while Dana talks', filedEmpty: 'Each answer lands here as it is heard, with the moment it was said.',
+      fromPolicy: 'from the policy', notTaken: 'Card number not taken', removed: 'removed', where: 'Where it goes:',
+      sample: 'Sample call, shortened. The voices are synthetic.', readLabel: 'The whole call, as text',
     },
-    readBack: 'Read back, the caller agreed',
-    captions: 'Captions', read: 'Read instead',
-    legendCv: 'ClaimVoice, above the line', legendCaller: 'Caller, below',
-    ringSmall: ['Or talk to it yourself.', 'Works in this browser, no app.'],
-    ringH: 'Ring the demo line',
+    readBack: 'Read back, and Dana agreed',
+    ringH: 'Call the demo line yourself.',
     ringP: 'Pretend something has just happened to your car or your home. ClaimVoice will take the claim, live, in this browser.',
     ringTry: 'Try: “Someone backed into my car in the Chinook Centre parking lot.”',
-    ringBtns: ['Ring the demo line', 'Type instead', 'Appeler en français'],
+    ringBtns: ['Call the demo line', 'Type instead', 'Appeler en français'],
     ringNote: 'Uses your microphone in this browser only. Nothing you say is kept after you close the page.',
-    saidH: 'What the caller hears, and what your team gets.',
+    saidH: 'What your team gets, by role.',
     rows: [
-      { role: 'Policyholder', line: '“Is everyone safe right now? Then let\'s get your claim started. It takes about four minutes.”', caller: false, gets: 'They get', pills: ['A claim number before hanging up', 'A photo link by text', 'A time someone will call'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
-      { role: 'Intake team', line: '“The wind tore the cover off my gas meter and I can smell gas.”', caller: true, gets: 'You get', pills: ['The caller told to leave and call 911', 'A summary, so nobody asks twice'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Urgent safety, waiting for a person' } },
-      { role: 'Adjuster', line: '“Here\'s what I have. Is that right?”', caller: false, gets: 'You get', pills: ['Every detail linked to the words it came from', 'The recording, by speaker'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'A route, with reasons in plain words' } },
+      { role: 'Policyholder', ask: 'What does the caller get?', line: '“Is everyone safe right now? Then let\'s get your claim started. It takes about four minutes.”', caller: false, pills: ['A claim number before hanging up', 'A photo link by text', 'A time someone will call'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
+      { role: 'Intake team', ask: 'What does the intake team get?', line: '“The wind tore the cover off my gas meter and I can smell gas.”', caller: true, pills: ['The caller told to leave and call 911', 'A summary, so nobody asks twice'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Urgent safety, waiting for a person' } },
+      { role: 'Adjuster', ask: 'What does the adjuster get?', line: '“Here\'s what I have. Is that right?”', caller: false, pills: ['Every answer linked to the words it came from', 'The recording, by speaker'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'A route, with reasons in plain words' } },
     ],
-    guardsLabel: 'Safeguards',
+    guardsH: 'Three promises, kept on every call.',
     guards: [
       { icon: 'i-lucide-shield-check', h: 'Recording consent comes first', p: 'Every call opens by asking. Where both people must agree to be recorded, nothing is kept until the caller says yes.', demo: '“This call is recorded so we get your claim right. Is that okay?”', hush: false, caller: false },
       { icon: 'i-lucide-credit-card', h: 'Card numbers are never taken', p: 'If a caller starts reading a card number, ClaimVoice stops them, and that moment is cut from the recording and the transcript.', demo: '“It\'s four-five', hush: true, caller: true },
       { icon: 'i-lucide-user-round', h: 'A person can take over any call', p: 'Callers can ask for a person at any time. Supervisors can listen, pass ClaimVoice a note, or take the call. Nothing is ever denied automatically.', demo: '“Of course. I\'m bringing in Renée now.”', hush: false, caller: false },
     ],
+    removed: 'removed',
     comply: 'Designed to support the NAIC model bulletin on insurers\' use of AI, state call-recording consent rules, PCI DSS, GLBA, PIPEDA and Québec\'s Law 25. In English and French.',
     foot: 'Built for claims teams at regional insurers and agencies.',
-    footLinks: ['Supervisors, sign in', 'Français', 'Privacy'],
-    readLabel: 'The whole call, as text',
+    footLinks: ['Sign in', 'Français', 'Privacy'],
   },
   fr: {
-    nav: ['Appeler la ligne de démo', 'Ce que votre équipe reçoit', 'Garanties'],
+    nav: ['Écouter un appel', 'Ce que votre équipe reçoit', 'Garanties'],
     navLabel: 'Sections',
-    signin: 'Superviseurs, connexion',
-    eyebrow: 'Un appel de réclamation à Larkspur Mutual, Calgary · jeudi 8 janvier, 2 h 14, pendant une tempête de vent chinook',
-    sample: 'Appel d\'exemple, abrégé · voix synthétiques',
-    tape: 'L\'appel d\'exemple',
-    h1a: 'Dites-moi ce qui s\'est passé.',
-    h1b: 'Je m\'occupe du reste.',
-    teaserWho: 'Dana, assurée',
-    teaser: '« Le vent vient de briser notre puits de lumière. »',
-    lede: 'ClaimVoice répond à votre ligne de réclamations à toute heure, en français ou en anglais. Il prend la première déclaration, pose les bonnes questions et remet à votre équipe un dossier où chaque détail renvoie aux mots d\'où il vient.',
-    names: { cv: 'ClaimVoice', caller: 'Dana, assurée' },
-    removed: 'retiré',
-    horizon: { play: 'Écouter l\'appel', pause: 'Mettre en pause', playLabel: 'Écouter l\'appel', playSub: '', paused: 'Enregistrement en pause · numéro de carte', wave: 'Enregistrement de l\'appel. Cliquez pour vous déplacer. Moments :', moments: 'Moments de l\'appel', jump: 'aller ici' },
-    slip: { label: 'Dossier', empty: 'Se remplit ici à mesure que chaque détail est entendu.', fromPolicy: 'selon la police' },
-    notice: {
-      pending: 'Pas encore entendu',
-      heardAt: 'Entendu à',
-      steps: ['Consentement', 'Police', 'Sécurité', 'Ce qui s\'est passé', 'Photos', 'Couverture', 'Relecture'],
-      boxes: {
-        consent: 'Consentement à l\'enregistrement', policy: 'Police et titulaire', where: 'Adresse assurée', hurt: 'Personnes blessées',
-        skylight: 'Dommages', debris: 'Cause', when: 'Quand c\'est arrivé', photos: 'Photos', card: 'Paiement de la franchise',
-        readback: 'Relu à l\'appelante', claimno: 'Numéro de réclamation',
-      } as Record<string, string>,
-      other: 'Aussi entendu',
-      states: { done: 'Complète', current: 'En cours', waiting: 'Pas encore', open: 'Encore ouverte' },
-      stepOf: 'Étape {n} sur 7',
-      allDone: 'Toutes les étapes de l\'appel sont faites',
-      whereTitle: 'Où va la réclamation',
-      whereLabel: 'Acheminement, avec trois raisons',
-      wherePending: 'Décidé à la fin de l\'appel',
+    signin: 'Connexion',
+    eyebrow: 'Pour les équipes de réclamations des assureurs et cabinets · en français et en anglais · à toute heure',
+    h1: 'La ligne de réclamations qui répond toujours.',
+    lede: 'ClaimVoice répond à votre ligne de réclamations à toute heure, en français ou en anglais. Il prend la première déclaration avec douceur, pose les bonnes questions et remet à votre équipe un dossier où chaque réponse renvoie aux mots d\'où elle vient.',
+    stage: {
+      incoming: 'Appel de réclamation entrant', when: 'Jeudi 8 janvier, 2 h 14', who: 'Dana Whitcombe', about: 'Assurée · Calgary, pendant une tempête chinook',
+      answer: 'Répondre', pause: 'Pause', resume: 'Reprendre', again: 'Réécouter', read: 'Lire plutôt', captions: 'Sous-titres',
+      onCall: 'En ligne', paused: 'En pause', ended: 'Appel terminé · dossier ouvert', cv: 'ClaimVoice', caller: 'Dana',
+      filed: 'Noté pendant que Dana parle', filedEmpty: 'Chaque réponse arrive ici quand elle est entendue, avec le moment où elle a été dite.',
+      fromPolicy: 'selon la police', notTaken: 'Numéro de carte non pris', removed: 'retiré', where: 'Acheminement :',
+      sample: 'Appel d\'exemple, abrégé. Les voix sont synthétiques.', readLabel: 'Tout l\'appel, en texte',
     },
-    readBack: 'Relu, l\'appelante est d\'accord',
-    captions: 'Sous-titres', read: 'Lire plutôt',
-    legendCv: 'ClaimVoice, au-dessus de la ligne', legendCaller: 'Appelant, en dessous',
-    ringSmall: ['Ou parlez-lui vous-même.', 'Dans ce navigateur, sans appli.'],
-    ringH: 'Appeler la ligne de démo',
+    readBack: 'Relu, et Dana est d\'accord',
+    ringH: 'Appelez la ligne de démo vous-même.',
     ringP: 'Imaginez qu\'il vient d\'arriver quelque chose à votre auto ou à votre maison. ClaimVoice prendra la réclamation, en direct, dans ce navigateur.',
     ringTry: 'Essayez : « Quelqu\'un a reculé dans mon auto au stationnement du Carrefour Laval. »',
     ringBtns: ['Appeler la ligne de démo', 'Écrire plutôt', 'Call in English'],
     ringNote: 'Utilise votre micro dans ce navigateur seulement. Rien de ce que vous dites n\'est gardé après la fermeture de la page.',
-    saidH: 'Ce que l\'appelant entend, et ce que votre équipe reçoit.',
+    saidH: 'Ce que votre équipe reçoit, selon le rôle.',
     rows: [
-      { role: 'Assuré', line: '« Est-ce que tout le monde est en sécurité? Alors, commençons votre réclamation. Ça prend environ quatre minutes. »', caller: false, gets: 'Ils reçoivent', pills: ['Un numéro de réclamation avant de raccrocher', 'Un lien pour photos par texto', 'L\'heure où on les rappellera'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
-      { role: 'Équipe d\'accueil', line: '« Le vent a arraché le couvercle de mon compteur de gaz et ça sent le gaz. »', caller: true, gets: 'Vous recevez', pills: ['L\'appelant invité à sortir et à faire le 911', 'Un résumé, pour ne rien redemander'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Sécurité urgente, attend une personne' } },
-      { role: 'Expert en sinistres', line: '« Voici ce que j\'ai. C\'est bien ça? »', caller: false, gets: 'Vous recevez', pills: ['Chaque détail relié aux mots d\'où il vient', 'L\'enregistrement, par voix'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'Un acheminement, avec des raisons claires' } },
+      { role: 'Assuré', ask: 'Que reçoit l\'appelant ?', line: '« Est-ce que tout le monde est en sécurité? Alors, commençons votre réclamation. Ça prend environ quatre minutes. »', caller: false, pills: ['Un numéro de réclamation avant de raccrocher', 'Un lien pour photos par texto', 'L\'heure où on les rappellera'], tag: null as null | { kind: 'urgent' | 'fast', icon: string, text: string } },
+      { role: 'Équipe d\'accueil', ask: 'Que reçoit l\'équipe d\'accueil ?', line: '« Le vent a arraché le couvercle de mon compteur de gaz et ça sent le gaz. »', caller: true, pills: ['L\'appelant invité à sortir et à faire le 911', 'Un résumé, pour ne rien redemander'], tag: { kind: 'urgent' as const, icon: 'i-lucide-triangle-alert', text: 'Sécurité urgente, attend une personne' } },
+      { role: 'Expert en sinistres', ask: 'Que reçoit l\'expert ?', line: '« Voici ce que j\'ai. C\'est bien ça? »', caller: false, pills: ['Chaque réponse reliée aux mots d\'où elle vient', 'L\'enregistrement, par voix'], tag: { kind: 'fast' as const, icon: 'i-lucide-check', text: 'Un acheminement, avec des raisons claires' } },
     ],
-    guardsLabel: 'Garanties',
+    guardsH: 'Trois promesses, tenues à chaque appel.',
     guards: [
       { icon: 'i-lucide-shield-check', h: 'Le consentement d\'abord', p: 'Chaque appel commence par la question. Là où les deux personnes doivent accepter, rien n\'est gardé avant le oui de l\'appelant.', demo: '« L\'appel est enregistré pour bien traiter votre réclamation. Ça vous convient? »', hush: false, caller: false },
       { icon: 'i-lucide-credit-card', h: 'Jamais de numéro de carte', p: 'Si un appelant commence à lire un numéro de carte, ClaimVoice l\'arrête, et ce moment est retiré de l\'enregistrement et de la transcription.', demo: '« C\'est quatre-cinq', hush: true, caller: true },
       { icon: 'i-lucide-user-round', h: 'Une personne peut prendre l\'appel', p: 'L\'appelant peut demander une personne en tout temps. Les superviseurs peuvent écouter, glisser une note à ClaimVoice ou prendre l\'appel. Rien n\'est jamais refusé automatiquement.', demo: '« Bien sûr. Je fais venir Renée. »', hush: false, caller: false },
     ],
+    removed: 'retiré',
     comply: 'Conçu pour soutenir le bulletin type de la NAIC sur l\'usage de l\'IA par les assureurs, les règles de consentement à l\'enregistrement, PCI DSS, GLBA, la LPRPDE et la Loi 25 du Québec. En français et en anglais.',
     foot: 'Conçu pour les équipes de réclamations des assureurs et cabinets régionaux.',
-    footLinks: ['Superviseurs, connexion', 'English', 'Confidentialité'],
-    readLabel: 'Tout l\'appel, en texte',
+    footLinks: ['Connexion', 'English', 'Confidentialité'],
   },
 }
 const c = computed(() => COPY[lang.value])
-useHead(() => ({ title: lang.value === 'fr' ? 'ClaimVoice · la ligne de réclamations qui écoute d\'abord' : 'ClaimVoice · the claims line that listens first', htmlAttrs: { lang: lang.value } }))
+useHead(() => ({ title: lang.value === 'fr' ? 'ClaimVoice · la ligne de réclamations qui répond toujours' : 'ClaimVoice · the claims line that always picks up', htmlAttrs: { lang: lang.value } }))
 
 // ------------------------------------------------------------- language and view switches (Nuxt UI tabs)
 const langItems = [{ label: 'English', short: 'EN', value: 'en' }, { label: 'Français', short: 'FR', value: 'fr' }]
@@ -146,14 +102,6 @@ const langModel = computed<string>({
   set: (v) => { prefs.lang.value = v === 'fr' ? 'fr' : 'en' },
 })
 const reading = ref(false)
-const viewItems = computed(() => [
-  { label: c.value.captions, value: 'captions', icon: 'i-lucide-captions' },
-  { label: c.value.read, value: 'read', icon: 'i-lucide-scroll-text' },
-])
-const viewModel = computed<string>({
-  get: () => (reading.value ? 'read' : 'captions'),
-  set: (v) => { reading.value = v === 'read' },
-})
 
 // ------------------------------------------------------------- the call
 const call = ref<LandingCall>(builtInCall(lang.value))
@@ -179,22 +127,17 @@ const player = useCallPlayer(duration, sources)
 const { t, playing } = player
 watch(lang, () => { player.pause(); player.seek(0); void loadCall() })
 
-const bars = computed(() => horizonBars(call.value))
 const idx = computed(() => turnAt(call.value.turns, t.value))
-const started = computed(() => t.value > 0.05 || playing.value)
-const hushing = computed(() => call.value.turns.some(x => x.hush != null && t.value >= x.hush && t.value < x.to + 1.9))
 const allItems = computed(() => noticeItems(call.value, c.value.readBack))
 const filled = computed(() => slipAt(allItems.value, t.value))
 const showRoute = computed(() => t.value >= duration.value - 0.05)
 const durationWords = computed(() => fmtDurationWords(duration.value, lang.value))
-const horizonCopy = computed(() => ({ ...c.value.horizon, playSub: `${durationWords.value} · ${lang.value === 'fr' ? 'sous-titres activés' : 'captions on'}` }))
-const noticeCopy = computed(() => ({ ...c.value.notice, title: c.value.slip.label, empty: c.value.slip.empty, fromPolicy: c.value.slip.fromPolicy }))
+const stageCopy = computed(() => ({ ...c.value.stage, sample: `${c.value.stage.sample} ${durationWords.value}.` }))
 const finished = computed(() => call.value.turns.filter(x => x.to <= t.value))
 const lastFinal = computed(() => {
   const f = finished.value[finished.value.length - 1]
   return f ? { ...f, text: stripCardToken(f.text) } : null
 })
-const callerShort = computed(() => c.value.names.caller.split(',')[0] ?? c.value.names.caller)
 
 function seekTurn(dir: 1 | -1) {
   const i = idx.value + dir
@@ -234,7 +177,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 // ------------------------------------------------------------- the demo line
 const otherLang = computed(() => (lang.value === 'fr' ? 'en' : 'fr'))
-const phone = useMediaQuery('(max-width: 720px)')
 </script>
 
 <template>
@@ -242,93 +184,48 @@ const phone = useMediaQuery('(max-width: 720px)')
     <header class="lp-top">
       <CvLogo />
       <nav :aria-label="c.navLabel" class="lp-nav">
-        <a href="#ring">{{ c.nav[0] }}</a><a href="#said">{{ c.nav[1] }}</a><a href="#guards">{{ c.nav[2] }}</a>
+        <a href="#hear">{{ c.nav[0] }}</a><a href="#said">{{ c.nav[1] }}</a><a href="#guards">{{ c.nav[2] }}</a>
       </nav>
       <div class="right">
-        <UTabs v-model="langModel" :items="langItems" :content="false" variant="pill" size="xs" color="neutral" aria-label="Language / Langue" class="langtabs">
+        <UTabs v-model="langModel" :items="langItems" :content="false" size="xs" color="neutral" aria-label="Language / Langue" class="langtabs">
           <template #default="{ item }">
             <span :lang="item.value"><span class="long">{{ item.label }}</span><span class="short" aria-hidden="true">{{ item.short }}</span></span>
           </template>
         </UTabs>
-        <UButton to="/sign-in" color="neutral" variant="link" size="md" icon="i-lucide-log-in" :aria-label="c.signin" class="signin">
+        <UButton to="/sign-in" color="neutral" size="md" icon="i-lucide-log-in" :aria-label="c.signin" class="signin">
           <span class="signin-word">{{ c.signin }}</span>
         </UButton>
       </div>
     </header>
 
-    <div class="eyebrow">
-      <span class="dot" aria-hidden="true" /><span>{{ c.eyebrow }}</span>
-      <UBadge color="neutral" variant="soft" size="md" class="sample">
-        {{ c.sample }}
-      </UBadge>
+    <section class="hero" aria-labelledby="h1">
+      <p class="eyebrow">
+        <CvMark :size="22" />{{ c.eyebrow }}
+      </p>
+      <h1 id="h1">
+        {{ c.h1 }}
+      </h1>
+      <p class="lede">
+        {{ c.lede }}
+      </p>
+    </section>
+
+    <div id="hear" class="stagewrap">
+      <CallStage
+        :turns="call.turns" :t="t" :duration="duration" :playing="playing" :items="filled" :route="call.route" :show-route="showRoute"
+        :reading="reading" :copy="stageCopy" :lang="lang" @toggle="player.toggle()" @seek="player.seek($event)" @read="v => reading = v"
+      />
+      <p class="sr-only-cv" aria-live="polite">
+        <template v-if="lastFinal && playing">
+          {{ lastFinal.who === 'cv' ? c.stage.cv : c.stage.caller }}: {{ lastFinal.text }}
+        </template>
+      </p>
     </div>
 
-    <Tape class="hero" :label="c.tape">
-      <template #above>
-        <div class="words up" :class="{ reading }">
-          <div class="headline" :class="{ gone: started || reading }">
-            <h1>{{ c.h1a }} <em>{{ c.h1b }}</em></h1>
-          </div>
-          <LyricSheet v-if="started && !reading" :turns="call.turns" :t="t" side="cv" :name="c.names.cv" :removed="c.removed" :lang="lang" />
-        </div>
-      </template>
-
-      <HorizonWave
-        :bars="bars" :duration="duration" :t="t" :playing="playing" :turn-index="idx" :moments="call.moments"
-        :hushing="hushing" :copy="horizonCopy" @toggle="player.toggle()" @seek="player.seek($event)"
-      />
-
-      <template #below>
-        <div v-if="!reading" class="words down">
-          <p class="teaser" :class="{ gone: started }">
-            <small>{{ c.teaserWho }}</small>{{ c.teaser }}
-          </p>
-          <LyricSheet v-if="started" :turns="call.turns" :t="t" side="caller" :name="c.names.caller" :removed="c.removed" :lang="lang" />
-        </div>
-        <ol v-else class="readlist" :aria-label="c.readLabel">
-          <li v-for="(x, i) in call.turns" :key="i" :class="[x.who, { cur: i === idx && started }]">
-            <button type="button" class="tm num" :aria-label="`${fmtClock(x.from)}, ${x.who === 'cv' ? c.names.cv : callerShort}`" @click="player.seek(x.from)">
-              {{ fmtClock(x.from) }}
-            </button>
-            <b>{{ x.who === 'cv' ? c.names.cv : callerShort }}</b>
-            <span class="said">{{ stripCardToken(x.text) }}<template v-if="x.hush != null"> <span class="hush">■■■■ {{ c.removed }}</span></template></span>
-          </li>
-        </ol>
-        <p class="sr-only-cv" aria-live="polite">
-          <template v-if="lastFinal && playing">
-            {{ lastFinal.who === 'cv' ? c.names.cv : c.names.caller }}: {{ lastFinal.text }}
-          </template>
-        </p>
-      </template>
-
-      <template #foot>
-        <div class="controls">
-          <time class="num clock">{{ fmtClock(t) }} / {{ fmtClock(duration) }}</time>
-          <UTabs v-model="viewModel" :items="viewItems" :content="false" variant="pill" size="sm" color="neutral" :aria-label="c.captions" />
-          <div class="legend" aria-hidden="true">
-            <span><i />{{ c.legendCv }}</span><span class="cl"><i />{{ c.legendCaller }}</span>
-          </div>
-          <div class="ring-cta">
-            <small>{{ c.ringSmall[0] }}<br>{{ c.ringSmall[1] }}</small>
-            <UButton to="#ring" color="neutral" variant="soft" icon="i-lucide-phone" :label="c.ringH" />
-          </div>
-        </div>
-      </template>
-    </Tape>
-
-    <p class="lede">
-      {{ c.lede }}
-    </p>
-
-    <LandingNotice
-      :items="filled" :turns="call.turns" :route="call.route" :show-route="showRoute" :started="started" :animate="playing"
-      :copy="noticeCopy" :lang="lang" @seek="player.seek($event)"
-    />
-
     <section id="ring" class="ringband" aria-labelledby="ring-h">
-      <div class="orbwrap">
-        <DemoOrb state="idle" :size="phone ? 128 : 176" />
-      </div>
+      <NuxtLink :to="{ path: '/call', query: { lang } }" class="bigcall" :aria-label="c.ringBtns[0]">
+        <span class="halo" aria-hidden="true" /><UIcon name="i-lucide-phone" />
+      </NuxtLink>
       <div class="ringtext">
         <h2 id="ring-h">
           {{ c.ringH }}
@@ -343,9 +240,9 @@ const phone = useMediaQuery('(max-width: 720px)')
           <UIcon name="i-lucide-mic" class="size-4 shrink-0" />{{ c.ringNote }}
         </p>
         <div class="ringactions">
-          <UButton :to="{ path: '/call', query: { lang } }" color="primary" icon="i-lucide-mic" :label="c.ringBtns[0]" />
-          <UButton :to="{ path: '/call', query: { type: '1', lang } }" color="neutral" variant="soft" icon="i-lucide-keyboard" :label="c.ringBtns[1]" class="on-wash" />
-          <UButton :to="{ path: '/call', query: { lang: otherLang } }" color="neutral" variant="soft" icon="i-lucide-languages" :label="c.ringBtns[2]" :lang="otherLang" class="on-wash" />
+          <UButton :to="{ path: '/call', query: { lang } }" size="xl" icon="i-lucide-phone" :label="c.ringBtns[0]" />
+          <UButton :to="{ path: '/call', query: { type: '1', lang } }" size="xl" color="neutral" variant="outline" icon="i-lucide-keyboard" :label="c.ringBtns[1]" />
+          <UButton :to="{ path: '/call', query: { lang: otherLang } }" size="xl" color="neutral" variant="outline" icon="i-lucide-languages" :label="c.ringBtns[2]" :lang="otherLang" />
         </div>
       </div>
     </section>
@@ -355,37 +252,37 @@ const phone = useMediaQuery('(max-width: 720px)')
         {{ c.saidH }}
       </h2>
       <ul class="rows">
-        <li v-for="(r, i) in c.rows" :key="i" class="row fade-scroll">
-          <div class="say">
-            <span class="role">{{ r.role }}</span>
-            <p class="quote" :class="{ caller: r.caller }">
-              {{ r.line }}
-            </p>
-          </div>
-          <div class="gets">
-            <span class="label">{{ r.gets }}</span>
-            <div class="pills">
-              <CvTag v-if="r.tag && r.tag.kind === 'urgent'" kind="urgent" :icon="r.tag.icon">
-                {{ r.tag.text }}
-              </CvTag>
-              <span v-for="p in r.pills" :key="p" class="heard plain">{{ p }}</span>
-              <CvTag v-if="r.tag && r.tag.kind === 'fast'" kind="fast" :icon="r.tag.icon">
-                {{ r.tag.text }}
-              </CvTag>
-            </div>
+        <li v-for="(r, i) in c.rows" :key="i" class="row">
+          <p class="ask round">
+            <CvMark :size="28" />{{ r.ask }}
+          </p>
+          <p class="quote" :class="{ caller: r.caller }">
+            <small>{{ r.role }}</small>{{ r.line }}
+          </p>
+          <div class="pills">
+            <CvTag v-if="r.tag && r.tag.kind === 'urgent'" kind="urgent" :icon="r.tag.icon">
+              {{ r.tag.text }}
+            </CvTag>
+            <span v-for="p in r.pills" :key="p" class="heard plain"><UIcon name="i-lucide-check" class="size-3.5 text-jade-ink" />{{ p }}</span>
+            <CvTag v-if="r.tag && r.tag.kind === 'fast'" kind="fast" :icon="r.tag.icon">
+              {{ r.tag.text }}
+            </CvTag>
           </div>
         </li>
       </ul>
     </section>
 
-    <section id="guards" class="guards" :aria-label="c.guardsLabel">
+    <section id="guards" class="guards" aria-labelledby="guards-h">
+      <h2 id="guards-h">
+        {{ c.guardsH }}
+      </h2>
       <ol>
-        <li v-for="(g, i) in c.guards" :key="g.h" class="guard fade-scroll">
-          <span class="no num" aria-hidden="true">{{ i + 1 }}</span>
-          <div class="gtext">
-            <h3><UIcon :name="g.icon" class="gicon" />{{ g.h }}</h3>
-            <p>{{ g.p }}</p>
-          </div>
+        <li v-for="g in c.guards" :key="g.h" class="guard">
+          <span class="gic" aria-hidden="true"><UIcon :name="g.icon" /></span>
+          <h3>{{ g.h }}</h3>
+          <p class="gp">
+            {{ g.p }}
+          </p>
           <p class="demo" :class="{ caller: g.caller }">
             {{ g.demo }}<template v-if="g.hush">
               <span class="hush">■■■■ {{ c.removed }}</span>{{ lang === 'fr' ? ' »' : '”' }}
@@ -411,151 +308,86 @@ const phone = useMediaQuery('(max-width: 720px)')
 </template>
 
 <style scoped>
-/* ------------------------------------------------------------ top: a quiet line, then the eyebrow */
-.lp-top { display: flex; align-items: center; gap: 22px; height: 68px; padding: 0 32px; }
-.lp-nav { display: flex; gap: 24px; margin-left: 28px; }
-.lp-nav a { color: var(--cv-muted); text-decoration: none; font-weight: 600; font-size: 14.5px; }
+.landing { width: min(1280px, 100%); margin: 0 auto; padding: 0 40px; }
+.lp-top { display: flex; align-items: center; gap: 22px; height: 84px; }
+.lp-nav { display: flex; gap: 26px; margin-left: 28px; }
+.lp-nav a { color: var(--cv-muted); text-decoration: none; font-weight: 500; font-size: 15px; }
 .lp-nav a:hover { color: var(--cv-ink); }
 .right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .langtabs { width: auto; }
 .langtabs .short { display: none; }
-.signin { font-weight: 650; }
 
-.eyebrow { padding: 4px 32px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--cv-muted); font-size: 14px; font-weight: 550; }
-.eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cv-orchid); flex: none; }
-.eyebrow .sample { margin-left: 4px; }
+/* The headline, centred and cushioned. */
+.hero { display: grid; justify-items: center; text-align: center; padding: 22px 0 30px; }
+.eyebrow { margin: 0 0 22px; display: inline-flex; align-items: center; gap: 10px; padding: 7px 16px 7px 10px; border-radius: 999px; background: var(--cv-surface); color: var(--cv-muted); font-size: 14px; box-shadow: var(--cv-shadow-soft); }
+h1 { font-size: clamp(48px, 6.2vw, 88px); line-height: .96; font-weight: 900; letter-spacing: -0.035em; max-width: 15ch; }
+.lede { margin: 20px 0 0; max-width: 66ch; color: var(--cv-muted); font-size: 18px; line-height: 1.55; }
+.stagewrap { scroll-margin-top: 20px; }
 
-/* ------------------------------------------------------------ the tape, as the hero */
-.tape.hero { padding-top: 26px; padding-bottom: 14px; border-top: 1px solid var(--cv-rule); }
-.hero :deep(.line) { height: auto; }
-.words { display: grid; }
-.words > * { grid-area: 1 / 1; min-height: 0; }
-.words.up { height: 236px; }
-.words.up.reading { height: 0; overflow: hidden; }
-.words.down { height: 156px; }
-.headline { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 6px; transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice); }
-.headline h1 { font-size: clamp(44px, 6.2vw, 90px); line-height: .98; font-weight: 720; letter-spacing: -0.035em; max-width: 1040px; }
-.headline h1 em { display: block; font-style: normal; color: var(--cv-orchid); }
-.teaser {
-  margin: 0; padding-top: 6px; justify-self: end; max-width: 520px; text-align: right; color: var(--cv-caller);
-  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 30px; font-weight: 600; line-height: 1.15; letter-spacing: -0.015em;
-  transition: opacity 400ms var(--ease-voice), transform 400ms var(--ease-voice);
-}
-.teaser small { display: block; font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; font-weight: 650; color: var(--cv-muted); letter-spacing: 0; margin-bottom: 4px; }
-/* Pressing play: the headline lifts away and the teaser sinks; both stay readable to assistive technology. */
-.headline.gone { opacity: 0; transform: translateY(-24px); pointer-events: none; }
-.teaser.gone { opacity: 0; transform: translateY(16px); pointer-events: none; }
-
-.readlist { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 2px; text-align: left; max-height: 440px; overflow: auto; font-family: var(--font-sans); font-variation-settings: normal; font-weight: 400; letter-spacing: 0; color: var(--cv-ink); }
-.readlist li { display: grid; grid-template-columns: 56px 130px minmax(0, 1fr); gap: 10px; padding: 6px 8px; border-radius: 6px; font-size: calc(15.5px * var(--cv-caption-scale)); line-height: 1.55; border-bottom: 1px solid var(--cv-rule); }
-.readlist li.cur { background: var(--cv-orchid-wash); }
-.readlist li.caller b, .readlist li.caller .said { color: var(--cv-caller); }
-.readlist b { font-weight: 650; }
-.readlist .tm { border: 0; background: none; color: var(--cv-muted); text-align: left; padding: 0; font-weight: 600; font-size: 14px; }
-.readlist .tm:hover { color: var(--cv-orchid-ink); }
-
-.controls { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; border-top: 1px solid var(--cv-rule); padding-top: 12px; }
-.clock { font-weight: 650; font-size: 14px; color: var(--cv-muted); min-width: 92px; }
-.controls :deep([role="tablist"]) { width: auto; }
-.legend { display: flex; gap: 14px; font-size: 12.5px; font-weight: 650; color: var(--cv-muted); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend i { width: 4px; height: 14px; border-radius: 2px; background: var(--cv-orchid); display: inline-block; }
-.legend .cl i { background: var(--cv-caller); }
-.ring-cta { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-.ring-cta small { color: var(--cv-muted); font-size: 13px; text-align: right; line-height: 1.35; }
-
-.lede { margin: 0; padding: 20px 32px 4px; max-width: calc(640px + 64px); color: var(--cv-muted); font-size: 17px; line-height: 1.55; }
-
-/* ------------------------------------------------------------ ring the demo line */
-.ringband {
-  margin: 64px 0 0; padding: 64px 32px 72px; background: var(--cv-orchid-wash); border-block: 1px solid var(--cv-rule);
-  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px 56px; align-items: center;
-}
-.orbwrap { padding: 18px; }
+/* Call the demo line */
+.ringband { margin-top: 96px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 32px 56px; align-items: center; padding: 56px; border-radius: 44px; background: var(--cv-jade-wash); }
+.bigcall { position: relative; width: 184px; height: 184px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-jade); color: var(--cv-on-jade); font-size: 72px; box-shadow: inset 0 -8px 0 var(--cv-lip), 0 22px 44px -22px var(--cv-jade); transition: transform 200ms var(--ease-spring); }
+.bigcall:hover { transform: translateY(-3px) rotate(-6deg); }
+.bigcall:active { transform: translateY(2px); }
+.bigcall .halo { position: absolute; inset: -10px; border-radius: 50%; border: 3px solid var(--cv-jade); animation: halo 2.2s var(--ease-tide) infinite; }
 .ringtext { max-width: 760px; }
-.ringband h2 { font-size: 54px; font-weight: 740; letter-spacing: -0.035em; line-height: 1.02; }
-.ringp { color: var(--cv-muted); max-width: 580px; font-size: 17px; margin: 12px 0 0; }
-.ringcap { margin: 22px 0 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 26px; font-weight: 600; color: var(--cv-caller); line-height: 1.25; letter-spacing: -0.015em; max-width: 680px; }
-.ringnote { display: flex; align-items: flex-start; gap: 8px; margin: 22px 0 0; font-size: 14px; color: var(--cv-muted); max-width: 580px; }
+.ringband h2 { font-size: 52px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.02; }
+.ringp { color: var(--cv-ink); max-width: 580px; font-size: 17px; margin: 14px 0 0; }
+.ringcap { margin: 20px 0 0; display: inline-block; padding: 14px 20px; border-radius: 24px 24px 6px 24px; background: var(--cv-sand); font-family: var(--font-round); font-size: 22px; font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; max-width: 640px; }
+.ringnote { display: flex; align-items: flex-start; gap: 8px; margin: 20px 0 0; font-size: 14px; color: var(--cv-muted); max-width: 580px; }
 .ringnote :deep(svg), .ringnote > span:first-child { margin-top: 3px; }
-.ringactions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-.on-wash { background: var(--cv-surface); }
-.on-wash:hover { background: var(--cv-sunk); }
+.ringactions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
 
-/* ------------------------------------------------------------ said → filed: three ruled rows */
-.said { padding: 88px 32px 32px; }
-.said h2 { font-size: 44px; font-weight: 740; letter-spacing: -0.03em; max-width: 820px; line-height: 1.06; }
-.rows { list-style: none; margin: 32px 0 0; padding: 0; border-bottom: 1px solid var(--cv-rule); }
-.row { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px 48px; align-items: start; padding: 28px 0; border-top: 1px solid var(--cv-rule); }
-.role { display: block; font-weight: 650; font-size: 13.5px; color: var(--cv-muted); margin-bottom: 6px; }
-.quote { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 27px; font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; color: var(--cv-ink); }
-.quote.caller { color: var(--cv-caller); }
-.gets { padding-top: 2px; }
-.gets .label { display: block; margin-bottom: 8px; }
-.pills { display: flex; flex-wrap: wrap; gap: 8px; }
-.fade-scroll { animation: rise-in linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
-@media (prefers-reduced-motion: reduce) { .fade-scroll { animation: none; } }
-:global(:root.reduce-motion) .fade-scroll { animation: none; }
+/* What your team gets: three asked-and-answered rows. */
+.said { margin-top: 104px; }
+.said h2, .guards h2 { font-size: 52px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.02; max-width: 16ch; }
+.rows { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.row { display: grid; gap: 14px; align-content: start; padding: 24px; border-radius: 32px; background: var(--cv-surface); box-shadow: var(--cv-shadow-soft); }
+.ask { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 900; line-height: 1.15; }
+.quote { margin: 0; padding: 14px 18px; border-radius: 6px 24px 24px 24px; background: var(--cv-jade-wash); font-size: 17px; line-height: 1.45; }
+.quote.caller { border-radius: 24px 6px 24px 24px; background: var(--cv-sand); }
+.quote small { display: block; font-size: 12.5px; font-weight: 600; color: var(--cv-jade-ink); margin-bottom: 4px; }
+.quote.caller small { color: var(--cv-caller); }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pills .heard { gap: 6px; padding-left: 10px; font-size: 13.5px; }
 
-/* ------------------------------------------------------------ safeguards: a numbered list */
-.guards { padding: 56px 32px 24px; }
-.guards ol { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--cv-rule); }
-.guard { display: grid; grid-template-columns: 44px minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px 32px; align-items: start; padding: 26px 0; border-top: 1px solid var(--cv-rule); }
-.guard .no {
-  width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-ink); color: var(--cv-bg);
-  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 720; font-size: 16px;
-}
-.guard h3 { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
-.gicon { width: 22px; height: 22px; color: var(--cv-orchid-ink); flex: none; }
-.gtext p { color: var(--cv-muted); margin: 8px 0 0; max-width: 560px; }
-.demo { margin: 0; padding-top: 2px; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 20px; font-weight: 600; line-height: 1.3; color: var(--cv-ink); }
-.demo.caller { color: var(--cv-caller); }
+/* Safeguards */
+.guards { margin-top: 104px; }
+.guards ol { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.guard { display: grid; gap: 10px; align-content: start; padding: 26px 24px; border-radius: 32px; background: var(--cv-surface); box-shadow: var(--cv-shadow-soft); }
+.gic { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-jade); color: var(--cv-on-jade); font-size: 26px; box-shadow: inset 0 -4px 0 var(--cv-lip); }
+.guard h3 { font-size: 25px; font-weight: 900; line-height: 1.12; }
+.gp { margin: 0; color: var(--cv-muted); font-size: 15px; }
+.demo { margin: 6px 0 0; justify-self: start; padding: 12px 16px; border-radius: 6px 22px 22px 22px; background: var(--cv-jade-wash); font-size: 16px; line-height: 1.4; }
+.demo.caller { background: var(--cv-sand); border-radius: 22px 6px 22px 22px; }
 .demo .hush { margin-left: 6px; }
 
-/* ------------------------------------------------------------ compliance + footer */
-.comply { margin: 0; padding: 28px 32px 32px; max-width: calc(860px + 64px); color: var(--cv-muted); font-size: 14.5px; }
-.foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 22px 32px 36px; border-top: 1px solid var(--cv-rule); color: var(--cv-muted); font-size: 13.5px; }
+.comply { margin: 72px auto 0; max-width: 72ch; text-align: center; color: var(--cv-muted); font-size: 14.5px; }
+.foot { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 40px; padding: 26px 0 40px; border-top: 2px solid var(--cv-sunk); color: var(--cv-muted); font-size: 14px; }
 .foot .right { gap: 6px; }
 
 @media (max-width: 1100px) {
-  .words.up { height: 216px; }
-  .teaser { font-size: 25px; }
   .lp-nav { gap: 18px; margin-left: 12px; }
-  .ring-cta small { display: none; }
+  .rows, .guards ol { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
   .lp-nav { display: none; }
 }
 @media (max-width: 720px) {
-  .lp-top { padding: 0 16px; height: 60px; gap: 12px; }
+  .landing { padding: 0 16px; }
+  .lp-top { height: 64px; gap: 12px; }
   .langtabs .long, .signin-word { display: none; }
   .langtabs .short { display: inline; }
-  .eyebrow { padding: 2px 16px 12px; font-size: 12.5px; display: block; line-height: 1.5; }
-  .eyebrow .dot { display: inline-block; margin-right: 8px; vertical-align: 1px; }
-  .eyebrow .sample { display: table; margin: 6px 0 0; font-size: 12px; }
-  .tape.hero { padding-top: 18px; }
-  .words.up { height: 228px; }
-  .words.down { height: 132px; }
-  .teaser { font-size: 21px; max-width: 92%; }
-  .readlist li { grid-template-columns: 44px minmax(0, 1fr); gap: 2px 10px; }
-  .readlist li b, .readlist li .said { grid-column: 2; }
-  .legend { display: none; }
-  .ring-cta { margin-left: 0; }
-  .lede { padding: 16px 16px 0; font-size: 15.5px; }
-  .ringband { margin-top: 48px; padding: 48px 16px 56px; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 18px; }
-  .orbwrap { padding: 10px; }
-  .ringband h2 { font-size: 34px; }
-  .ringcap { font-size: 21px; }
-  .said { padding: 64px 16px 24px; }
-  .said h2 { font-size: 30px; }
-  .row { grid-template-columns: minmax(0, 1fr); padding: 22px 0; }
-  .quote { font-size: 22px; }
-  .guards { padding: 40px 16px 16px; }
-  .guard { grid-template-columns: 36px minmax(0, 1fr); gap: 10px 14px; }
-  .guard .demo { grid-column: 2; font-size: 18px; }
-  .guard h3 { font-size: 20px; }
-  .comply { padding: 24px 16px; }
-  .foot { padding: 20px 16px 28px; }
-  .foot .right { margin-left: 0; flex-wrap: wrap; }
+  .hero { padding: 18px 0 22px; }
+  .eyebrow { font-size: 12.5px; margin-bottom: 16px; text-align: left; border-radius: 22px; }
+  h1 { font-size: 46px; }
+  .lede { font-size: 16px; margin-top: 18px; }
+  .ringband { margin-top: 56px; padding: 28px 18px; grid-template-columns: minmax(0, 1fr); justify-items: start; gap: 18px; border-radius: 30px; }
+  .bigcall { width: 112px; height: 112px; font-size: 44px; }
+  .ringband h2, .said h2, .guards h2 { font-size: 34px; }
+  .ringcap { font-size: 18px; }
+  .said, .guards { margin-top: 64px; }
+  .row, .guard { padding: 18px; border-radius: 26px; }
+  .comply { margin-top: 48px; text-align: left; }
 }
 </style>

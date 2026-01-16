@@ -64,7 +64,7 @@ async function save() {
           <p class="basis">
             {{ row.original.basis }}
           </p>
-          <CvTag v-if="!row.original.isDefault" kind="orchid" icon="i-lucide-pencil" class="mt-1.5">
+          <CvTag v-if="!row.original.isDefault" kind="jade" icon="i-lucide-pencil" class="mt-1.5">
             Changed by Larkspur
           </CvTag>
         </template>
@@ -126,16 +126,15 @@ async function save() {
 </template>
 
 <style scoped>
-.msg { padding: 12px 32px; border-bottom: 1px solid var(--cv-rule); }
-.doc { padding: 0 32px 24px; }
-.place { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 18px; font-weight: 680; }
+.msg { padding: 0 0 12px; }
+.doc { padding: 0; }
+.place { margin: 0; font-family: var(--font-round); font-size: 18px; font-weight: 850; }
 .basis { margin: 2px 0 0; color: var(--cv-muted); font-size: 13px; max-width: 280px; }
-.strong { margin: 6px 0 0; font-weight: 650; font-size: 13.5px; }
-.line { margin: 0 0 4px; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 16px; font-weight: 560; line-height: 1.35; max-width: 460px; }
+.strong { margin: 6px 0 0; font-weight: 500; font-size: 13.5px; }
+.line { margin: 0 0 4px; font-family: var(--font-round); font-size: 16px; font-weight: 560; line-height: 1.35; max-width: 460px; }
 .refuse { display: inline-flex; gap: 6px; align-items: flex-start; font-size: 13.5px; }
 .refuse :deep(svg), .refuse > span:first-child { margin-top: 2px; }
 @media (max-width: 720px) {
-  .msg { padding: 10px 16px; }
-  .doc { padding: 0 16px 20px; overflow-x: auto; }
+  .doc { overflow-x: auto; }
 }
 </style>

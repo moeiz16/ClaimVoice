@@ -2,8 +2,6 @@
 // voice line's audio and its timed transcript live in /audio/dana-call(.fr).{ogg,m4a,json}; until those load (or
 // when they are missing) the page plays this built-in script on a silent clock with the same timings.
 import type { Route } from '~/types/api'
-import type { WaveBar } from './waveform'
-import { conversationBars, withHushes } from './waveform'
 import { phraseSpokenAt } from './transcript'
 
 export interface CallTurn { who: 'cv' | 'caller', from: number, to: number, text: string, spans?: { text: string, key: string }[], hush?: number | null }
@@ -173,52 +171,6 @@ export function slipAt(slip: SlipItem[], t: number): SlipItem[] {
     latest.set(f.key, f)
   }
   return order.map(k => latest.get(k)!)
-}
-
-/** Bars for the horizon: from the audio's peaks when present, else drawn from the turn timings. */
-export function horizonBars(call: LandingCall, n = 420): WaveBar[] {
-  const hushes = call.turns.filter(t => t.hush != null).map(t => [t.hush!, t.to] as const)
-  if (call.peaks && call.peaks.cv.length && call.peaks.cv.length === call.peaks.caller.length) {
-    const len = call.peaks.cv.length
-    return Array.from({ length: n }, (_, i) => {
-      const j = Math.floor((i / n) * len)
-      const t = ((i + 0.5) / n) * call.durationSeconds
-      if (hushes.some(([a, b]) => t >= a && t < b)) return { who: 'hush' as const, a: 0 }
-      const cv = call.peaks!.cv[j] ?? 0
-      const ca = call.peaks!.caller[j] ?? 0
-      if (Math.max(cv, ca) < 0.03) return { who: 'gap' as const, a: 0.04 }
-      return cv >= ca ? { who: 'cv' as const, a: Math.min(1, cv) } : { who: 'caller' as const, a: Math.min(1, ca) }
-    })
-  }
-  return conversationBars(withHushes(call.turns), call.durationSeconds, n, 11)
-}
-
-/**
- * The landing's loss notice: the seven script steps as numbered sections, and the slip keys that fill each box.
- * A key the layout doesn't know joins section 4 (What happened), so nothing heard is ever dropped.
- */
-export const NOTICE_LAYOUT: { step: number, boxes: string[] }[] = [
-  { step: 1, boxes: ['consent'] },
-  { step: 2, boxes: ['policy', 'where'] },
-  { step: 3, boxes: ['hurt'] },
-  { step: 4, boxes: ['skylight', 'debris', 'when'] },
-  { step: 5, boxes: ['photos'] },
-  { step: 6, boxes: ['card'] },
-  { step: 7, boxes: ['readback', 'claimno'] },
-]
-
-/** Section number of a slip key on the landing notice. */
-export function noticeStep(key: string): number {
-  return NOTICE_LAYOUT.find(s => s.boxes.includes(key))?.step ?? 4
-}
-
-/** The caller's own words that filled a slip value (its margin note); null for values ClaimVoice said or looked up. */
-export function quoteFor(turns: CallTurn[], item: SlipItem): string | null {
-  if (item.quote !== undefined) return item.quote
-  if (item.fromPolicy || item.hushed) return null
-  const turn = [...turns].reverse().find(t => t.from <= item.at + 0.05 && t.spans?.some(s => s.key === item.key))
-  if (!turn || turn.who !== 'caller') return null
-  return turn.spans!.find(s => s.key === item.key)!.text.replace(/[.,]$/, '')
 }
 
 /**

@@ -80,17 +80,17 @@ const noticeUrl = computed({
 </template>
 
 <style scoped>
-.doc { display: grid; }
-.sec { display: grid; grid-template-columns: minmax(200px, 320px) minmax(0, 1fr); gap: 12px 32px; align-items: start; padding: 20px 32px; border-bottom: 1px solid var(--cv-rule); }
+.doc { display: grid; gap: 3px; border-radius: 28px; overflow: hidden; }
+.sec { display: grid; grid-template-columns: minmax(200px, 320px) minmax(0, 1fr); gap: 12px 32px; align-items: start; padding: 20px 24px; background: var(--cv-surface); }
 .lead { display: grid; gap: 6px; }
-h2 { font-size: 22px; font-weight: 700; }
+h2 { font-size: 22px; font-weight: 900; }
 .muted { margin: 0; color: var(--cv-muted); font-size: 14px; }
 .form { display: grid; gap: 14px; max-width: 520px; }
 .save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .keeps { list-style: none; margin: 0; padding: 0; max-width: 720px; }
-.keeps li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; padding: 10px 0; border-bottom: 1px solid var(--cv-rule); }
+.keeps li { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; padding: 10px 0; border-bottom: 2px solid var(--cv-sunk); }
 .keeps li:last-child { border-bottom: 0; }
-.keeps li :deep(svg), .keeps li > span:first-child { color: var(--cv-orchid-ink); margin-top: 3px; }
+.keeps li :deep(svg), .keeps li > span:first-child { color: var(--cv-jade-ink); margin-top: 3px; }
 @media (max-width: 900px) { .sec { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 720px) { .sec { padding: 16px; } }
 </style>

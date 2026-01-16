@@ -1,16 +1,16 @@
 <script setup lang="ts">
-// A live conversation waveform: bars scroll right to left, ClaimVoice above the line, the caller below.
+// The live level of a call (it carries sound, so it stays): bars scroll right to left, ClaimVoice above the line,
+// the caller below. Shown on the live call, the demo line and in the Bell.
 import type { LevelSource } from '~/composables/useLiveLevels'
-import { dockColors, drawLive, themeColors } from '~/utils/waveform'
+import { drawLive, themeColors } from '~/utils/waveform'
 
 const props = withDefaults(defineProps<{
   seedKey: string
   source?: LevelSource
-  palette?: 'theme' | 'dock'
   bar?: number
   gap?: number
   label?: string | null
-}>(), { source: () => ({}), palette: 'theme', bar: 3, gap: 2, label: null })
+}>(), { source: () => ({}), bar: 3, gap: 2, label: null })
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const seed = computed(() => props.seedKey)
@@ -19,7 +19,7 @@ const prefs = usePrefs()
 
 function draw() {
   if (!canvas.value) return
-  drawLive(canvas.value, buffer.bars, { bar: props.bar, gap: props.gap, colors: props.palette === 'dock' ? dockColors() : themeColors() })
+  drawLive(canvas.value, buffer.bars, { bar: props.bar, gap: props.gap, colors: themeColors() })
 }
 watch(version, draw)
 watch(() => prefs.theme.value, () => nextTick(draw))

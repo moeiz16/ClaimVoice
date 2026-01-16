@@ -17,7 +17,7 @@ const items = computed(() => [{ value: 'signs', label: `Signs worth a closer loo
   <div class="signs">
     <UAccordion
       v-model="value" :items="items" :unmount-on-hide="false"
-      :ui="{ trigger: 'py-3 text-[15px] font-semibold', leadingIcon: 'text-siu size-5', item: 'border-0' }"
+      :ui="{ trigger: 'py-3.5 text-[16px] font-semibold text-siu', leadingIcon: 'text-siu size-5', item: 'border-0' }"
     >
       <template #signs-body>
         <ol class="list">
@@ -39,15 +39,15 @@ const items = computed(() => [{ value: 'signs', label: `Signs worth a closer loo
 </template>
 
 <style scoped>
-.signs { border-top: 1px solid var(--cv-rule); border-bottom: 1px solid var(--cv-rule); }
-.list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--cv-rule); }
-.list li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--cv-rule); font-size: 14.5px; }
+.signs { border-radius: 24px; background: var(--cv-siu-wash); padding: 2px 18px 8px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.list li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 18px; background: var(--cv-surface); font-size: 14.5px; }
 .txt small { display: block; color: var(--cv-muted); font-size: 13px; }
-.n { width: 26px; height: 26px; border-radius: 50%; background: var(--cv-siu-wash); color: var(--cv-siu); display: grid; place-items: center; font-weight: 720; font-size: 13px; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; }
-.src { font-size: 12.5px; color: var(--cv-muted); font-weight: 600; white-space: nowrap; }
-.chip { min-height: 0; padding: 3px; }
-.chip .at { height: 22px; }
+.n { width: 30px; height: 30px; border-radius: 50%; background: var(--cv-siu-wash); color: var(--cv-siu); display: grid; place-items: center; font-weight: 900; font-size: 14px; font-family: var(--font-round); }
+.src { font-size: 12.5px; color: var(--cv-muted); font-weight: 500; white-space: nowrap; }
+.chip { min-height: 0; padding: 2px; border-width: 0; background: none; }
+.chip .at { height: 24px; }
 .chip :deep(.tri) { width: 11px; height: 11px; }
-.never { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 4px; padding: 10px 12px; border-radius: 6px; background: var(--cv-siu-wash); font-size: 14px; font-weight: 600; color: var(--cv-ink); }
+.never { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 8px; font-size: 14px; font-weight: 500; color: var(--cv-ink); }
 .never .shield { color: var(--cv-siu); margin-top: 2px; flex: none; }
 </style>

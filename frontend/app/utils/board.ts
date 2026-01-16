@@ -1,10 +1,9 @@
-// The screener's board (DESIGN.md §0.2): every live line and every caller waiting for a person as one row, in NEXT
-// order, the way a broadcast screener's NEXT key takes calls: urgent safety first, then whoever has waited longest
-// for a person, then people already on a call, then the lines ClaimVoice is handling (by line number), then ringing.
-// The same rows drive the key bank's line keys.
+// Every live line and every caller waiting for a person as one row, in the order to take them (DESIGN.md §3): urgent
+// safety first, then whoever has waited longest for a person, then people already on a call, then the lines
+// ClaimVoice is handling (by line number), then ringing. The Lines page groups them into pools; the Bell counts them.
 import type { HandoffInfo, Iso, Lang, LiveLine } from '~/types/api'
 
-/** The lamp on a line key. Never shown by colour alone: every lamp has a glyph and a word. */
+/** A caller's state. Never shown by colour alone: every state has a glyph and a word. */
 export type Lamp = 'urgent' | 'waiting' | 'person' | 'line' | 'ringing'
 
 export interface BoardRow {
@@ -93,22 +92,4 @@ export function boardRows(lines: LiveLine[], tray: HandoffInfo[]): BoardRow[] {
     if (a.lamp === 'urgent' || a.lamp === 'waiting') return a.since.localeCompare(b.since)
     return (a.lineNo ?? 99) - (b.lineNo ?? 99)
   })
-}
-
-/** The caller the NEXT key takes: the first row waiting for a person, if any. */
-export function nextCaller(rows: BoardRow[]): BoardRow | null {
-  return rows.find(r => r.lamp === 'urgent' || r.lamp === 'waiting') ?? null
-}
-
-/** Line keys for the key bank: by line number, so a key keeps its place while rows reorder. */
-export function lineKeys(rows: BoardRow[], max = 8): BoardRow[] {
-  return [...rows].sort((a, b) => (a.lineNo ?? 99) - (b.lineNo ?? 99)).slice(0, max)
-}
-
-/** A key's accessible name and tooltip, in words. */
-export function keyLabel(r: BoardRow, waited: string | null): string {
-  const bits = [r.lineLabel, r.callerLabel, r.stateWord.toLowerCase()]
-  if (waited && (r.lamp === 'urgent' || r.lamp === 'waiting')) bits.push(`waiting ${waited}`)
-  if (r.language === 'fr') bits.push('in French')
-  return bits.join(' · ')
 }

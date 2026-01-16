@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// The demo-line orb: one object, three states. Idle breathes; listening scales with the microphone level through a
+// The demo-line pebble: one round object, three states, sitting in the phone card. Idle swells softly; listening scales with the microphone level through a
 // spring (stiffness 300, damping 30); speaking pulses with ClaimVoice's turn. Reduced motion: a static ring with a
 // five-step level meter updated four times a second.
 import { levelStep } from '~/utils/waveform'
@@ -39,8 +39,8 @@ const glyph = computed(() => { const px = `${Math.round(Math.max(20, props.size 
 
 <template>
   <div class="orb" :class="[state, { reduced }]" :style="{ width: `${size}px`, height: `${size}px` }">
-    <span class="ring2" :class="{ breathe: !live && !reduced }" aria-hidden="true" />
-    <span class="core" :class="{ breathe: state === 'idle' && !reduced }" :style="!reduced && live ? { transform: `scale(${scale})` } : undefined">
+    <span class="ring2" :class="{ swell: !live && !reduced }" aria-hidden="true" />
+    <span class="core" :class="{ swell: state === 'idle' && !reduced }" :style="!reduced && live ? { transform: `scale(${scale})` } : undefined">
       <UIcon v-if="state === 'listening' && typed" name="i-lucide-keyboard" :style="glyph" />
       <UIcon v-else-if="state === 'listening'" name="i-lucide-mic" :style="glyph" />
       <UIcon v-else name="i-lucide-phone" :style="glyph" />
@@ -54,12 +54,13 @@ const glyph = computed(() => { const px = `${Math.round(Math.max(20, props.size 
 
 <style scoped>
 .orb { position: relative; display: grid; place-items: center; }
-.core { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--cv-orchid) 55%, #fff) 0, var(--cv-orchid) 58%, color-mix(in srgb, var(--cv-orchid) 70%, #2A1530) 100%); will-change: transform; }
-.speaking .core { background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--cv-orchid) 40%, #fff) 0, var(--cv-orchid) 52%, color-mix(in srgb, var(--cv-orchid) 60%, #2A1530) 100%); }
-.ended .core { filter: saturate(.6); }
-.ring2 { position: absolute; inset: -18px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--cv-orchid) 35%, transparent); }
-.ringwave { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--cv-orchid); animation: ripple 600ms var(--ease-voice) 2; }
-.meter { position: absolute; bottom: -34px; display: flex; gap: 4px; }
+.core { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; color: var(--cv-on-jade); background: var(--cv-jade); box-shadow: inset 0 -7px 0 var(--cv-lip); will-change: transform; }
+.listening .core { background: var(--cv-caller); color: var(--cv-sand); }
+.ended .core { background: var(--cv-sunk-2); color: var(--cv-muted); box-shadow: none; }
+.ring2 { position: absolute; inset: -14px; border-radius: 50%; border: 3px solid var(--cv-seaglass); }
+.swell { animation: swell 3.2s var(--ease-swell) infinite; }
+.ringwave { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--cv-jade); animation: halo 600ms var(--ease-tide) 2; }
+.meter { position: absolute; bottom: -30px; display: flex; gap: 4px; }
 .meter i { width: 14px; height: 6px; border-radius: 3px; background: var(--cv-sunk-2); }
-.meter i.on { background: var(--cv-orchid); }
+.meter i.on { background: var(--cv-jade); }
 </style>

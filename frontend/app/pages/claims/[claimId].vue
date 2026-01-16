@@ -1,14 +1,15 @@
 <script setup lang="ts">
-// The claim file (DESIGN.md §5.4) for the adjuster and special investigations. The slate (holder, claim number, loss
-// and times; assigned person, Change route, Claim file PDF), then the tape: the recording with the current turn
-// written on it. Then section 8 first, "Where it goes": the route, one sentence on who does what, three numbered
-// reasons with their moments, likely size, the closer-look signs (folded, with the never-deny note) and Accept route /
-// Change with a reason. Then the loss notice: "In short" as its remarks, sections 1–7 with margin notes, photos in
-// section 5. "What we heard" opens the whole transcript from the left, following the recording.
-// Query flags: ?signs opens the signs, ?read opens the transcript, ?t= starts the tape at a second.
+// The claim file (DESIGN.md §3) for the adjuster and special investigations. The crumb and the holder's name, then
+// the claim card (a wallet pass: claim number, what, where, when, reported, assigned, route; What we heard, Change
+// route, PDF). Then "Where does it go?": the verdict, three numbered reasons with their moments, likely size, the
+// closer-look signs (folded, with the never-deny line) and Accept / Change. Then the recording, In short, and the
+// answer sheet (photos under "Can you send photos?"). "What we heard" opens the conversation in a slide-over.
+// Query flags: ?signs opens the signs, ?read opens the conversation, ?t= starts the recording at a second.
 import type { Claim, Photo, Recording, RoutingDecision, Slot, Transcript, Turn } from '~/types/api'
 import { api } from '~/utils/api'
-import { firstName, fmtClock, fmtDate, fmtDayShort, fmtTime, money, zoneForRegion } from '~/utils/format'
+import { firstName, fmtClock, fmtDate, fmtDayShort, fmtTime, initials, money, zoneForRegion } from '~/utils/format'
+import { lossIcon } from '~/utils/labels'
+import { icon } from '~/utils/icons'
 import { marksByTurn, slotByKey } from '~/utils/marks'
 import { buildNotice, SECTION_STEP } from '~/utils/notice'
 import { isSessionEnded } from '~/composables/useSession'
@@ -66,10 +67,12 @@ const lossWhen = computed(() => {
   const s = slotByKey(claim.value?.file, 'loss_time') ?? slotByKey(claim.value?.file, 'loss_date')
   return s?.display || (claim.value?.lossDate ? fmtDate(claim.value.lossDate) : '')
 })
+const reported = computed(() => (claim.value ? `${fmtDayShort(claim.value.reportedAt, zone.value).split(' ')[0]} ${fmtTime(claim.value.reportedAt, zone.value)}` : ''))
 const caption = computed(() => {
   const c = claim.value
   if (!c) return ''
-  return `${c.claimNumber} · ${c.lossTypeLabel}${c.lossPlace ? `, ${c.lossPlace.split(',').pop()!.trim()}` : ''}${lossWhen.value ? ` · ${lossWhen.value}` : ''} · reported ${fmtDayShort(c.reportedAt, zone.value).split(' ')[0]} ${fmtTime(c.reportedAt, zone.value)}`
+  const line = `${c.lossTypeLabel}${c.lossPlace ? ` in ${c.lossPlace.split(',').pop()!.trim()}` : ''}, reported ${reported.value}`
+  return line.endsWith('.') ? line : `${line}.`
 })
 
 // The notice: sections 1–7 from the claim file (sections with nothing to show and nothing required are left out).
@@ -98,7 +101,7 @@ const shortSegs = computed(() => {
 
 // What we heard: the transcript follows the recording.
 const turns = computed(() => transcript.value?.turns ?? [])
-const signTurns = computed(() => new Set((decision.value?.signs ?? []).map(s => s.turnId).filter(Boolean)))
+const signIds = computed(() => (decision.value?.signs ?? []).map(s => s.turnId).filter((x): x is string => !!x))
 const marks = computed(() => marksByTurn(claim.value?.file))
 const currentTurn = computed(() => {
   const ms = t.value * 1000
@@ -112,7 +115,6 @@ watch([currentTurn, reading], async ([tid]) => {
   await nextTick()
   txEl.value?.querySelector<HTMLElement>(`[data-turn="${tid}"]`)?.scrollIntoView({ block: 'center', behavior: prefs.reduceMotion.value ? 'auto' : 'smooth' })
 })
-const speakerOf = (x: Turn) => (x.speaker === 'whisper' ? 'Whisper, ClaimVoice only' : x.speaker === 'caller' ? firstName(x.speakerLabel) : x.speakerLabel)
 
 function onActivate(slot: Slot) {
   if (slot.heardAtSeconds != null) rec.value?.playClip(slot.heardAtSeconds)
@@ -123,7 +125,7 @@ function onSpan(turnId: string, key: string) {
   const s = slotByKey(claim.value?.file, key)
   if (s?.span) {
     links.flash(s.span, false)
-    nextTick(() => document.querySelector('.notice .box.linked')?.scrollIntoView({ block: 'nearest', behavior: prefs.reduceMotion.value ? 'auto' : 'smooth' }))
+    nextTick(() => document.querySelector('.sheet .kv.linked')?.scrollIntoView({ block: 'nearest', behavior: prefs.reduceMotion.value ? 'auto' : 'smooth' }))
   }
   const turn = turns.value.find(x => x.id === turnId)
   if (turn) rec.value?.seek(turn.atMs / 1000)
@@ -167,58 +169,69 @@ function resendLink() { listening.flash(`Photo link sent to ${callerFirst.value}
 
 <template>
   <div class="claim">
-    <Slate :title="claim?.holderName ?? 'Claim'" :caption="caption" :back="{ to: '/claims', label: 'Claims' }">
-      <CvTag v-if="claim?.assignedTo" kind="person" icon="person" lg class="hide-phone">
-        {{ claim.assignedTo.name }}{{ claim.assignedTo.id === me?.user.id ? ' (you)' : '' }}
-      </CvTag>
-      <UButton v-if="claim" color="neutral" variant="soft" icon="i-lucide-text" :aria-pressed="reading" @click="reading = !reading">
+    <PageHead :title="claim?.holderName ?? 'Claim'" :caption="caption" :back="{ to: '/claims', label: 'Claims' }">
+      <UButton v-if="claim" color="neutral" variant="soft" icon="i-lucide-messages-square" :aria-pressed="reading" @click="reading = !reading">
         What we heard
       </UButton>
       <UButton v-if="can('claims:route') && decision" color="neutral" variant="soft" icon="i-lucide-arrow-left-right" class="hide-phone" @click="changing = true">
         Change route
       </UButton>
-      <UButton v-if="claim" color="neutral" icon="i-lucide-file-text" class="hide-phone" @click="printFile">
+      <UButton v-if="claim" color="neutral" variant="outline" icon="i-lucide-printer" class="hide-phone" @click="printFile">
         Claim file PDF
       </UButton>
-    </Slate>
+    </PageHead>
 
-    <StateNote v-if="error" kind="error" title="We couldn't open this claim." :body="error" retry class="m-4 sm:mx-8" @retry="load" />
+    <StateNote v-if="error" kind="error" title="We couldn't open this claim." :body="error" retry class="mb-6" @retry="load" />
 
-    <!-- The tape -->
-    <CallRecording
-      v-if="recording" ref="rec" :recording="recording" :caller-label="callerFirst" :start-at="startAt" :turns="turns"
-      label="The call's recording" @time="x => (t = x)"
-    />
-    <Tape v-else-if="claim && can('recordings:read')" label="The call's recording">
-      <template #key>
-        <USkeleton class="size-14 rounded-full" />
-      </template>
-      <div class="prep">
-        <USkeleton class="h-11 w-56 flex-none" />
-        <p>The recording is being prepared. The transcript is ready now.</p>
+    <!-- The claim card: a wallet pass -->
+    <section v-if="claim" class="pass" :class="claim.route ? `r-${claim.route.route}` : ''" aria-label="The claim">
+      <div class="strip">
+        <CvMark :size="26" /><span>Larkspur Mutual · claim</span>
+        <RouteTag v-if="claim.route" :route="claim.route.route" :label="claim.route.label" class="ml-auto" />
       </div>
-    </Tape>
-    <Tape v-else-if="!claim && !error" label="Loading the recording">
-      <template #key>
-        <USkeleton class="size-14 rounded-full" />
-      </template>
-      <USkeleton class="h-full w-full" />
-    </Tape>
+      <div class="fields">
+        <div class="f main">
+          <span class="label">Claim number</span>
+          <b class="round num">{{ claim.claimNumber }}</b>
+        </div>
+        <div class="f">
+          <span class="label">What happened</span>
+          <b><UIcon :name="icon(lossIcon(claim.lossType))" class="size-4" />{{ claim.lossTypeLabel }}</b>
+        </div>
+        <div class="f">
+          <span class="label">Where</span>
+          <b>{{ claim.lossPlace ?? claim.regionLabel }}</b>
+        </div>
+        <div v-if="lossWhen" class="f">
+          <span class="label">When</span>
+          <b>{{ lossWhen }}</b>
+        </div>
+        <div class="f">
+          <span class="label">Reported</span>
+          <b class="num">{{ reported }}</b>
+        </div>
+        <div v-if="claim.assignedTo" class="f">
+          <span class="label">With</span>
+          <b class="who"><span class="av">{{ initials(claim.assignedTo.name) }}</span>{{ claim.assignedTo.name }}{{ claim.assignedTo.id === me?.user.id ? ' (you)' : '' }}</b>
+        </div>
+        <div v-if="fr" class="f">
+          <span class="label">Language</span>
+          <b><UIcon name="i-lucide-languages" class="size-4" />Kept in French</b>
+        </div>
+      </div>
+    </section>
+    <USkeleton v-else-if="!error" class="h-44 rounded-[32px]" />
 
     <template v-if="claim">
-      <!-- 8 · Where it goes, first -->
+      <!-- Where does it go? -->
       <section class="goes" aria-labelledby="goes-h">
-        <header class="ghead">
-          <span class="no num" aria-hidden="true">8</span>
-          <h2 id="goes-h">
-            Where it goes
-          </h2>
-        </header>
-
+        <h2 id="goes-h" class="pool-h">
+          Where does {{ firstName(claim.holderName) }}'s claim go?
+        </h2>
         <template v-if="decision">
           <RouteUnfurl :decision="decision" :siu-open="claim.siuOpen" @seek="seekTo">
             <template #note>
-              <p class="routenote voice">
+              <p class="routenote">
                 {{ routeNote }}
               </p>
               <p v-if="decision.override" class="override">
@@ -228,8 +241,8 @@ function resendLink() { listening.flash(`Photo link sent to ${callerFirst.value}
           </RouteUnfurl>
 
           <div class="size">
-            <span class="k">Likely size</span>
-            <b class="voice">{{ sizeWord }}</b>
+            <span class="label">Likely size</span>
+            <b class="round">{{ sizeWord }}</b>
             <span class="d">{{ sizeDetail }}</span>
           </div>
 
@@ -239,14 +252,14 @@ function resendLink() { listening.flash(`Photo link sent to ${callerFirst.value}
           </p>
 
           <div v-if="can('claims:route')" class="actions">
-            <UButton v-if="!decision.acceptedBy" icon="i-lucide-check" :loading="accepting" @click="accept">
-              Accept route
+            <UButton v-if="!decision.acceptedBy" icon="i-lucide-check" size="xl" :loading="accepting" @click="accept">
+              Accept the route
             </UButton>
             <CvTag v-else kind="fast" icon="check" lg>
               {{ accepted }}
             </CvTag>
-            <UButton color="neutral" variant="soft" icon="i-lucide-arrow-left-right" @click="changing = true">
-              Change with a reason
+            <UButton color="neutral" variant="soft" size="xl" icon="i-lucide-arrow-left-right" @click="changing = true">
+              Change it, with a reason
             </UButton>
           </div>
           <p v-else-if="accepted" class="actions">
@@ -255,88 +268,87 @@ function resendLink() { listening.flash(`Photo link sent to ${callerFirst.value}
             </CvTag>
           </p>
         </template>
-        <p v-else class="routenote">
+        <p v-else class="wait">
           The route appears here once the call's routing checks have run.
         </p>
       </section>
 
-      <!-- 1–7 · The loss notice -->
-      <LossNotice
-        :sections="sections" :step="7" ended :turns="turns" :language="claim.language" :reference="claim.claimNumber"
-        @activate="onActivate"
-      >
-        <template #head>
-          <CvTag v-if="fr" kind="orchid" icon="lang">
-            Kept in French · English shown for staff
-          </CvTag>
-        </template>
-        <template #before>
-          <div class="remarks">
-            <div class="rhead">
-              <span class="k">Remarks · In short</span>
-              <small>Written from the call<template v-if="claim.inShort.checkedBy"> · checked by {{ firstName(claim.inShort.checkedBy.name) }}<template v-if="claim.inShort.checkedAt"> at {{ fmtTime(claim.inShort.checkedAt, zone).replace(/ [ap]\.m\./, '') }}</template></template></small>
-            </div>
-            <p class="short">
-              <template v-for="(s, i) in shortSegs" :key="i">
-                <span
-                  v-if="s.link" role="button" :tabindex="s.at == null ? -1 : 0" class="ulink" :aria-label="`${s.text}, heard at ${fmtClock(s.at ?? 0)}`"
-                  @click="s.at != null && rec?.playClip(s.at)" @keydown.enter.prevent="s.at != null && rec?.playClip(s.at)" @keydown.space.prevent="s.at != null && rec?.playClip(s.at)"
-                >{{ s.text }}</span><template v-else>
-                  {{ s.text }}
-                </template>
-              </template>
-            </p>
-            <p v-if="claim.descriptionEn && claim.language === 'fr'" class="en">
-              {{ claim.descriptionEn }}
-            </p>
-          </div>
-        </template>
+      <!-- The recording -->
+      <section class="rec" aria-labelledby="rec-h">
+        <h2 id="rec-h" class="pool-h">
+          Hear the call
+        </h2>
+        <CallRecording
+          v-if="recording" ref="rec" :recording="recording" :caller-label="callerFirst" :start-at="startAt" :turns="turns"
+          label="The call's recording" @time="x => (t = x)"
+        />
+        <div v-else-if="can('recordings:read')" class="prep">
+          <USkeleton class="size-16 rounded-full" />
+          <p>The recording is being prepared. The words are ready now: open What we heard.</p>
+        </div>
+      </section>
+
+      <!-- In short -->
+      <section class="short" aria-labelledby="short-h">
+        <div class="sq">
+          <CvMark :size="30" />
+          <h2 id="short-h">
+            In short
+          </h2>
+          <small>Written from the call<template v-if="claim.inShort.checkedBy"> · checked by {{ firstName(claim.inShort.checkedBy.name) }}<template v-if="claim.inShort.checkedAt"> at {{ fmtTime(claim.inShort.checkedAt, zone).replace(/ [ap]\.m\./, '') }}</template></template></small>
+        </div>
+        <p class="stext">
+          <template v-for="(s, i) in shortSegs" :key="i">
+            <span
+              v-if="s.link" role="button" :tabindex="s.at == null ? -1 : 0" class="ulink" :aria-label="`${s.text}, heard at ${fmtClock(s.at ?? 0)}`"
+              @click="s.at != null && rec?.playClip(s.at)" @keydown.enter.prevent="s.at != null && rec?.playClip(s.at)" @keydown.space.prevent="s.at != null && rec?.playClip(s.at)"
+            >{{ s.text }}</span><template v-else>
+              {{ s.text }}
+            </template>
+          </template>
+        </p>
+        <p v-if="claim.descriptionEn && claim.language === 'fr'" class="en">
+          {{ claim.descriptionEn }}
+        </p>
+      </section>
+
+      <!-- The answers -->
+      <AnswerSheet class="answers" title="What the caller told us" :sections="sections" :step="7" ended :language="claim.language" :reference="claim.claimNumber" @activate="onActivate">
         <template #step-5>
           <PhotoTiles :photos="photos" :link-sent-at="photoLinkAt" :can-resend="can('claims:edit')" @resend="resendLink" />
         </template>
         <template v-if="!hasPhotoStep" #after>
           <PhotoTiles :photos="photos" :link-sent-at="photoLinkAt" :can-resend="can('claims:edit')" @resend="resendLink" />
         </template>
-      </LossNotice>
+      </AnswerSheet>
     </template>
-    <LossNotice v-else-if="!error" :sections="[]" :step="7" ended loading />
+    <AnswerSheet v-else-if="!error" class="answers" :sections="[]" :step="7" ended loading />
 
-    <!-- What we heard: the whole conversation, from the left, following the recording -->
+    <!-- What we heard: the conversation as bubbles, following the recording -->
     <USlideover
-      v-model:open="reading" side="left" title="What we heard" :description="recording?.available ? 'Follows the recording. Click a time to play from there.' : 'Notes from the call'"
-      :modal="false" :overlay="false" :content="{ onInteractOutside: (e: Event) => e.preventDefault() }" :ui="{ content: 'max-w-lg', body: 'p-0 sm:p-0' }"
+      v-model:open="reading" side="right" title="What we heard" :description="recording?.available ? 'Follows the recording. Press a time to play from there.' : 'Notes from the call'"
+      :modal="false" :overlay="false" :content="{ onInteractOutside: (e: Event) => e.preventDefault() }" :ui="{ content: 'max-w-xl', body: 'px-4 sm:px-5' }"
     >
       <template #body>
         <p v-if="transcript && !transcript.retained" class="refused">
           <UIcon name="i-lucide-shield-check" class="size-4" />{{ transcript.notice }}
         </p>
-        <ol ref="txEl" class="tx" aria-label="Transcript">
-          <li v-for="x in turns" :key="x.id" class="t" :data-turn="x.id" :class="[x.speaker, { on: x.id === currentTurn, sign: signTurns.has(x.id) }]" :aria-current="x.id === currentTurn ? 'true' : undefined">
-            <button type="button" class="tm num" :aria-label="`Play from ${fmtClock(x.atMs / 1000)}`" :disabled="!recording?.available" @click="seekTo(x.atMs / 1000)">
-              {{ fmtClock(x.atMs / 1000) }}
-            </button>
-            <div>
-              <b>{{ speakerOf(x) }}</b>
-              <p :lang="x.language === 'fr' ? 'fr' : undefined">
-                <TranscriptText :text="x.text" :turn-id="x.id" :marks="marks[x.id]" @span="k => onSpan(x.id, k)" />
-              </p>
-              <span v-if="x.textEn" class="en">{{ x.textEn }}</span>
-              <CvTag v-if="signTurns.has(x.id)" kind="siu" icon="look" class="signtag">
-                A sign worth a closer look
-              </CvTag>
-            </div>
-          </li>
-        </ol>
+        <div ref="txEl">
+          <Conversation
+            :turns="turns" :marks="marks" :caller-label="claim?.holderName" :current-id="currentTurn" :sign-ids="signIds"
+            :seekable="!!recording?.available" label="Transcript" @seek="seekTo" @span="onSpan"
+          />
+        </div>
         <p v-if="!turns.length" class="refused">
           Nothing was written down from this call.
         </p>
       </template>
       <template v-if="recording?.available" #footer>
-        <div class="flex items-center gap-3">
-          <UButton :icon="rec?.playing ? 'i-lucide-pause' : 'i-lucide-play'" color="primary" :aria-label="rec?.playing ? 'Pause' : `Play from ${fmtClock(t)}`" @click="rec?.toggle()" />
+        <div class="flex items-center gap-3 w-full">
+          <UButton :icon="rec?.playing ? 'i-lucide-pause' : 'i-lucide-play'" color="primary" class="rounded-full" :aria-label="rec?.playing ? 'Pause' : `Play from ${fmtClock(t)}`" @click="rec?.toggle()" />
           <time class="num font-semibold">{{ fmtClock(t) }}</time>
           <UButton color="neutral" variant="ghost" class="ml-auto" @click="reading = false">
-            Back to the notice
+            Back to the claim
           </UButton>
         </div>
       </template>
@@ -347,65 +359,55 @@ function resendLink() { listening.flash(`Photo link sent to ${callerFirst.value}
 </template>
 
 <style scoped>
-.prep { height: 100%; display: flex; gap: 14px; align-items: center; color: var(--cv-muted); font-weight: 600; }
+/* The claim card, a wallet pass. */
+.pass { border-radius: 32px; background: var(--cv-surface); box-shadow: var(--cv-shadow-soft); overflow: hidden; }
+.strip { display: flex; align-items: center; gap: 10px; padding: 12px 22px; background: var(--cv-jade-wash); font-size: 13.5px; font-weight: 500; color: var(--cv-jade-ink); }
+.r-adjuster .strip { background: var(--cv-adj-wash); color: var(--cv-adj); }
+.r-special_investigation .strip { background: var(--cv-siu-wash); color: var(--cv-siu); }
+.fields { display: flex; flex-wrap: wrap; gap: 18px 36px; padding: 20px 24px 22px; align-items: flex-end; }
+.f { display: grid; gap: 4px; min-width: 0; }
+.f b { display: inline-flex; align-items: center; gap: 7px; font-weight: 500; font-size: 16px; }
+.f.main b { font-size: 40px; line-height: 1; font-weight: 900; letter-spacing: -0.02em; }
+.who .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-person-wash); color: var(--cv-person); font-family: var(--font-round); font-weight: 900; font-size: 11px; }
+
+/* Where does it go? */
+.goes { margin-top: 36px; display: grid; gap: 16px; padding: 26px 28px; border-radius: 32px; background: linear-gradient(180deg, var(--cv-jade-wash), color-mix(in srgb, var(--cv-jade-wash) 25%, var(--cv-bg)) 80%); }
+.r-adjuster ~ .goes, .claim:has(.r-adjuster) .goes { background: linear-gradient(180deg, var(--cv-adj-wash), color-mix(in srgb, var(--cv-adj-wash) 25%, var(--cv-bg)) 80%); }
+.claim:has(.r-special_investigation) .goes { background: linear-gradient(180deg, var(--cv-siu-wash), color-mix(in srgb, var(--cv-siu-wash) 25%, var(--cv-bg)) 80%); }
+.routenote { margin: 12px 0 0; font-size: 18px; line-height: 1.4; max-width: 64ch; }
+.override { display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 500; margin: 6px 0 0; }
+.size { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; }
+.size b { font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+.size .d { color: var(--cv-muted); font-size: 14.5px; }
+.never { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 12px 16px; border-radius: 20px; background: var(--cv-surface); font-size: 14px; font-weight: 500; }
+.never .shield { color: var(--cv-siu); margin-top: 2px; flex: none; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 0; }
+.wait { margin: 0; color: var(--cv-muted); }
+
+.rec { margin-top: 40px; display: grid; gap: 14px; }
+.prep { display: flex; gap: 14px; align-items: center; padding: 20px; border-radius: 28px; background: var(--cv-surface); color: var(--cv-muted); }
 .prep p { margin: 0; }
 
-/* 8 · Where it goes: a full-width ruled band */
-.goes { padding: 20px 32px 22px; border-bottom: 1px solid var(--cv-rule); display: grid; gap: 14px; }
-.ghead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.ghead h2 { font-size: 22px; font-weight: 680; }
-.no {
-  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none;
-  font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 720; font-size: 15px;
-  background: var(--cv-ink); color: var(--cv-bg);
-}
-.routenote { margin: 0; font-size: 18px; font-weight: 560; line-height: 1.35; font-variation-settings: "FLAR" 60; max-width: 72ch; }
-.goes > .routenote { font-family: var(--font-sans); font-size: 15px; color: var(--cv-muted); }
-.override { display: flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 600; margin: 6px 0 0; }
-.size { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; padding: 2px 0; }
-.size .k { font-size: 13px; font-weight: 650; color: var(--cv-muted); }
-.size b { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
-.size .d { color: var(--cv-muted); font-size: 14.5px; }
-.never { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: 6px; background: var(--cv-siu-wash); font-size: 14px; font-weight: 600; }
-.never .shield { color: var(--cv-siu); margin-top: 2px; flex: none; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0; }
-
-/* Remarks · In short, the notice's first box */
-.remarks { border: 1px solid var(--cv-rule); border-radius: 6px; background: var(--cv-surface); padding: 10px 14px 14px; }
-.rhead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.rhead .k { font-size: 12px; font-weight: 650; color: var(--cv-muted); }
-.rhead small { margin-left: auto; font-size: 12.5px; color: var(--cv-muted); font-weight: 600; }
-.short {
-  font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: calc(19px * var(--cv-caption-scale));
-  font-weight: 520; line-height: 1.42; letter-spacing: -0.005em; margin: 6px 0 0; max-width: 88ch;
-}
-.ulink { text-decoration: underline; text-decoration-color: var(--cv-orchid); text-decoration-thickness: 2px; text-underline-offset: 4px; cursor: pointer; border-radius: 2px; }
-.ulink:hover, .ulink:focus-visible { background: var(--cv-orchid-wash); }
-.en { display: block; color: var(--cv-muted); font-size: 13.5px; margin-top: 4px; }
-.remarks .en { margin-top: 8px; }
-
-/* What we heard */
-.tx { list-style: none; margin: 0; padding: 6px 0; display: grid; }
-.t { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; padding: 8px 16px; border-left: 3px solid transparent; font-size: calc(15.5px * var(--cv-caption-scale)); line-height: 1.55; transition: background-color 200ms; }
-.tm { border: 0; background: none; color: var(--cv-muted); font-size: 12px; font-weight: 650; padding: 4px 0 0; text-align: left; align-self: start; cursor: pointer; }
-.tm:hover:not(:disabled) { color: var(--cv-orchid-ink); }
-.tm:disabled { cursor: default; }
-.t b { display: block; font-size: 12px; color: var(--cv-muted); line-height: 1.3; }
-.t p { margin: 0; }
-.t.caller p { color: var(--cv-caller); }
-.t.whisper p { color: var(--cv-person); }
-.t.on { background: var(--cv-orchid-wash); border-left-color: var(--cv-orchid); }
-.t.sign { border-left-color: var(--cv-siu); }
-.signtag { margin-top: 6px; }
-.refused { display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-weight: 600; padding: 12px 16px 0; margin: 0; }
-:global(.reduce-motion) .t { transition: none; }
+/* In short: ClaimVoice's summary, as its own bubble. */
+.short { margin-top: 40px; display: grid; gap: 10px; }
+.sq { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sq h2 { font-size: 26px; font-weight: 900; }
+.sq small { color: var(--cv-muted); font-size: 13px; }
+.stext { margin: 0; max-width: 72ch; padding: 18px 22px; border-radius: 6px 26px 26px 26px; background: var(--cv-jade-wash); font-size: calc(19px * var(--cv-caption-scale)); line-height: 1.5; }
+.ulink { text-decoration: underline; text-decoration-color: var(--cv-jade); text-decoration-thickness: 2px; text-underline-offset: 4px; cursor: pointer; border-radius: 6px; }
+.ulink:hover, .ulink:focus-visible { background: var(--cv-seaglass); }
+.en { display: block; color: var(--cv-muted); font-size: 14px; margin: 0; max-width: 72ch; }
+.answers { margin-top: 44px; }
+.refused { display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-weight: 500; margin: 0 0 12px; }
 
 @media (max-width: 720px) {
-  .goes { padding: 16px 16px 18px; }
-  .routenote { font-size: 16.5px; }
-  .rhead small { margin-left: 0; }
+  .fields { padding: 16px 18px 18px; gap: 14px 24px; }
+  .f.main b { font-size: 30px; }
+  .goes { padding: 20px 16px; border-radius: 26px; }
+  .routenote { font-size: 16px; }
+  .stext { font-size: calc(17px * var(--cv-caption-scale)); padding: 14px 16px; }
 }
 @media print {
-  .actions, .claim :deep(.slate .ctl) { display: none; }
+  .actions, .claim :deep(.pagehead .ctl), .claim :deep(.crumb) { display: none; }
 }
 </style>

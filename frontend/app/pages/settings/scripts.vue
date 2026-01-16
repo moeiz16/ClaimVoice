@@ -54,7 +54,7 @@ async function save() {
 
 <template>
   <div>
-    <StateNote v-if="error" kind="error" class="m-4 sm:mx-8" title="That didn't load or save." :body="error" />
+    <StateNote v-if="error" kind="error" class="mb-4" title="That didn't load or save." :body="error" />
     <div v-if="types.length" class="picker">
       <UTabs v-model="active" :items="types" :content="false" variant="pill" size="sm" color="neutral" aria-label="Loss type" />
     </div>
@@ -101,7 +101,7 @@ async function save() {
               <USwitch v-model="q.surgeOnly" size="sm" color="warning" label="Storm only" :aria-label="`Question ${i + 1} is asked only in a storm`" />
             </template>
             <span v-else class="flex gap-1.5 flex-wrap">
-              <CvTag :kind="q.required ? 'orchid' : 'plain'" :icon="q.required ? 'check' : 'dots'">{{ q.required ? 'Required' : 'Optional' }}</CvTag>
+              <CvTag :kind="q.required ? 'jade' : 'plain'" :icon="q.required ? 'check' : 'dots'">{{ q.required ? 'Required' : 'Optional' }}</CvTag>
               <CvTag v-if="q.surgeOnly" kind="siu" icon="wind">Storm</CvTag>
             </span>
             <span v-if="q.when" class="muted">Only if {{ q.when.replace(/_/g, ' ').replace('== true', '') }}</span>
@@ -128,22 +128,23 @@ async function save() {
 </template>
 
 <style scoped>
-.picker { padding: 14px 32px; border-bottom: 1px solid var(--cv-rule); overflow-x: auto; }
-.convo { padding: 20px 32px 28px; display: grid; gap: 12px; }
+.picker { padding: 0 0 14px; overflow-x: auto; }
+.convo { padding: 22px 24px 26px; display: grid; gap: 12px; border-radius: 28px; background: var(--cv-surface); }
 .head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.head h2 { font-size: 24px; font-weight: 700; }
+.head h2 { font-size: 24px; font-weight: 900; }
 .muted { color: var(--cv-muted); font-size: 13.5px; }
 .surge { margin: 0; display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--cv-siu); }
 .cols, .q { display: grid; grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) 220px; gap: 6px 24px; }
-.cols { padding-bottom: 6px; border-bottom: 1px solid var(--cv-rule); margin-top: 6px; }
+.cols { padding-bottom: 6px; margin-top: 6px; }
 .qs { list-style: none; margin: 0; padding: 0; }
-.q { padding: 14px 0; border-bottom: 1px solid var(--cv-rule); align-items: start; }
-.n { font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-size: 20px; font-weight: 720; color: var(--cv-orchid-ink); line-height: 1.3; }
+.q { padding: 14px 14px; border-radius: 20px; background: var(--cv-bg); align-items: start; }
+.qs { display: grid; gap: 6px; }
+.n { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-jade-wash); font-family: var(--font-round); font-size: 15px; font-weight: 900; color: var(--cv-jade-ink); }
 .say { display: grid; gap: 2px; min-width: 0; }
-.who { display: flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 650; color: var(--cv-muted); }
-.who i { width: 7px; height: 7px; border-radius: 50%; background: var(--cv-orchid); }
+.who { display: flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 500; color: var(--cv-muted); }
+.who i { width: 7px; height: 7px; border-radius: 50%; background: var(--cv-jade); }
 .who.narrow { display: none; }
-.say-text, .say :deep(.say-text) { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 17px; font-weight: 560; line-height: 1.35; color: var(--cv-ink); }
+.say-text, .say :deep(.say-text) { margin: 0; font-family: var(--font-round); font-size: 17px; font-weight: 560; line-height: 1.35; color: var(--cv-ink); }
 .meta { display: grid; gap: 8px; align-content: start; justify-items: start; }
 .fills { font-size: 13.5px; color: var(--cv-muted); }
 .fills b { color: var(--cv-ink); }
@@ -155,8 +156,7 @@ async function save() {
   .who.narrow { display: flex; }
 }
 @media (max-width: 720px) {
-  .picker { padding: 12px 16px; }
-  .convo { padding: 16px 16px 24px; }
+  .convo { padding: 16px 14px 22px; }
   .q { grid-template-columns: 26px minmax(0, 1fr); gap: 8px 10px; }
   .q > .say, .meta { grid-column: 2; }
   .meta { grid-auto-flow: row; }

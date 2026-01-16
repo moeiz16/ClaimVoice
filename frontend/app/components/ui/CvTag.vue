@@ -3,9 +3,9 @@
 // ClaimVoice's statuses; each maps to a semantic colour whose soft variant is the AA-checked wash + ink pair.
 import { icon as iconFor } from '~/utils/icons'
 
-type Kind = 'fast' | 'adj' | 'siu' | 'urgent' | 'orchid' | 'person' | 'plain' | 'caller'
+type Kind = 'fast' | 'adj' | 'siu' | 'urgent' | 'jade' | 'person' | 'plain' | 'caller'
 const props = withDefaults(defineProps<{ kind?: Kind, icon?: string, lg?: boolean, variant?: 'soft' | 'subtle' | 'outline' | 'solid' }>(), { kind: 'plain', icon: undefined, lg: false, variant: 'soft' })
-const COLOR = { fast: 'success', adj: 'info', person: 'info', siu: 'warning', urgent: 'error', orchid: 'primary', plain: 'neutral', caller: 'secondary' } as const
+const COLOR = { fast: 'success', adj: 'info', person: 'info', siu: 'warning', urgent: 'error', jade: 'primary', plain: 'neutral', caller: 'secondary' } as const
 const color = computed(() => COLOR[props.kind])
 const leading = computed(() => (props.icon ? (props.icon.startsWith('i-') ? props.icon : iconFor(props.icon)) : undefined))
 </script>

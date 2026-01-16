@@ -37,6 +37,6 @@ const label = computed(() => {
 .hv { display: contents; }
 .heard { cursor: pointer; }
 .heard .tri { width: 10px; height: 10px; }
-.src { font-size: 14.5px; font-weight: 600; display: inline-flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
-.src small { color: var(--cv-muted); font-weight: 550; font-size: 12px; }
+.src { font-size: 14.5px; font-weight: 500; display: inline-flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.src small { color: var(--cv-muted); font-weight: 400; font-size: 12px; }
 </style>

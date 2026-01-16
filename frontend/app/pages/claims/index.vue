@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// Claims: a register. The slate, the route filter (tabs) and search, then one table row per claim: number, caller,
-// loss, place, reported, where it goes (icon + word), who has it and its state. A row opens the claim file. The
-// filters and the search live in the URL (?route=, ?assigned=me, ?q=).
+// Claims (DESIGN.md §3): "Which claims came in?" answered in a sentence, filter pebbles by route and Find, then the
+// register as pebble rows: caller, claim number, what happened, where, reported, where it goes (icon + word), who
+// has it and its state. A row opens the claim file. Filters and the search live in the URL (?route=, ?assigned=me, ?q=).
 import type { TableColumn } from '@nuxt/ui'
 import type { ClaimSummary, Page } from '~/types/api'
 import { api } from '~/utils/api'
@@ -9,6 +9,7 @@ import { fmtDayShort, fmtTime, initials } from '~/utils/format'
 import { lossIcon } from '~/utils/labels'
 import { icon } from '~/utils/icons'
 import { refDebounced } from '@vueuse/core'
+import { questionFor } from '~/utils/places'
 
 useHead({ title: 'Claims · ClaimVoice' })
 const route = useRoute()
@@ -53,15 +54,16 @@ const caption = computed(() => {
   const n = page.value.total
   const newOnes = items.value.filter(c => c.status === 'new').length
   const label = view.value !== 'all' ? tabs.value.find(p => p.value === view.value)?.label.toLowerCase() : null
-  return `${n} claim${n === 1 ? '' : 's'}${label ? ` · ${label}` : ''}${newOnes ? ` · ${newOnes} waiting for a first look` : ''}`
+  const what = `${n} claim${n === 1 ? '' : 's'}${label ? ` (${label})` : ''}${qd.value ? ` matching “${qd.value}”` : ''}`
+  return `${what}${newOnes ? `; ${newOnes} still waiting for a first look.` : '.'}`
 })
 // The register reads in the organisation's time (Calgary), so rows sort and compare at a glance.
 const ORG_TIME = 'America/Edmonton'
 const placeOf = (c: ClaimSummary) => (c.lossPlace ?? c.regionLabel)
 
 const columns: TableColumn<ClaimSummary>[] = [
-  { accessorKey: 'claimNumber', header: 'Claim' },
   { accessorKey: 'holderName', header: 'Caller' },
+  { accessorKey: 'claimNumber', header: 'Claim' },
   { id: 'loss', header: 'What happened' },
   { id: 'place', header: 'Where', cell: ({ row }) => placeOf(row.original) },
   { id: 'reported', header: 'Reported' },
@@ -75,36 +77,35 @@ const more = computed(() => (page.value && page.value.page < page.value.totalPag
 
 <template>
   <div>
-    <Slate title="Claims" :caption="caption" />
+    <PageHead :title="questionFor('claims')" :caption="caption" />
 
     <div class="filters">
       <UTabs v-model="view" :items="tabs" :content="false" variant="pill" size="sm" color="neutral" aria-label="Show claims by route" class="tabs" />
       <UInput v-model="q" type="search" icon="i-lucide-search" placeholder="Claim number, name or place" aria-label="Find a claim" class="search" />
     </div>
 
-    <StateNote v-if="error" kind="error" title="We couldn't load the claims." :body="error" retry class="m-4 sm:mx-8" @retry="load()" />
+    <StateNote v-if="error" kind="error" title="We couldn't load the claims." :body="error" retry class="mb-4" @retry="load()" />
 
     <div v-if="loading && !items.length && !error" class="skel" aria-busy="true" aria-label="Loading the claims">
       <div v-for="n in 6" :key="n" class="srow">
-        <USkeleton class="h-5 w-28" /><USkeleton class="h-5 w-40" /><USkeleton class="h-5 flex-1" /><USkeleton class="h-7 w-28 rounded-full" />
+        <USkeleton class="h-14 w-full rounded-[18px]" />
       </div>
     </div>
 
     <template v-else-if="items.length">
-      <UTable :data="items" :columns="columns" class="tbl" :ui="{ tr: 'cursor-pointer hover:bg-sunk' }" aria-label="Claims" @select="openClaim">
-        <template #claimNumber-cell="{ row }">
-          <NuxtLink :to="`/claims/${row.original.id}`" class="font-semibold num" @click.stop>
-            {{ row.original.claimNumber }}
-          </NuxtLink>
-        </template>
+      <UTable :data="items" :columns="columns" class="tbl" :ui="{ tr: 'cursor-pointer', td: 'whitespace-normal' }" aria-label="Claims" @select="openClaim">
         <template #holderName-cell="{ row }">
-          <span class="who" :lang="row.original.language === 'fr' ? 'fr' : undefined">{{ row.original.holderName }}</span>
-          <UBadge v-if="row.original.language === 'fr'" color="primary" variant="soft" size="sm" class="ml-1.5">
-            FR
-          </UBadge>
+          <span class="who">
+            <span class="face" aria-hidden="true">{{ initials(row.original.holderName) }}</span>
+            <NuxtLink :to="`/claims/${row.original.id}`" :lang="row.original.language === 'fr' ? 'fr' : undefined" @click.stop>{{ row.original.holderName }}</NuxtLink>
+            <span v-if="row.original.language === 'fr'" class="fr" title="In French">FR</span>
+          </span>
+        </template>
+        <template #claimNumber-cell="{ row }">
+          <span class="num text-muted">{{ row.original.claimNumber }}</span>
         </template>
         <template #loss-cell="{ row }">
-          <span class="loss"><UIcon :name="icon(lossIcon(row.original.lossType))" class="size-4 text-orchid-ink" />{{ row.original.lossTypeLabel }}</span>
+          <span class="loss"><UIcon :name="icon(lossIcon(row.original.lossType))" class="size-4 text-jade-ink" />{{ row.original.lossTypeLabel }}</span>
         </template>
         <template #reported-cell="{ row }">
           <span class="when num">{{ fmtDayShort(row.original.reportedAt, ORG_TIME) }} <span>{{ fmtTime(row.original.reportedAt, ORG_TIME) }}</span></span>
@@ -120,7 +121,7 @@ const more = computed(() => (page.value && page.value.page < page.value.totalPag
         </template>
         <template #assigned-cell="{ row }">
           <span v-if="row.original.assignedTo" class="person">
-            <UAvatar :text="initials(row.original.assignedTo.name)" size="xs" class="bg-adj-wash text-adj font-bold" />{{ row.original.assignedTo.name }}
+            <span class="face sm adj" aria-hidden="true">{{ initials(row.original.assignedTo.name) }}</span>{{ row.original.assignedTo.name }}
           </span>
           <span v-else class="text-muted">Not assigned yet</span>
         </template>
@@ -139,32 +140,30 @@ const more = computed(() => (page.value && page.value.page < page.value.totalPag
       </div>
     </template>
 
-    <StateNote v-else-if="!error" class="m-4 sm:mx-8" title="No claims match." body="Try another route, or clear the search." />
+    <StateNote v-else-if="!error" class="mb-4" title="No claims match." body="Try another route, or clear the search." />
   </div>
 </template>
 
 <style scoped>
-.filters { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; padding: 14px 32px; border-bottom: 1px solid var(--cv-rule); }
-.search { margin-left: auto; width: 320px; }
-.tbl { border-bottom: 1px solid var(--cv-rule); }
-.tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 32px; }
-.tbl :deep(th:last-child), .tbl :deep(td:last-child) { padding-right: 32px; }
-.who { font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 650; font-size: 16px; }
-.loss, .person { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.when { white-space: nowrap; font-weight: 600; }
-.when span { color: var(--cv-muted); font-weight: 500; }
+.filters { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin: 4px 0 14px; }
+.search { margin-left: auto; width: 340px; }
+.who { display: inline-flex; align-items: center; gap: 10px; }
+.who a { color: var(--cv-ink); text-decoration: none; font-family: var(--font-round); font-weight: 850; font-size: 17px; letter-spacing: -0.01em; }
+.who a:hover { text-decoration: underline; text-decoration-color: var(--cv-seaglass); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+.face { width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; flex: none; background: var(--cv-sand); color: var(--cv-caller); font-family: var(--font-round); font-weight: 900; font-size: 13px; }
+.face.sm { width: 28px; height: 28px; font-size: 11px; }
+.face.adj { background: var(--cv-adj-wash); color: var(--cv-adj); }
+.fr { padding: 0 8px; border-radius: 999px; background: var(--cv-jade-wash); color: var(--cv-jade-ink); font-weight: 600; font-size: 12px; }
+.loss, .person { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.when { white-space: nowrap; font-weight: 500; }
+.when span { color: var(--cv-muted); font-weight: 400; }
 .badges { display: flex; gap: 6px; flex-wrap: wrap; }
-.state { display: inline-flex; align-items: center; gap: 8px; color: var(--cv-muted); font-weight: 600; white-space: nowrap; }
+.state { display: inline-flex; align-items: center; gap: 8px; color: var(--cv-muted); font-weight: 500; white-space: nowrap; }
 .ph { display: inline-flex; gap: 3px; align-items: center; font-size: 13px; }
-.skel { display: grid; }
-.srow { display: flex; align-items: center; gap: 20px; padding: 16px 32px; border-bottom: 1px solid var(--cv-rule); }
-.more { display: flex; align-items: center; gap: 14px; padding: 16px 32px; }
+.skel { display: grid; gap: 8px; }
+.more { display: flex; align-items: center; gap: 14px; padding: 16px 0; }
 @media (max-width: 720px) {
-  .filters { padding: 12px 16px; }
   .tabs { width: 100%; overflow-x: auto; scrollbar-width: none; }
   .search { margin-left: 0; width: 100%; }
-  .tbl { overflow-x: auto; }
-  .tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 16px; }
-  .srow, .more { padding-left: 16px; padding-right: 16px; }
 }
 </style>

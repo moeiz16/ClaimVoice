@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Activity: the audit trail as a timeline per day, each entry a sentence with the actor's initials and the actor's
+// Activity (DESIGN.md §3): "Who did what, and when?" The audit trail as a soft line per day, each entry a sentence with the actor's initials and the actor's
 // words in bold; filters by action, person and claim; a "Record intact" check of the hash chain (and a way to run it
 // again); export as CSV.
 import type { TimelineItem } from '@nuxt/ui'
@@ -7,6 +7,7 @@ import type { AuditEntry, ChainStatus, Member } from '~/types/api'
 import { api } from '~/utils/api'
 import { fmtDayGroup, fmtTime, initials } from '~/utils/format'
 import { refDebounced } from '@vueuse/core'
+import { questionFor } from '~/utils/places'
 
 useHead({ title: 'Activity · ClaimVoice' })
 const clock = useDemoClock()
@@ -81,10 +82,10 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
 
 <template>
   <div>
-    <Slate title="Activity log" :caption="`Every sensitive action at Larkspur Mutual, newest first${total ? ` · ${total} entries` : ''}`">
+    <PageHead :title="questionFor('activity')" :caption="`Every sensitive action at Larkspur Mutual, newest first${total ? `: ${total.toLocaleString('en-CA')} entries, each chained to the one before` : ''}.`">
       <UTooltip v-if="chain" :text="`${chain.checked} entries checked`">
         <CvTag :kind="chain.ok ? 'fast' : 'urgent'" :icon="chain.ok ? 'check' : 'urgent'" class="hide-phone">
-          {{ chain.ok ? `Record intact ✓ · checked ${fmtTime(chain.checkedAt)}` : `Record broken at entry ${chain.firstBrokenSeq}` }}
+          {{ chain.ok ? `Record intact · checked ${fmtTime(chain.checkedAt)}` : `Record broken at entry ${chain.firstBrokenSeq}` }}
         </CvTag>
       </UTooltip>
       <UButton color="neutral" variant="soft" icon="i-lucide-link-2" :loading="verifying" class="hide-phone" @click="verify">
@@ -93,7 +94,7 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
       <UButton :href="exportUrl" external download color="neutral" variant="soft" icon="i-lucide-download" class="hide-phone">
         Export CSV
       </UButton>
-    </Slate>
+    </PageHead>
 
     <div class="filters">
       <USelectMenu v-model="action" :items="actions" value-key="value" :search-input="false" icon="i-lucide-list-filter" class="w-56" aria-label="Show by action" />
@@ -105,7 +106,7 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
       v-if="chain && !chain.ok" color="error" variant="soft" icon="i-lucide-triangle-alert" role="alert" class="broken"
       :title="`The record doesn't add up from entry ${chain.firstBrokenSeq}: ${chain.reason}. Tell your privacy officer.`"
     />
-    <StateNote v-if="error" kind="error" class="m-4 sm:mx-8" title="We couldn't load the activity." :body="error" retry @retry="load()" />
+    <StateNote v-if="error" kind="error" class="mb-4" title="We couldn't load the activity." :body="error" retry @retry="load()" />
 
     <section v-for="(g, gi) in groups" :key="g.day" class="day" :aria-labelledby="`day-${gi}`">
       <h2 :id="`day-${gi}`">
@@ -113,7 +114,7 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
       </h2>
       <UTimeline
         :items="g.items" color="neutral" size="md" class="log"
-        :ui="{ indicator: 'bg-person-wash text-person font-bold', separator: 'bg-rule', wrapper: 'pb-4 flex items-baseline gap-4', date: 'num text-[13px] font-semibold text-muted shrink-0 w-[68px]', title: 'text-[15px] font-normal text-ink' }"
+        :ui="{ indicator: 'bg-person-wash text-person font-round font-[900]', separator: 'bg-sunk-2 w-[3px] rounded-full', wrapper: 'pb-5 flex items-baseline gap-4', date: 'num text-[13px] font-medium text-muted shrink-0 w-[68px]', title: 'text-[15px] font-normal text-ink' }"
       >
         <template #title="{ item }">
           <p class="m-0">
@@ -128,7 +129,7 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
         <USkeleton class="size-8 rounded-full" /><USkeleton class="h-5 flex-1" />
       </div>
     </div>
-    <StateNote v-else-if="!entries.length && !error" class="m-4 sm:mx-8" title="Nothing matches." body="Try another person or action." />
+    <StateNote v-else-if="!entries.length && !error" class="mb-4" title="Nothing matches." body="Try another person or action." />
 
     <div v-if="entries.length < total" class="more">
       <UButton color="neutral" variant="soft" icon="i-lucide-chevron-down" :loading="loading" @click="load(true)">
@@ -140,18 +141,15 @@ const exportUrl = computed(() => api.audit.exportUrl(query.value))
 </template>
 
 <style scoped>
-.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 32px; border-bottom: 1px solid var(--cv-rule); }
-.broken { margin: 12px 32px 0; width: auto; }
-.day { padding: 18px 32px 6px; border-bottom: 1px solid var(--cv-rule); }
-.day h2 { font-size: 21px; font-weight: 700; margin-bottom: 12px; }
+.filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 20px; }
+.broken { margin: 0 0 16px; width: auto; }
+.day { padding: 22px 24px 8px; border-radius: 28px; background: var(--cv-surface); margin-bottom: 14px; box-shadow: var(--cv-shadow-soft); }
+.day h2 { font-size: 24px; font-weight: 900; margin-bottom: 14px; }
 .log { max-width: 980px; }
-.log b { font-weight: 700; }
-.more { display: flex; gap: 14px; align-items: center; padding: 18px 32px 28px; }
+.log b { font-weight: 600; }
+.more { display: flex; gap: 14px; align-items: center; padding: 8px 0 24px; }
 @media (max-width: 720px) {
-  .filters { padding: 12px 16px; }
   .filters > * { width: 100%; }
-  .broken { margin: 10px 16px 0; }
-  .day { padding: 14px 16px 4px; }
-  .more { padding: 14px 16px 24px; }
+  .day { padding: 16px 16px 4px; border-radius: 24px; }
 }
 </style>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-// Call quality: the review queue as a register, flagged calls first, with the rubric beads as a column and what was
-// missed as tabs. A row opens its review, where the recording jumps to the flagged moment. Filters live in the URL
+// Quality (DESIGN.md §3): "Which calls missed the mark?" answered in a sentence, then the review queue as pebble rows,
+// flagged calls first, with the rubric beads as a column and what was missed as filter pebbles. A row opens its review, where the recording jumps to the flagged moment. Filters live in the URL
 // (?status=, ?item=); an old ?call= link opens that review.
 import type { TableColumn } from '@nuxt/ui'
 import type { Page, QaQueueItem } from '~/types/api'
 import { api } from '~/utils/api'
-import { fmtClock, fmtDayShort, fmtTime } from '~/utils/format'
+import { fmtClock, fmtDayShort, fmtTime, initials } from '~/utils/format'
+import { questionFor } from '~/utils/places'
 
 definePageMeta({
   middleware: [(to) => {
@@ -46,8 +47,8 @@ watch([status, item], () => {
 
 const caption = computed(() => {
   const n = page.value?.total ?? 0
-  if (status.value === 'reviewed') return `${n} reviewed this month`
-  return n ? `${n} call${n === 1 ? '' : 's'} to review · flagged first, then the lowest scores` : 'Every call this week met the rubric'
+  if (status.value === 'reviewed') return `${n} call${n === 1 ? '' : 's'} reviewed this month.`
+  return n ? `${n} call${n === 1 ? '' : 's'} to review: the flagged ones first, then the lowest scores.` : 'None. Every call this week met the rubric.'
 })
 const BAND = { good: { kind: 'fast', icon: 'check' }, needs_attention: { kind: 'siu', icon: 'clock' }, failed: { kind: 'urgent', icon: 'urgent' } } as const
 const columns: TableColumn<QaQueueItem>[] = [
@@ -64,33 +65,31 @@ function open(row: { original: QaQueueItem }) { void navigateTo(hrefOf(row.origi
 
 <template>
   <div>
-    <Slate title="Quality" :caption="caption">
-      <UTabs v-model="status" :items="statuses" :content="false" variant="pill" size="sm" color="neutral" aria-label="Which calls" />
-    </Slate>
+    <PageHead :title="questionFor('quality')" :caption="caption">
+      <UTabs v-model="status" :items="statuses" :content="false" size="sm" color="neutral" aria-label="Which calls" />
+    </PageHead>
 
     <div class="filters">
-      <UTabs v-model="item" :items="filters" :content="false" variant="link" size="sm" color="neutral" aria-label="Filter by what was missed" class="tabs" />
+      <UTabs v-model="item" :items="filters" :content="false" size="sm" color="neutral" aria-label="Filter by what was missed" class="tabs" :ui="{ list: 'bg-transparent p-0 gap-1.5', trigger: 'ring-2 ring-inset ring-rule data-[state=active]:ring-jade data-[state=active]:bg-jade-wash data-[state=active]:text-jade-ink', indicator: 'hidden' }" />
     </div>
 
-    <StateNote v-if="error" kind="error" title="We couldn't load the queue." :body="error" retry class="m-4 sm:mx-8" @retry="load" />
+    <StateNote v-if="error" kind="error" title="We couldn't load the queue." :body="error" retry class="mb-4" @retry="load" />
 
     <div v-else-if="loading && !page" class="skel" aria-busy="true" aria-label="Loading the queue">
-      <div v-for="n in 4" :key="n" class="srow">
-        <USkeleton class="h-5 w-40" />
-        <div class="flex flex-wrap gap-1.5 flex-1">
-          <USkeleton v-for="b in 6" :key="b" class="h-6 w-20 rounded-full" />
-        </div>
-      </div>
+      <USkeleton v-for="n in 4" :key="n" class="h-20 w-full rounded-[18px]" />
     </div>
 
-    <StateNote v-else-if="!page?.items.length" class="m-4 sm:mx-8" title="Nothing to review." body="Every call this week met the rubric." />
+    <StateNote v-else-if="!page?.items.length" class="mb-4" title="Nothing to review." body="Every call this week met the rubric." />
 
-    <UTable v-else :data="page.items" :columns="columns" class="tbl" :ui="{ tr: 'cursor-pointer hover:bg-sunk', td: 'align-top' }" aria-label="Review queue" @select="open">
+    <UTable v-else :data="page.items" :columns="columns" class="tbl" :ui="{ tr: 'cursor-pointer', td: 'align-top whitespace-normal' }" aria-label="Review queue" @select="open">
       <template #callerLabel-cell="{ row }">
-        <NuxtLink :to="hrefOf(row.original)" class="who" @click.stop>
-          {{ row.original.callerLabel }}
-        </NuxtLink>
-        <span class="why">{{ row.original.reasonQueued }}</span>
+        <span class="whorow">
+          <span class="face" aria-hidden="true">{{ initials(row.original.callerLabel) }}</span>
+          <span>
+            <NuxtLink :to="hrefOf(row.original)" class="who" @click.stop>{{ row.original.callerLabel }}</NuxtLink>
+            <span class="why">{{ row.original.reasonQueued }}</span>
+          </span>
+        </span>
       </template>
       <template #claim-cell="{ row }">
         <span class="num font-semibold">{{ row.original.claimNumber ?? row.original.reference }}</span>
@@ -117,22 +116,14 @@ function open(row: { original: QaQueueItem }) { void navigateTo(hrefOf(row.origi
 </template>
 
 <style scoped>
-.filters { padding: 6px 32px 0; border-bottom: 1px solid var(--cv-rule); overflow-x: auto; scrollbar-width: none; }
-.tbl { border-bottom: 1px solid var(--cv-rule); }
-.tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 32px; }
-.tbl :deep(th:last-child), .tbl :deep(td:last-child) { padding-right: 32px; }
-.who { display: block; font-family: var(--font-voice); font-variation-settings: "FLAR" 100; font-weight: 660; font-size: 16.5px; color: inherit; text-decoration: none; }
-.who:hover { text-decoration: underline; text-underline-offset: 3px; }
-.why { display: block; font-size: 13.5px; font-weight: 600; margin-top: 2px; white-space: normal; max-width: 34ch; }
+.filters { margin: 0 0 12px; overflow-x: auto; scrollbar-width: none; }
+.whorow { display: flex; gap: 12px; align-items: flex-start; }
+.face { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--cv-sand); color: var(--cv-caller); font-family: var(--font-round); font-weight: 900; font-size: 13px; }
+.who { display: block; font-family: var(--font-round); font-weight: 850; font-size: 17px; color: inherit; text-decoration: none; }
+.who:hover { text-decoration: underline; text-decoration-color: var(--cv-seaglass); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+.why { display: block; font-size: 13.5px; color: var(--cv-urgent); font-weight: 500; margin-top: 2px; white-space: normal; max-width: 34ch; }
 .sub { display: block; color: var(--cv-muted); font-size: 12.5px; margin-top: 3px; }
 .nowrap { white-space: nowrap; }
 .beads { max-width: 460px; }
-.skel { display: grid; }
-.srow { display: flex; align-items: center; gap: 20px; padding: 16px 32px; border-bottom: 1px solid var(--cv-rule); }
-@media (max-width: 720px) {
-  .filters { padding: 4px 16px 0; }
-  .tbl { overflow-x: auto; }
-  .tbl :deep(th:first-child), .tbl :deep(td:first-child) { padding-left: 16px; }
-  .srow { padding-left: 16px; padding-right: 16px; }
-}
+.skel { display: grid; gap: 8px; }
 </style>

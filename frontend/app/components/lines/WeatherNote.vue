@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// The surge band (Nuxt UI Alert, amber): what's happening in words, and the supervisor's two levers. "What's
-// covered" opens the storm guidance in a popover.
+// The weather note (DESIGN.md §3): a surge, in words, as a sand note under the page's answer, with the supervisor's
+// two levers (the storm's questions; the standby team) and "What's covered" in a popover.
 import type { Surge } from '~/types/api'
 import { api } from '~/utils/api'
 
@@ -14,7 +14,7 @@ const waitWords = computed(() => {
   const s = props.surge.waitForPersonSeconds
   return s < 60 ? 'under a minute' : s < 90 ? 'about 1 min' : `about ${Math.round(s / 60)} min`
 })
-const questionsWord = computed(() => `${props.surge.kindLabel} questions switched ${props.surge.surgeQuestionsOn ? 'on' : 'off'}`)
+const questionsWord = computed(() => `${props.surge.kindLabel} questions ${props.surge.surgeQuestionsOn ? 'on' : 'off'}`)
 
 async function standby() {
   busy.value = true
@@ -32,49 +32,67 @@ async function toggleQuestions() {
 </script>
 
 <template>
-  <UAlert color="warning" variant="soft" :icon="kindIcon" class="surge" role="status" :ui="{ root: 'rounded-none px-8 py-3 max-[720px]:px-4 items-center', icon: 'size-6', title: 'font-voice text-[19px] [font-variation-settings:\'FLAR\'_100] text-ink', description: 'text-ink', actions: 'items-center' }">
-    <template #title>
-      {{ surge.title }} <span class="headline">· {{ surge.headline }}</span>
-    </template>
-    <template #description>
-      <span class="facts">
+  <section class="wx" role="status" aria-label="Weather on the lines">
+    <span class="ic" aria-hidden="true"><UIcon :name="kindIcon" class="size-7" /></span>
+    <div class="txt">
+      <h2>{{ surge.title }}</h2>
+      <p class="hl">
+        {{ surge.headline }}
+      </p>
+      <p class="facts">
         <span v-if="queueWords">{{ queueWords }}</span>
-        <span v-else>Calls are <strong class="num">{{ surge.multiplier.toFixed(1) }}×</strong> usual {{ surge.sinceLabel }}</span>
-        <USwitch v-if="can('lines:manage')" :model-value="surge.surgeQuestionsOn" :label="questionsWord" size="sm" color="warning" @update:model-value="toggleQuestions" />
-        <span v-else><UIcon :name="surge.surgeQuestionsOn ? 'i-lucide-check' : 'i-lucide-x'" class="size-4" />{{ questionsWord }}</span>
+        <span v-else>Calls are <b class="num">{{ surge.multiplier.toFixed(1) }}×</b> usual {{ surge.sinceLabel }}</span>
         <span><UIcon name="i-lucide-clock" class="size-4" />Wait for a person: {{ waitWords }}</span>
-      </span>
-    </template>
-    <template #actions>
-      <UButton v-if="can('lines:manage') && !surge.standbyCalled" icon="i-lucide-users-round" :loading="busy" @click="standby">
-        Bring in the standby team ({{ surge.standbyAvailable }})
-      </UButton>
-      <CvTag v-else-if="surge.standbyCalled" kind="fast" icon="check">Standby team on the lines</CvTag>
-      <UPopover :content="{ side: 'bottom', align: 'end' }">
-        <UButton color="neutral" variant="outline" class="bg-surface">
-          What's covered
+        <span v-if="!can('lines:manage')"><UIcon :name="surge.surgeQuestionsOn ? 'i-lucide-check' : 'i-lucide-x'" class="size-4" />{{ questionsWord }}</span>
+      </p>
+    </div>
+    <div class="levers">
+      <USwitch v-if="can('lines:manage')" :model-value="surge.surgeQuestionsOn" :label="questionsWord" color="warning" @update:model-value="toggleQuestions" />
+      <div class="btns">
+        <UButton v-if="can('lines:manage') && !surge.standbyCalled" icon="i-lucide-users-round" :loading="busy" color="neutral" @click="standby">
+          Bring in the standby team ({{ surge.standbyAvailable }})
         </UButton>
-        <template #content>
-          <div class="guide">
-            <UIcon name="i-lucide-shield-check" class="size-5 text-fast shrink-0" />
-            <div>
-              <p>{{ surge.guidance }}</p>
-              <small>{{ surge.source }}</small>
+        <CvTag v-else-if="surge.standbyCalled" kind="fast" icon="check" lg>Standby team on the lines</CvTag>
+        <UPopover :content="{ side: 'bottom', align: 'end' }">
+          <UButton color="neutral" variant="outline">
+            What's covered
+          </UButton>
+          <template #content>
+            <div class="guide">
+              <UIcon name="i-lucide-shield-check" class="size-5 text-jade-ink shrink-0" />
+              <div>
+                <p>{{ surge.guidance }}</p>
+                <small>{{ surge.source }}</small>
+              </div>
             </div>
-          </div>
-        </template>
-      </UPopover>
-    </template>
-  </UAlert>
+          </template>
+        </UPopover>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.headline { color: var(--cv-muted); font-family: var(--font-sans); font-size: 14px; font-weight: 500; }
-@media (max-width: 1280px) { .headline { display: none; } }
-.facts { display: flex; gap: 6px 20px; flex-wrap: wrap; font-size: 14px; font-weight: 500; margin-top: 2px; }
-.facts > span { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
-strong { color: var(--cv-siu); font-weight: 750; }
-.guide { display: flex; gap: 10px; padding: 14px; max-width: 380px; font-size: 14px; }
+.wx { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px 20px; align-items: center; padding: 18px 22px; border-radius: 28px; background: var(--cv-sand); }
+.ic { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--cv-surface); color: var(--cv-caller); }
+h2 { font-size: 24px; line-height: 1.1; font-weight: 900; }
+.hl { margin: 3px 0 0; color: var(--cv-ink); font-size: 14.5px; }
+.facts { margin: 6px 0 0; display: flex; gap: 4px 18px; flex-wrap: wrap; font-size: 14px; color: var(--cv-caller); font-weight: 500; }
+.facts > span { display: inline-flex; gap: 6px; align-items: center; }
+.facts b { font-weight: 700; }
+.levers { display: grid; gap: 10px; justify-items: end; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.guide { display: flex; gap: 10px; padding: 16px; max-width: 380px; font-size: 14px; }
 .guide p { margin: 0 0 4px; }
 .guide small { color: var(--cv-muted); }
+@media (max-width: 1100px) {
+  .wx { grid-template-columns: auto minmax(0, 1fr); }
+  .levers { grid-column: 1 / -1; justify-items: start; }
+  .btns { justify-content: flex-start; }
+}
+@media (max-width: 720px) {
+  .wx { padding: 16px; border-radius: 24px; gap: 12px; }
+  .ic { width: 48px; height: 48px; }
+  h2 { font-size: 20px; }
+}
 </style>

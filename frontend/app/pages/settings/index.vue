@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: () => navigateTo('/settings/scripts', { replace: true }) })
+// /settings shows the section groups (pages/settings.vue); this child page is empty.
 </script>
 
 <template>

@@ -1,11 +1,6 @@
-// The loss notice (DESIGN.md §0.2): the claim file as a boxed form whose numbered sections are the seven script
-// steps, so the stepper over the tape and the form beneath it are one thing. Each box carries its label, its value
-// with a source, and a margin note: the caller's own words that filled it.
-import type { ClaimFile, ClaimFileSection, SectionKey, Slot, TextSpan, Turn } from '~/types/api'
-import { CARD_TOKEN } from './transcript'
-
-/** The seven script steps, in order (the stepper's items). */
-export const STEPS = ['Consent', 'Policy', 'Safety', 'What happened', 'Photos', 'Coverage', 'Read-back'] as const
+// The answer sheet (DESIGN.md §3): the claim file grouped by the script step that asks for it, so each group is one
+// question ClaimVoice asked and its answers. Each value keeps its source.
+import type { ClaimFile, ClaimFileSection, SectionKey, Slot } from '~/types/api'
 
 /** Which script step fills each claim-file section. */
 export const SECTION_STEP: Record<SectionKey, number> = {
@@ -53,45 +48,10 @@ export function buildNotice(file: ClaimFile | null | undefined, step: number, en
   })
 }
 
-/** Index of the stepper's active item (0-based) for a stage step; past the end when the call has ended. */
-export function stepperIndex(step: number, ended: boolean): number {
-  return ended ? STEPS.length : Math.min(Math.max(step, 1), STEPS.length) - 1
-}
-
-/** A box is wide (two columns) when its value or label is long; long free text gets the full row. */
+/** An answer is wide (two columns) when its value or label is long; long free text gets the full row. */
 export function boxWidth(slot: Slot): 1 | 2 | 4 {
   const len = (slot.display ?? '').length
   if (len > 64) return 4
   if (len > 26 || slot.label.length > 22) return 2
   return 1
-}
-
-/**
- * The margin note for a heard value: the caller's words around its span, at most `maxWords` words, with an ellipsis
- * where it was cut. Card-number moments are never quoted. Returns null when the words aren't available.
- */
-export function marginNote(turns: Pick<Turn, 'id' | 'text'>[] | null | undefined, span: TextSpan | null | undefined, maxWords = 9): string | null {
-  if (!span || !turns?.length) return null
-  const turn = turns.find(t => t.id === span.turnId)
-  if (!turn) return null
-  const text = turn.text
-  const start = Math.max(0, Math.min(span.start, text.length))
-  const end = Math.max(start, Math.min(span.end, text.length))
-  const core = text.slice(start, end).trim()
-  if (!core || core.toLowerCase().includes(CARD_TOKEN)) return null
-  const before = text.slice(0, start)
-  const after = text.slice(end)
-  const countWords = (x: string) => x.trim().split(/\s+/).filter(Boolean).length
-  const room = Math.max(0, maxWords - countWords(core))
-  const nb = countWords(before)
-  const na = countWords(after)
-  // Share the room between the words before and after, giving any unused share to the other side.
-  let pre = Math.min(nb, Math.ceil(room / 2))
-  const post = Math.min(na, room - pre)
-  pre = Math.min(nb, room - post)
-  // Cut on the original text so punctuation keeps its place ("LM-AB-204118." not "LM-AB-204118 .").
-  const lead = pre ? (before.match(new RegExp(`(?:\\S+\\s*){${pre}}$`))?.[0] ?? '') : ''
-  const tail = post ? (after.match(new RegExp(`^(?:\\s*\\S+){${post}}`))?.[0] ?? '') : ''
-  const quote = `${lead}${text.slice(start, end)}${tail}`.replace(/\[[^\]]*\]/g, '').replace(/\s{2,}/g, ' ').trim()
-  return `${pre < nb ? '… ' : ''}${quote}${post < na ? ' …' : ''}`
 }

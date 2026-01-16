@@ -27,7 +27,7 @@ function setWords(words: string[]) {
   if (!rules.value) return
   rules.value.urgentKeywords = [...new Set(words.map(w => w.trim().toLowerCase()).filter(Boolean))]
 }
-const blank = { base: 'font-sans font-semibold text-[15px] text-orchid-ink bg-orchid-wash', trailingIcon: 'text-orchid-ink' }
+const blank = { base: 'font-sans font-semibold text-[15px] text-jade-ink bg-jade-wash', trailingIcon: 'text-jade-ink' }
 
 async function save() {
   if (!rules.value) return
@@ -120,20 +120,19 @@ async function save() {
 </template>
 
 <style scoped>
-.doc { display: grid; }
-.rule { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; align-items: start; padding: 18px 32px; border-bottom: 1px solid var(--cv-rule); }
-.ic { width: 40px; height: 40px; border-radius: 50%; background: var(--cv-sunk); display: grid; place-items: center; color: var(--cv-orchid-ink); }
+.doc { display: grid; gap: 3px; border-radius: 28px; overflow: hidden; }
+.rule { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; align-items: start; padding: 20px 24px; background: var(--cv-surface); }
+.ic { width: 40px; height: 40px; border-radius: 50%; background: var(--cv-sunk); display: grid; place-items: center; color: var(--cv-jade-ink); }
 .ic.urgent { background: var(--cv-urgent-wash); color: var(--cv-urgent); }
-.rule p { margin: 0; font-family: var(--font-voice); font-variation-settings: "FLAR" 60; font-size: 20px; font-weight: 520; line-height: 1.7; max-width: 980px; }
-.rule b { font-weight: 720; }
+.rule p { margin: 0; font-family: var(--font-round); font-size: 20px; font-weight: 520; line-height: 1.7; max-width: 980px; }
+.rule b { font-weight: 800; }
 .blank { display: inline-flex; vertical-align: middle; width: auto; min-width: 0; }
 .words { display: inline-flex; vertical-align: middle; max-width: 100%; }
-.rule p.lock { display: flex; gap: 6px; align-items: center; font-family: var(--font-sans); font-variation-settings: normal; font-size: 13px; line-height: 1.4; color: var(--cv-muted); font-weight: 600; margin-top: 6px; }
-.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 18px 32px 28px; }
+.rule p.lock { display: flex; gap: 6px; align-items: center; font-family: var(--font-sans); font-size: 13px; line-height: 1.4; color: var(--cv-muted); font-weight: 600; margin-top: 6px; }
+.save { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 18px 0 8px; }
 @media (max-width: 720px) {
   .rule { padding: 14px 16px; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; }
   .ic { width: 34px; height: 34px; }
   .rule p { font-size: 17px; }
-  .save { padding: 14px 16px 22px; }
 }
 </style>

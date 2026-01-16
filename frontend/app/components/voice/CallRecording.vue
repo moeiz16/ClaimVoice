@@ -1,9 +1,9 @@
 <script setup lang="ts">
-// The recorded call on the tape (wavesurfer.js v7). Two speaker lanes from precomputed peaks: ClaimVoice's bars rise
-// from the centre line, the caller's hang beneath it, so together they read as one conversation. Hatched card-number
-// gaps, minute ticks and a hover time sit on the wave; moment pins (with their names in a tooltip) run under it. The
-// left column holds play, the time and the speed. As the recording plays, the current turn is written on the tape:
-// ClaimVoice's words above the line, the caller's below, spoken words in ink and the rest of the turn waiting faintly.
+// The recording player (wavesurfer.js v7): the one place a waveform stays in ClaimVoice, because here it carries the
+// sound. Two lanes from precomputed peaks (ClaimVoice's bars rise from the centre, the caller's hang beneath it),
+// hatched card-number gaps, minute ticks and a hover time; moments sit under it as pebbles. A big round play button,
+// the time and the speed sit at its left. As it plays, what each side is saying shows as two bubbles beneath, the
+// spoken words in ink and the rest of the turn waiting faintly.
 // Keyboard while the page is open: Space play/pause, ←/→ 5 s, [ ] previous/next turn, J/K previous/next moment.
 import WaveSurfer from 'wavesurfer.js'
 import HoverPlugin from 'wavesurfer.js/dist/plugins/hover.esm.js'
@@ -71,7 +71,7 @@ function laneRender(direction: 'up' | 'down') {
 }
 
 function colors() {
-  return { faint: cssVar('--cv-faint'), orchid: cssVar('--cv-orchid'), caller: cssVar('--cv-caller'), muted: cssVar('--cv-muted') }
+  return { faint: cssVar('--cv-faint'), jade: cssVar('--cv-jade'), caller: cssVar('--cv-caller'), muted: cssVar('--cv-muted') }
 }
 
 function channelOptions() {
@@ -79,7 +79,7 @@ function channelOptions() {
   // Played portion in full colour, unplayed at 32% of the speaker's colour (DESIGN.md §11).
   const dim = (col: string) => `color-mix(in srgb, ${col} 32%, transparent)`
   return [
-    { waveColor: dim(c.orchid), progressColor: c.orchid, height: laneHeight.value, renderFunction: laneRender('up') },
+    { waveColor: dim(c.jade), progressColor: c.jade, height: laneHeight.value, renderFunction: laneRender('up') },
     { waveColor: dim(c.caller), progressColor: c.caller, height: laneHeight.value, renderFunction: laneRender('down') },
   ]
 }
@@ -101,7 +101,7 @@ function build() {
     splitChannels: channelOptions(),
     normalize: false,
     interact: true,
-    cursorColor: c.orchid,
+    cursorColor: c.jade,
     cursorWidth: 2,
     barWidth: 3,
     barGap: 2,
@@ -154,7 +154,7 @@ function destroy() {
 }
 
 watch(() => props.recording, () => nextTick(build))
-watch(() => prefs.theme.value, () => nextTick(() => { ws?.setOptions({ splitChannels: channelOptions(), cursorColor: colors().orchid }) }))
+watch(() => prefs.theme.value, () => nextTick(() => { ws?.setOptions({ splitChannels: channelOptions(), cursorColor: colors().jade }) }))
 watch(laneHeight, () => { ws?.setOptions({ splitChannels: channelOptions() }) })
 watch(rate, r => ws?.setPlaybackRate(Number(r)))
 onMounted(build)
@@ -237,43 +237,25 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
-  <Tape v-if="recording.available && duration" class="rec" :label="ariaLabel">
-    <template #key>
-      <div class="pk">
-        <UButton
-          :icon="playing ? 'i-lucide-pause' : 'i-lucide-play'" size="xl" class="play" :disabled="!ready"
-          :aria-label="playing ? 'Pause' : `Play from ${fmtClock(t)}`" @click="toggle"
-        />
-        <time class="num">{{ fmtClock(t) }} <span>/ {{ fmtClock(duration) }}</span></time>
-      </div>
-      <UTabs v-model="rate" :items="rates" :content="false" variant="pill" size="xs" color="neutral" aria-label="Speed" class="speed" />
-      <p class="legend" aria-hidden="true">
-        <span><i />ClaimVoice above</span>
-        <span class="c"><i />{{ callerLabel }} below</span>
-      </p>
+  <section v-if="recording.available && duration" class="player" :aria-label="ariaLabel">
+    <div class="ctl">
+      <button type="button" class="play" :disabled="!ready" :aria-label="playing ? 'Pause' : `Play from ${fmtClock(t)}`" @click="toggle">
+        <UIcon :name="playing ? 'i-lucide-pause' : 'i-lucide-play'" />
+      </button>
+      <time class="num">{{ fmtClock(t) }} <span>/ {{ fmtClock(duration) }}</span></time>
+      <UTabs v-model="rate" :items="rates" :content="false" size="xs" color="neutral" aria-label="Speed" class="speed" />
       <slot name="key-after" />
-    </template>
-
-    <template #above>
-      <slot name="above" :t="t">
-        <p v-if="lineWords && lineTurn" class="said" :class="{ quiet: speaking === 'caller' }" :lang="frOf(lineTurn)">
-          <span v-for="(w, i) in lineWords.words" :key="i" :class="{ ahead: w.ahead }">{{ `${w.text} ` }}</span>
-          <span v-if="lineWords.hushed" class="hush" role="img" aria-label="Card number removed">■■■■ removed</span>
-          <small v-if="lineTurn.textEn" class="tr">{{ lineTurn.textEn }}</small>
-        </p>
-        <p v-else-if="!callerTurn" class="said hint">
-          Press play to hear the call.
-        </p>
-      </slot>
-    </template>
-
-    <div ref="host" class="wave" />
-
-    <template #pins>
+    </div>
+    <div class="deck">
+      <p class="legend" aria-hidden="true">
+        <span><i />ClaimVoice</span>
+        <span class="c"><i />{{ callerLabel }}</span>
+      </p>
+      <div ref="host" class="wave" />
       <div ref="scale" class="scale num" aria-hidden="true" />
       <div ref="pinsEl" class="pinrow" :class="{ two: pinLayout.some(p => p.row === 1) }" role="group" aria-label="Moments in the call">
         <UTooltip v-for="(p, i) in pinLayout" :key="i" :text="`${PIN_WORD[p.kind] ? `${PIN_WORD[p.kind]}: ` : ''}${p.label} · ${fmtClock(p.at)}`" :kbds="['J', 'K']">
-          <button type="button" class="pin" :class="p.kind" :style="{ left: `${p.left}px`, top: `${p.row * 30}px` }" :aria-label="`${p.label}, ${fmtClock(p.at)}. Play from here.`" @click="seek(p.at, true)">
+          <button type="button" class="pin" :class="p.kind" :style="{ left: `${p.left}px`, top: `${p.row * 32}px` }" :aria-label="`${p.label}, ${fmtClock(p.at)}. Play from here.`" @click="seek(p.at, true)">
             <UIcon v-if="p.kind === 'siu'" name="i-lucide-search" class="size-3.5" />
             <UIcon v-else-if="p.kind === 'hush'" name="i-lucide-lock" class="size-3.5" />
             <UIcon v-else-if="p.kind === 'fail'" name="i-lucide-x" class="size-3.5" />
@@ -283,74 +265,80 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           </button>
         </UTooltip>
       </div>
-    </template>
-
-    <template #below>
-      <slot name="below" :t="t">
-        <p v-if="callerWords && callerTurn" class="said" :class="{ quiet: speaking === 'line' }" :lang="frOf(callerTurn)">
+      <div v-if="turns" class="now" aria-live="off">
+        <p v-if="lineWords && lineTurn" class="said line" :class="{ quiet: speaking === 'caller' }" :lang="frOf(lineTurn)">
+          <span v-for="(w, i) in lineWords.words" :key="i" :class="{ ahead: w.ahead }">{{ `${w.text} ` }}</span>
+          <span v-if="lineWords.hushed" class="hush" role="img" aria-label="Card number removed">■■■■ removed</span>
+          <small v-if="lineTurn.textEn" class="tr">{{ lineTurn.textEn }}</small>
+        </p>
+        <p v-else-if="!callerTurn" class="said hint">
+          Press play to hear the call.
+        </p>
+        <p v-if="callerWords && callerTurn" class="said caller" :class="{ quiet: speaking === 'line' }" :lang="frOf(callerTurn)">
           <span v-for="(w, i) in callerWords.words" :key="i" :class="{ ahead: w.ahead }">{{ `${w.text} ` }}</span>
           <span v-if="callerWords.hushed" class="hush" role="img" aria-label="Card number removed">■■■■ removed</span>
           <small v-if="callerTurn.textEn" class="tr">{{ callerTurn.textEn }}</small>
         </p>
-      </slot>
-    </template>
-
-    <template v-if="$slots.foot" #foot>
-      <slot name="foot" />
-    </template>
-  </Tape>
-
-  <Tape v-else class="rec" :label="label">
-    <div class="none">
-      <span class="hatch" aria-hidden="true" />
-      <p><UIcon name="i-lucide-shield-check" class="size-4" />{{ recording.reason ?? 'No recording at the caller\'s request.' }} The transcript is notes only.</p>
+      </div>
     </div>
-  </Tape>
+  </section>
+
+  <section v-else class="player none" :aria-label="label">
+    <span class="hatch" aria-hidden="true" />
+    <p><UIcon name="i-lucide-shield-check" class="size-4" />{{ recording.reason ?? 'No recording at the caller\'s request.' }} The transcript is notes only.</p>
+  </section>
 </template>
 
 <style scoped>
-.pk { display: flex; align-items: center; gap: 12px; }
-.play { width: 56px; height: 56px; border-radius: 50%; justify-content: center; flex: none; }
-.pk time { font-weight: 700; font-size: 14.5px; white-space: nowrap; }
-.pk time span { color: var(--cv-muted); font-weight: 550; }
-.speed { align-self: flex-start; }
-.legend { margin: 2px 0 0; display: grid; gap: 2px; font-size: 12.5px; font-weight: 650; color: var(--cv-muted); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.legend i { width: 8px; height: 8px; border-radius: 50%; background: var(--cv-orchid); flex: none; }
+.player { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px 24px; padding: 22px 24px; border-radius: 32px; background: var(--cv-surface); box-shadow: var(--cv-shadow-soft); }
+.ctl { display: grid; justify-items: center; align-content: start; gap: 10px; }
+.play {
+  width: 84px; height: 84px; border: 0; border-radius: 50%; display: grid; place-items: center; font-size: 34px;
+  background: var(--cv-jade); color: var(--cv-on-jade); box-shadow: inset 0 -4px 0 var(--cv-lip), 0 10px 24px -12px var(--cv-jade);
+  transition: transform 140ms var(--ease-spring);
+}
+.play:active { transform: translateY(2px); }
+.play:disabled { opacity: .5; }
+.play:focus-visible { outline-color: var(--cv-ink); }
+.ctl time { font-weight: 600; font-size: 15px; white-space: nowrap; }
+.ctl time span { color: var(--cv-muted); font-weight: 400; }
+.deck { min-width: 0; display: grid; gap: 4px; }
+.legend { margin: 0 0 4px; display: flex; gap: 16px; font-size: 12.5px; font-weight: 500; color: var(--cv-muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--cv-jade); flex: none; }
 .legend .c i { background: var(--cv-caller); }
-.wave { height: 100%; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-.said { margin: 0; transition: opacity 200ms; }
-.said.quiet { opacity: .5; }
-.said.hint { color: var(--cv-muted); }
-.said .ahead { opacity: .34; transition: opacity 160ms; }
-.said .tr { display: block; font-family: var(--font-sans); font-variation-settings: normal; font-size: 13.5px; font-weight: 500; letter-spacing: 0; line-height: 1.4; color: var(--cv-muted); margin-top: 2px; }
-.said .hush { font-size: 13px; vertical-align: middle; }
+.wave { min-width: 0; }
 .scale { position: relative; height: 16px; }
-.pinrow { position: relative; height: 30px; margin-top: 4px; }
-.pinrow.two { height: 60px; }
+.pinrow { position: relative; height: 32px; margin-top: 4px; }
+.pinrow.two { height: 64px; }
 .pin {
-  position: absolute; border: 0; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--cv-surface);
-  box-shadow: inset 0 0 0 1px var(--cv-rule); font-size: 12px; font-weight: 650; white-space: nowrap;
-  display: inline-flex; align-items: center; gap: 4px; color: var(--cv-ink); cursor: pointer;
+  position: absolute; border: 0; height: 28px; padding: 0 11px; border-radius: 999px; background: var(--cv-bg);
+  font-size: 12px; font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; color: var(--cv-ink); cursor: pointer;
 }
-.pin:hover { box-shadow: inset 0 0 0 1.5px var(--cv-orchid); }
-.pin.siu { background: var(--cv-siu-wash); color: var(--cv-siu); box-shadow: none; }
-.pin.hush { background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); color: var(--cv-muted); box-shadow: none; }
-.pin.fail { background: var(--cv-urgent-wash); color: var(--cv-urgent); box-shadow: none; }
-.pin.pass { background: var(--cv-fast-wash); color: var(--cv-fast); box-shadow: none; }
-.pin.focus { background: var(--cv-orchid-wash); color: var(--cv-orchid-ink); box-shadow: none; }
-.none { height: 100%; display: flex; align-items: center; gap: 14px; }
-.hatch { width: 160px; height: 44px; border-radius: 6px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-bg) 5px 10px); flex: none; }
-.none p { margin: 0; display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-weight: 600; }
+.pin:hover { box-shadow: inset 0 0 0 2px var(--cv-jade); }
+.pin.siu { background: var(--cv-siu-wash); color: var(--cv-siu); }
+.pin.hush { background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-sunk) 5px 10px); color: var(--cv-muted); }
+.pin.fail { background: var(--cv-urgent-wash); color: var(--cv-urgent); }
+.pin.pass { background: var(--cv-fast-wash); color: var(--cv-fast); }
+.pin.focus { background: var(--cv-jade); color: var(--cv-on-jade); }
+.now { display: grid; gap: 8px; margin-top: 10px; }
+.said { margin: 0; max-width: 80%; padding: 10px 16px; border-radius: 22px 22px 22px 6px; background: var(--cv-jade-wash); font-size: calc(16px * var(--cv-caption-scale)); line-height: 1.45; transition: opacity 200ms; }
+.said.caller { justify-self: end; border-radius: 22px 22px 6px 22px; background: var(--cv-sand); }
+.said.quiet { opacity: .5; }
+.said.hint { background: none; color: var(--cv-muted); padding-left: 0; }
+.said .ahead { opacity: .34; transition: opacity 160ms; }
+.said .tr { display: block; font-size: 13px; color: var(--cv-muted); margin-top: 2px; }
+.said .hush { font-size: 12px; vertical-align: middle; }
+.none { grid-template-columns: auto minmax(0, 1fr); align-items: center; }
+.hatch { width: 120px; height: 44px; border-radius: 999px; background: repeating-linear-gradient(-45deg, var(--cv-sunk-2) 0 5px, var(--cv-bg) 5px 10px); }
+.none p { margin: 0; display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-weight: 500; }
 :global(.reduce-motion) .said, :global(.reduce-motion) .said .ahead { transition: none; }
-@media (max-width: 1100px) {
-  .legend { display: none; }
-}
 @media (max-width: 720px) {
+  .player { grid-template-columns: minmax(0, 1fr); padding: 16px; border-radius: 26px; }
+  .ctl { grid-auto-flow: column; justify-content: start; align-items: center; }
+  .play { width: 60px; height: 60px; font-size: 26px; }
   .pinrow { display: none; }
-  .hatch { width: 64px; }
+  .said { max-width: 94%; }
 }
-@media print {
-  .rec { display: none; }
-}
+@media print { .player { display: none; } }
 </style>

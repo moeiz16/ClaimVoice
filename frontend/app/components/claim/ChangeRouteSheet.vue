@@ -78,12 +78,12 @@ async function save() {
 </template>
 
 <style scoped>
-.rl { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 650; }
-.now { font-size: 12px; font-weight: 650; color: var(--cv-muted); padding: 1px 8px; border-radius: 999px; background: var(--cv-sunk); }
+.rl { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-round); font-size: 18px; font-weight: 850; }
+.now { font-family: var(--font-sans); font-size: 12px; font-weight: 500; color: var(--cv-muted); padding: 1px 8px; border-radius: 999px; background: var(--cv-sunk); }
 .routes :deep(.k-fast:has([data-state="checked"])) { background: var(--cv-fast-wash); box-shadow: inset 0 0 0 2px var(--cv-fast); border-color: transparent; }
 .routes :deep(.k-adj:has([data-state="checked"])) { background: var(--cv-adj-wash); box-shadow: inset 0 0 0 2px var(--cv-adj); border-color: transparent; }
 .routes :deep(.k-siu:has([data-state="checked"])) { background: var(--cv-siu-wash); box-shadow: inset 0 0 0 2px var(--cv-siu); border-color: transparent; }
-.routes :deep(label) { cursor: pointer; border-radius: 6px; }
+.routes :deep(label) { cursor: pointer; border-radius: 20px; }
 .quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -6px; }
 .notify { display: flex; gap: 6px; align-items: center; color: var(--cv-muted); font-size: 13.5px; margin: 0; }
 </style>
