@@ -72,14 +72,14 @@ any other role.
 
 | Role | Person | What they get |
 |---|---|---|
-| **Claims supervisor** | Renée Kowalchuk (`renee.kowalchuk@larkspur.example`) | The **board**: every live line and every caller waiting for a person as one numbered row, in the order to take them (urgent safety first, then the longest wait), with the step in the seven-step script, what ClaimVoice last asked and what has been heard so far; a **Take the next caller** key; the surge band and the morning's finished claims, all kept live over Server-Sent Events. Line keys with lamps sit in the key bank on every page. **Listen** (follow the call by live captions), **Whisper** (a typed note the line acts on; the caller never hears it), **Take over** (type, and the line says it in its own voice while ClaimVoice keeps taking notes) and hand back. Signs routing-check versions for claims |
+| **Claims supervisor** | Renée Kowalchuk (`renee.kowalchuk@larkspur.example`) | **Who's on the line?** Every live call and every caller waiting for a person, in pools by who they need: waiting for a person (urgent safety first, then the longest wait), talking with ClaimVoice (the last question it asked, what it has heard so far, a ring showing the step in the seven-step script) and with a person; the storm's weather note and the morning's finished claims, all kept live over Server-Sent Events. The Bell, on every page, counts the callers waiting for a person and holds the line you're on. **Listen** (follow the call by live captions), **Whisper** (a typed note the line acts on; the caller never hears it), **Take over** (type, and the line says it in its own voice while ClaimVoice keeps taking notes) and hand back. Signs routing-check versions for claims |
 | **Intake agent** | Jamal Haddad, Sofía Herrera, Aurélie Fortin (French), plus a standby team of two | Hand-offs that arrive with a two-line summary, so nobody asks the caller twice |
-| **Adjuster** | Lena Ortiz | The **claim file**: a two-lane recording (wavesurfer.js), the summary with every phrase linked to its moment, photos from the text link, the route with three reasons and a likely settlement range. Can change a route with a reason |
+| **Adjuster** | Lena Ortiz | The **claim file**: the claim card, where it goes with three reasons and a likely settlement range, a two-lane recording (wavesurfer.js), the summary with every phrase linked to its moment, and the caller's answers to each question ClaimVoice asked, with photos from the text link. Can change a route with a reason |
 | **Special investigator** | Dev Malhotra | Closer-look referrals: which of the 14 signs are present, and where in the call or the policy each came from, under the note that a sign is never a reason to deny a claim |
 | **Compliance and quality** | Priya Sandhu (model risk, privacy officer), Owen Fairweather (call quality) | The **quality review** queue scored on the rubric; **routing checks** answered as a regulator's four questions, fact sheets, fairness, drift and sign-off; the hash-chained activity log with a one-click integrity check |
 | **Administrator** | Nadia Kassem | People and invitations; scripts per loss type (EN/FR); consent rules per state and province; hand-off rules as sentences; languages; retention; the privacy officer |
 
-And for the caller: **Ring the demo line** on the public page calls ClaimVoice from the browser, by voice or by
+And for the caller: **Call the demo line** on the public page calls ClaimVoice from the browser, by voice or by
 typing, in English or French.
 
 ## Quick start (offline, no accounts)
@@ -458,7 +458,7 @@ endorsed by any regulator and not legal advice.
 | Dialogue | An explicit state machine, versioned bilingual scripts (YAML seeded into the database), rule-based EN/FR understanding with spans, optional LiteLLM reader with schema checks |
 | API and platform | Python 3.13, **Litestar** 2, msgspec, **SQLAlchemy 2 + Alembic** (SQLite by default, Postgres-ready), Argon2id, structlog, Prometheus client, Server-Sent Events |
 | Routing checks | **XGBoost** 3, scikit-learn (logistic regression, random forest, isotonic calibration), **Optuna**, **SHAP** (TreeSHAP), **MLflow** (local tracking), PSI drift, freMTPL2 via fastparquet |
-| Web | **Nuxt 3** (Vue 3), TypeScript, **Nuxt UI 3** (Reka UI) themed to the pink palette, Tailwind CSS 4.1, Motion for Vue, VueUse, Web Audio `AnalyserNode` + canvas waveforms, **wavesurfer.js** 7 for recordings, Commissioner and Inclusive Sans self-hosted |
+| Web | **Nuxt 3** (Vue 3), TypeScript, **Nuxt UI 3** (Reka UI) re-shaped to the sea-glass palette, Tailwind CSS 4.1, Motion for Vue, VueUse, Web Audio `AnalyserNode` + canvas live level, **wavesurfer.js** 7 for recordings, Nunito and Lexend self-hosted |
 | Quality | pytest, Ruff, mypy, ESLint, `nuxt typecheck`, Vitest, an evaluation harness with 38 gates, GitHub Actions CI |
 
 Pinned versions and why each was chosen: [ADR 0001](docs/adr/0001-toolchain-and-versions.md).
@@ -489,7 +489,7 @@ backend/
     qa/                           call-quality rubric and scorer
     settings/ seed/               scripts, consent, hand-off, retention, privacy; the Larkspur Mutual seed
   alembic/ tests/
-frontend/        Nuxt 3 + Nuxt UI app: landing, demo line, sign-in, the board, live call, claims, quality, routing checks, settings
+frontend/        Nuxt 3 + Nuxt UI app: landing, demo line, sign-in, lines, live call, claims, quality, routing checks, settings
 eval/            evaluation harness (run.py), suites, scripted and held-out callers, labelled calls, RESULTS.md
 scripts/         freMTPL2 download, toolchain smoke checks, landing-call audio generator
 docs/            problem statement, architecture, API contract, data, compliance map, demo script, ADRs, fact sheets

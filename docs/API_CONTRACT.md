@@ -16,21 +16,23 @@ Changing a shape here means changing it in the same commit as the code. The code
 
 ## 1.0 Screens and the endpoints behind them
 
-The web app's information architecture (`frontend/DESIGN.md` §3): one floating **dock** is the only navigation, with
-**Lines · Claims · Quality · Routing checks · Settings**, and "the line you are on" (a mini player) once you listen.
+The web app's information architecture (`frontend/DESIGN.md` §3): each place is named by the question it answers, and
+the page's question heading is the navigation (it opens the Questions sheet: **Lines · Claims · Quality · Routing
+checks · Settings · Activity**, Find, and the person's own settings). The Bell, top right, counts callers waiting for a
+person and holds "the line you're on" once you listen.
 
 | Route | Screen | Endpoints |
 |---|---|---|
 | `/` | Landing with the recorded call (static audio + captions) | `GET /meta`, `GET /auth/session` |
-| `/call` | Ring the demo line (orb, captions, typed call, French) | `POST /demo/calls`, Part 4 signalling and data channel |
+| `/call` | Call the demo line (phone card, bubbles, typed call, French) | `POST /demo/calls`, Part 4 signalling and data channel |
 | `/sign-in` | Sign in, demo sign-in | `GET /auth/csrf`, `POST /auth/login`, `POST /auth/demo` |
-| `/lines` | Line desk: surge ribbon, strips, hand-off tray, free people, finished this morning | `GET /switchboard`, SSE `/switchboard/stream`, `/surges/{id}/standby`, `/surges/{id}/questions`, `/calls/{id}/handoff/accept` |
-| `/lines/[lineId]` (`lineId` = call id) | Live call: conversation, script track, live claim file, whisper input, take over | `GET /calls/{id}`, `/transcript`, `/claim-file`, SSE `/calls/{id}/stream`, `/listen`, `/whisper`, `/takeover`, `/say`, `/return`, `/handoff`, `/hangup` |
-| dock player | The line you are on (Listening · Whisper · Take over) | `POST /calls/{id}/listen` (`ListenOut`), SSE `/calls/{id}/stream` |
-| `/claims`, `/claims/[claimId]` | Claim ledger (filter pills by route); claim file: In short, What we heard, Where it goes | `GET /claims`, `/claims/{id}`, `/transcript`, `/recording`, `/recording/audio`, `/photos`, `/routing`, `/routing/accept`, `/routing/override`, `/siu`, `/siu/decision`, `PATCH /claims/{id}/file` |
+| `/lines` | Lines: weather note (surge), callers in pools (waiting for a person, talking with ClaimVoice, with a person), free people, finished this morning | `GET /switchboard`, SSE `/switchboard/stream`, `/surges/{id}/standby`, `/surges/{id}/questions`, `/calls/{id}/handoff/accept` |
+| `/lines/[lineId]` (`lineId` = call id) | Live call: in-call stage, the conversation as bubbles, the answer sheet filling, whisper input, take over | `GET /calls/{id}`, `/transcript`, `/claim-file`, SSE `/calls/{id}/stream`, `/listen`, `/whisper`, `/takeover`, `/say`, `/return`, `/handoff`, `/hangup` |
+| the Bell | Waiting callers and the line you're on (Listening · Whisper · Take over) | `POST /calls/{id}/listen` (`ListenOut`), SSE `/calls/{id}/stream` |
+| `/claims`, `/claims/[claimId]` | Claims register (filter by route); claim file: the claim card, Where it goes, the recording, In short, the answers, What we heard | `GET /claims`, `/claims/{id}`, `/transcript`, `/recording`, `/recording/audio`, `/photos`, `/routing`, `/routing/accept`, `/routing/override`, `/siu`, `/siu/decision`, `PATCH /claims/{id}/file` |
 | `/quality`, `/quality/[callId]` | Review queue with rubric beads; review opened at the flagged moment | `GET /qa/queue`, `/qa/calls/{callId}`, `POST …/review`, `GET /claims/{id}/recording` (by the call's claim) |
 | `/routing`, `/routing/[check]` | Routing checks (four questions) and fact sheets | `GET /routing-checks`, `/routing-checks/{check}`, `/fairness`, `POST …/sign-off`, `GET /routing-checks/regulator-pack` |
-| `/settings/{scripts,consent,handoff,languages,retention,people}` | Settings sections | §1.11, people §1.4 |
+| `/settings`, `/settings/{scripts,consent,handoff,languages,retention,privacy,people}` | Settings groups, then each section | §1.11, people §1.4 |
 | `/activity` | Audit log, day-grouped sentences, "Record intact" | `GET /audit`, `/audit/verify`, `/audit/export.csv` |
 | `/p/[token]` | Photo upload from the caller's phone | `GET /photo-links/{token}`, `POST /photo-links/{token}/photos` |
 
