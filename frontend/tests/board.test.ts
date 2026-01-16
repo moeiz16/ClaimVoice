@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HandoffInfo, LiveLine } from '../app/types/api'
-import { boardRows, keyLabel, LAMP_GLYPH, lineKeys, lineNumber, nextCaller } from '../app/utils/board'
+import { boardRows, LAMP_GLYPH, lineNumber } from '../app/utils/board'
 
 const line = (n: number, over: Partial<LiveLine> = {}): LiveLine => ({
   callId: `c${n}`, lineLabel: `Line ${n}`, state: 'with_line', stateLabel: 'With ClaimVoice', mode: 'voice', language: 'en',
@@ -15,7 +15,7 @@ const handoff = (n: number, priority: HandoffInfo['priority'], requestedAt: stri
   lineLabel: `Line ${n}`, place: 'Airdrie', lossTypeLabel: 'Wind', language: 'en', summary: 'Summary', actionsTaken: [], to: null, team: null, ...over,
 })
 
-describe('the screener\'s board', () => {
+describe('callers on the lines', () => {
   it('reads line numbers from labels', () => {
     expect(lineNumber('Line 12')).toBe(12)
     expect(lineNumber('Ligne 3')).toBe(3)
@@ -23,7 +23,7 @@ describe('the screener\'s board', () => {
     expect(lineNumber(null)).toBeNull()
   })
 
-  it('puts callers in NEXT order: urgent, then the longest wait, then people on calls, then the lines by number', () => {
+  it('orders callers to take: urgent, then the longest wait, then people on calls, then the lines by number', () => {
     const lines = [line(3), line(1), line(2, { listeners: [{ userId: 'u', name: 'Jamal Haddad', mode: 'took_over' }] })]
     const tray = [handoff(5, 'normal', '2026-01-08T14:40:00Z'), handoff(4, 'urgent', '2026-01-08T14:41:00Z'), handoff(6, 'high', '2026-01-08T14:39:00Z')]
     const rows = boardRows(lines, tray)
@@ -45,20 +45,10 @@ describe('the screener\'s board', () => {
     expect(rows.map(r => r.callId)).toEqual(['c2'])
   })
 
-  it('takes the first waiting caller with NEXT, and nobody when nobody waits', () => {
-    expect(nextCaller(boardRows([line(1)], [handoff(5, 'normal', '2026-01-08T14:40:00Z')]))?.callId).toBe('c5')
-    expect(nextCaller(boardRows([line(1)], []))).toBeNull()
-  })
-
-  it('keeps key bank keys in line order, however the rows sort', () => {
-    const rows = boardRows([line(3), line(1)], [handoff(5, 'urgent', '2026-01-08T14:40:00Z')])
-    expect(lineKeys(rows).map(r => r.lineNo)).toEqual([1, 3, 5])
-    expect(lineKeys(rows, 2)).toHaveLength(2)
-  })
-
-  it('names every lamp in words and gives it a glyph, so state is never colour alone', () => {
+  it('names every state in words and gives it a glyph, so state is never colour alone', () => {
     const [urgent] = boardRows([], [handoff(4, 'urgent', '2026-01-08T14:41:00Z', { language: 'fr' })])
-    expect(keyLabel(urgent!, '1:48')).toBe('Line 4 · Caller 4 · urgent safety · waiting 1:48 · in French')
+    expect(urgent!.stateWord).toBe('Urgent safety')
+    expect(urgent!.language).toBe('fr')
     expect(Object.values(LAMP_GLYPH).every(g => g.startsWith('i-lucide-'))).toBe(true)
   })
 })

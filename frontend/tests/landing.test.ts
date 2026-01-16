@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alignSlip, builtInCall, horizonBars, normaliseSlip, parseLandingCall, reasonText, slipAt } from '../app/utils/landingCall'
+import { alignSlip, builtInCall, noticeItems, normaliseSlip, parseLandingCall, reasonText, slipAt } from '../app/utils/landingCall'
 import { looksLikeCardNumber } from '../app/mock/demoLine'
 
 describe('the landing call', () => {
@@ -42,12 +42,11 @@ describe('the landing call', () => {
     expect(aligned[0]!.at).toBeCloseTo(13.5)
   })
 
-  it('draws the horizon from peaks when present, with the hush blanked', () => {
-    const call = { ...builtInCall('en'), durationSeconds: 10, turns: [{ who: 'caller' as const, from: 0, to: 10, text: 'x', hush: 5 }], peaks: { cv: [0, 0, 0, 0], caller: [0.5, 0.5, 0.5, 0.5] } }
-    const bars = horizonBars(call, 10)
-    expect(bars[1]!.who).toBe('caller')
-    expect(bars[8]!.who).toBe('hush')
-    expect(horizonBars(builtInCall('en'), 50)).toHaveLength(50)
+  it('adds the read-back once the caller agrees to it, in time order', () => {
+    const call = builtInCall('en')
+    const items = noticeItems(call, 'Read back')
+    expect(items.map(i => i.at)).toEqual([...items.map(i => i.at)].sort((a, b) => a - b))
+    if (call.moments.some(m => m.key === 'readback') && !call.slip.some(i => i.key === 'readback')) expect(items.some(i => i.key === 'readback')).toBe(true)
   })
 
   it('reads route reasons as plain strings or objects', () => {

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import CvTag from '../app/components/ui/CvTag.vue'
 import RouteTag from '../app/components/ui/RouteTag.vue'
 import RubricBeads from '../app/components/quality/RubricBeads.vue'
-import ScriptProgress from '../app/components/lines/ScriptProgress.vue'
+import StepRing from '../app/components/lines/StepRing.vue'
 import HeardValue from '../app/components/claim/HeardValue.vue'
 import type { Slot } from '../app/types/api'
 
@@ -34,14 +34,21 @@ describe('rubric beads', () => {
   })
 })
 
-describe('script progress', () => {
-  it('fills done steps, half-fills the current one and labels itself', () => {
-    const w = mount(ScriptProgress, { props: { stage: { key: 'loss_details', label: 'Details', step: 4, stepLabel: 'What happened', steps: 7, nextLabel: 'Photos next' } } })
-    const segs = w.findAll('i')
-    expect(segs).toHaveLength(7)
-    expect(segs.filter(s => s.classes().includes('done'))).toHaveLength(3)
-    expect(segs[3]!.classes()).toContain('cur')
-    expect(w.attributes('aria-label')).toBe('Step 4 of 7: What happened')
+describe('step and wait rings', () => {
+  it('draws the seven steps as arcs, done ones full, the current one half, and says it in words', () => {
+    const w = mount(StepRing, { props: { label: 'Gord Lindqvist', initials: 'GL', stage: { key: 'loss_details', label: 'Details', step: 4, stepLabel: 'What happened', steps: 7, nextLabel: 'Photos next' } } })
+    expect(w.findAll('circle.track')).toHaveLength(7)
+    expect(w.findAll('circle.arc')).toHaveLength(4)
+    expect(w.find('.ini').text()).toBe('GL')
+    expect(w.attributes('role')).toBe('img')
+    expect(w.attributes('aria-label')).toBe('Gord Lindqvist: step 4 of 7, What happened')
+  })
+
+  it('fills a wait ring as the wait grows, never empty and never past full', () => {
+    const arc = (s: number) => Number(mount(StepRing, { props: { label: 'Hal', initials: 'HP', waitSeconds: s, of: 180 } }).find('circle.arc').attributes('stroke-dasharray')!.split(' ')[0])
+    expect(arc(0)).toBeGreaterThan(0)
+    expect(arc(90)).toBeLessThan(arc(180))
+    expect(arc(900)).toBeCloseTo(arc(180))
   })
 })
 

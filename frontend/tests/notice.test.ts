@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ClaimFile, Slot } from '../app/types/api'
-import { boxWidth, buildNotice, marginNote, slotsDone, STEPS, stepperIndex } from '../app/utils/notice'
+import { boxWidth, buildNotice, slotsDone } from '../app/utils/notice'
 
 const slot = (key: string, display: string, over: Partial<Slot> = {}): Slot => ({
   key, label: key, value: display, display, confidence: 0.9, confidenceLabel: 'sure', source: 'heard', sourceLabel: '▸ 0:10',
@@ -8,7 +8,7 @@ const slot = (key: string, display: string, over: Partial<Slot> = {}): Slot => (
 })
 const file = (sections: ClaimFile['sections']): ClaimFile => ({ callId: 'c1', claimId: null, lossType: 'wind', lossTypeLabel: 'Wind', progress: 0.5, missing: [], sections })
 
-describe('the loss notice', () => {
+describe('the answer sheet', () => {
   it('numbers sections by the script step that fills them, joining caller and policy, loss and details', () => {
     const n = buildNotice(file([
       { key: 'caller', label: 'Caller', slots: [slot('name', 'Gord')] },
@@ -38,33 +38,9 @@ describe('the loss notice', () => {
     expect(slotsDone([])).toBe(false)
   })
 
-  it('maps the stage step to the stepper and runs past the end when the call is over', () => {
-    expect(STEPS).toHaveLength(7)
-    expect(stepperIndex(4, false)).toBe(3)
-    expect(stepperIndex(0, false)).toBe(0)
-    expect(stepperIndex(9, false)).toBe(6)
-    expect(stepperIndex(3, true)).toBe(7)
-  })
-
-  it('widens boxes for long values', () => {
+  it('widens answers for long values', () => {
     expect(boxWidth(slot('a', 'Wind'))).toBe(1)
     expect(boxWidth(slot('a', 'Kitchen skylight smashed by debris'))).toBe(2)
     expect(boxWidth(slot('a', 'x'.repeat(80)))).toBe(4)
-  })
-
-  it('quotes the caller\'s words around a heard value as a margin note, trimmed with ellipses', () => {
-    const turns = [{ id: 't1', text: 'Oh, and the skylight in the kitchen got smashed by something blown off the neighbour\'s deck.' }]
-    const start = turns[0]!.text.indexOf('skylight')
-    expect(marginNote(turns, { turnId: 't1', start, end: start + 8 }, 5)).toBe('… and the skylight in the …')
-    expect(marginNote(turns, { turnId: 't1', start: 0, end: turns[0]!.text.length }, 40)).toBe(turns[0]!.text)
-  })
-
-  it('never quotes a card-number moment, and says nothing when the words are missing', () => {
-    const turns = [{ id: 't1', text: 'It\'s four five [card number removed] okay' }]
-    const s = turns[0]!.text.indexOf('[card')
-    expect(marginNote(turns, { turnId: 't1', start: s, end: s + 21 })).toBeNull()
-    expect(marginNote(turns, { turnId: 'nope', start: 0, end: 3 })).toBeNull()
-    expect(marginNote(null, { turnId: 't1', start: 0, end: 3 })).toBeNull()
-    expect(marginNote(turns, null)).toBeNull()
   })
 })
